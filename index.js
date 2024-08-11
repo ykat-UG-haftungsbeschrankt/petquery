@@ -5,6 +5,18 @@ const util = require("util");
 const config = require("./config.js");
 const modules = [];
 
+function escapeHtml(str){
+	const map = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#039;'
+	};
+	
+	return str.replace(/[&<>"']/g,function(m){return map[m];});
+}
+
 function loadModules(){
 	let dirent;
 	const dir = fs.opendirSync('./modules');
@@ -23,8 +35,8 @@ function loadModules(){
 }
 loadModules();
 
-app.use(express.json());       // to support JSON-encoded bodies
-app.use(express.urlencoded()); // to support URL-encoded bodies
+app.use(express.json());
+app.use(express.urlencoded());
 
 app.all('/',async function(req,res){
 	let query = {...req.query,...req.body};
@@ -40,18 +52,18 @@ app.all('/',async function(req,res){
 		results = await Promise.all(results.map(p => p.catch(e => e)));
 
 		for(result of results.filter(result => (result instanceof Error))){
-			errors_html.push('<pre>'+util.inspect(result)+'</pre>');
+			errors_html.push('<pre>'+escapeHtml(util.inspect(result))+'</pre>');
 		}
 
 		for(result of results.filter(result => !(result instanceof Error))){
-			for(row of result){
-				results_html.push('<pre>'+JSON.stringify(row,null,4)+'</pre>');
+			for(row of result.slice(0,config.max_results_per_module)){
+				results_html.push('<pre>'+escapeHtml(JSON.stringify(row,null,4))+'</pre>');
 			}
 		}
 	}
 
 	errors_html = errors_html.join('');
-	results_html = results_html.join('');
+	results_html = results_html.slice(0,config.max_results_total).join('');
 
 	res.end(`
 		<!DOCTYPE html>
@@ -94,10 +106,6 @@ app.all('/',async function(req,res){
 			</body>
 		</html>
 	`);
-});
-
-app.post('/search',function(req,res){
-   res.end(JSON.stringify({a:1}));
 });
 
 app.listen(config.port,function(){
