@@ -5,7 +5,9 @@ class PetQueryModulesError extends PetQueryModule{
 		super(cfg);
 	}
 	async query(query){
-		throw new Error("1234");
+
+		//throw new Error("1234");
+		return [];
 	}
 };
 

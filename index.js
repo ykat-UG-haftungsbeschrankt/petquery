@@ -31,7 +31,8 @@ function loadModules(){
 
 	const dir = fs.opendirSync('./modules');
 	while((dirent = dir.readSync()) !== null){
-		if(fs.existsSync('./modules/'+dirent.name+'/index.js')){
+		if(fs.existsSync('./modules/'+dirent.name+'/index.js')
+		&& config.module[dirent.name]?.enabled !== false){
 			console.log('Loading module '+dirent.name);
 			let module = require('./modules/'+dirent.name+'/index.js');
 			modules.push(new module(
@@ -46,6 +47,22 @@ function loadModules(){
 	return modules;
 }
 
+function objectMap(obj,fn){
+	let ret = [];
+	Object.keys(obj).forEach(function(key){
+		ret.push(fn(key,obj[key]));
+	});
+	return ret;
+}
+
+function isArray(a) {
+    return (!!a) && (a.constructor === Array);
+}
+
+function isObject(a){
+    return (!!a) && (a.constructor === Object);
+}
+
 const modules = loadModules();
 const app = express();
 
@@ -57,6 +74,8 @@ app.all('/',async function(req,res){
 	let results = [];
 	let errors_html = [];
 	let results_html = [];
+
+	try{
 
 	if(query.query){
 		for(module of modules){
@@ -90,7 +109,19 @@ app.all('/',async function(req,res){
 							)
 							+escapeHtml(row.source?.name || '')
 						+'</a>'
-						+'<pre>'+escapeHtml(JSON.stringify(row.data,null,4))+'</pre>'
+						+'<table class=data>'
+							+objectMap(row.data,(key,value)=>{
+								return '<tr><th>'+escapeHtml(key)+'</th>'
+									 + '<td>'
+								     + (
+										  isArray(value) || isObject(value)
+										? '<pre>'+escapeHtml(JSON.stringify(value,null,4))+'</pre>'
+										: escapeHtml(value)
+									 )
+								     + '</td>'
+								;
+							}).join('')
+						+'</table>'
 						+(
 							row.files?.length
 							? '<div class=files><ul>'
@@ -106,8 +137,32 @@ app.all('/',async function(req,res){
 		}
 	}
 
+	}catch(e){
+		errors_html.push('<pre>'+escapeHtml(util.inspect(e))+'</pre>');
+	}
+
 	errors_html = errors_html.join('');
 	results_html = results_html.slice(0,config.max_results_total).join('');
+
+	if(errors_html != ''){
+		errors_html = `
+			<hr class=lynx>
+			<h2>Errors:</h2>
+			<div class=errors>
+				${errors_html}
+			</div>
+		`;
+	}
+
+	if(results_html != ''){
+		results_html = `
+			<hr class=lynx>
+			<h2>Results:</h2>
+			<div class=results>
+				${results_html}
+			</div>
+		`;
+	}
 
 	res.end(`
 		<!DOCTYPE html>
@@ -141,6 +196,13 @@ app.all('/',async function(req,res){
 						background-color: #f9f9f9;
 						border-radius: 7px;
 						margin-bottom: 14px;
+					}
+					.results .data{
+						margin-top: 7px;
+					}
+					.results .data th{
+						text-align:left;
+						white-space:nowrap;
 					}
 					.results .source{
 					    float: right;
@@ -181,16 +243,9 @@ app.all('/',async function(req,res){
 					<br><br>
 					<div class=example_id>Example identification number: 112093400000465</div>
 				</form>
-				<hr class=lynx>
-				<h2>Errors:</h2>
-				<div class=errors>
-					${errors_html}
-				</div>
-				<hr class=lynx>
-				<h2>Results:</h2>
-				<div class=results>
-					${results_html}
-				</div>
+
+				${errors_html}
+				${results_html}
 			</body>
 		</html>
 	`);

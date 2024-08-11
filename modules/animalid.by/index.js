@@ -28,7 +28,7 @@ class PetQueryModulesAnimalidBy extends PetQueryModule{
 			let table = [...body.matchAll(/<tr[^>]*>[\s\S]*?<td[^>]*>([\s\S]*?)<\/td[^>]*>[\s\S]*?<td[^>]*>([\s\S]*?)<\/td[^>]*>[\s\S]*?<\/tr[^>]*>/g)];
 			let obj = {
 				source:{
-					favicon:'https://animalid.by/favicon.ico'
+					 favicon:'https://animalid.by/favicon.ico'
 					,url:'https://animalid.by'
 					,name:'Animalid'
 				}
@@ -37,9 +37,9 @@ class PetQueryModulesAnimalidBy extends PetQueryModule{
 
 			if(img){
 				obj = {
-					...obj
+					 ...obj
 					,...{
-						preview:'https://animalid.by'+img[1]
+						 preview:'https://animalid.by'+img[1]
 						,files:['https://animalid.by'+img[1]]
 					}
 				};

@@ -5,6 +5,10 @@ module.exports = {
 	,module:{
 		test:{
 			ain:1234
+			,enabled:false
+		}
+		,error:{
+			enabled:false
 		}
 	}
 };
