@@ -1,6 +1,6 @@
 const PetQueryModule = require('../../module.js');
 
-class PetQueryModulesTest extends PetQueryModule{
+class PetQueryModulesBambi extends PetQueryModule{
 	constructor(cfg){
 		super(cfg);
 	}
@@ -22,4 +22,4 @@ class PetQueryModulesTest extends PetQueryModule{
 	}
 };
 
-module.exports = PetQueryModulesTest;
+module.exports = PetQueryModulesBambi;
