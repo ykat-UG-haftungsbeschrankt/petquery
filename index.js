@@ -57,7 +57,18 @@ app.all('/',async function(req,res){
 
 		for(result of results.filter(result => !(result instanceof Error))){
 			for(row of result.slice(0,config.max_results_per_module)){
-				results_html.push('<pre>'+escapeHtml(JSON.stringify(row,null,4))+'</pre>');
+				results_html.push(
+					'<div class=result>'
+						+(row.preview ? '<img src='+row.preview+' class=preview>' : '')
+						+'<a href='+row.source.url+' target=_blank class=source><img src='+row.source.favicon+' class=favicon> '+row.source.name+'</a>'
+						+'<pre>'+escapeHtml(JSON.stringify(row.data,null,4))+'</pre>'
+						+'<div class=files><ul>'
+							+row.files.map(v=>{
+								return '<li><a href="'+v+'" target=_blank>'+v+'</a>';
+							})
+						+'</div>'
+					+'</div>'
+				);
 			}
 		}
 	}
@@ -77,13 +88,50 @@ app.all('/',async function(req,res){
 					body{
 						font-family: 'Helvetica', 'Arial', sans-serif;
 					}
+					a{
+						text-decoration:none;
+					}
 					h1,form{
 						text-align:center;
 					}
-					pre{
+					.results .preview{
+						max-width:150px;
+						max-height:150px;
+						float:left;
+						margin: 7px;
+						border-radius: 7px;
+						margin-bottom: 14px;
+					}
+					.results .result{
+						min-height:160px;
 						border: 1px solid #d2d2d2;
-						padding: 3px 7px;
 						background-color: #f9f9f9;
+						border-radius: 7px;
+						margin-bottom: 14px;
+					}
+					.results .source{
+					    float: right;
+						background-color: white;
+						border-bottom: 1px solid #d2d2d2;
+						border-left: 1px solid #d2d2d2;
+						padding: 1px 3px;
+						left: 1px;
+						position: relative;
+						top: -1px;
+						border-bottom-left-radius: 7px;
+					}
+					.errors pre,.results pre{
+						padding: 3px 7px;
+					}
+					.results pre{
+						margin-left: 160px;
+					}
+					.results .files{
+						margin-left: 160px;
+					}
+					.example_id{
+						color:#666;
+						font-size:0.7 em;
 					}
 				</style>
 			</head>
@@ -94,6 +142,8 @@ app.all('/',async function(req,res){
 					<input type="text" id="site-search" name="query" placeholder="Enter identification number
 " required/>
 					<input type="submit" value="Search">
+					<br><br>
+					<div class=example_id>Example identification number: 112093400000465</div>
 				</form>
 				<h2>Errors:</h2>
 				<div class=errors>

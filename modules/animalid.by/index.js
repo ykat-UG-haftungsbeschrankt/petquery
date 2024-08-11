@@ -22,10 +22,20 @@ class PetQueryModulesAnimalidBy extends PetQueryModule{
 		});
 		let body = await data.text();
 		console.log(body);
-		let table = [...body.matchAll(/<tr>[\s\S]*?<td>([\s\S]*?)<\/td>[\s\S]*?<td>([\s\S]*?)<\/td>[\s\S]*?<\/tr>/g)];
-		let obj = {};
+		let img = body.match(/<td\s+id="img">[\s\S]*?<img[^>]+src="([^"]+)"[^>]*>/);
+		let table = [...body.matchAll(/<tr[^>]*>[\s\S]*?<td[^>]*>([\s\S]*?)<\/td[^>]*>[\s\S]*?<td[^>]*>([\s\S]*?)<\/td[^>]*>[\s\S]*?<\/tr[^>]*>/g)];
+		let obj = {
+			source:{
+				 favicon:'https://animalid.by/favicon.ico'
+				,url:'https://animalid.by'
+				,name:'Animalid'
+			}
+			,preview:'https://animalid.by'+img[1]
+			,files:['https://animalid.by'+img[1]]
+			,data:{}
+		};
 		for(const row of table){
-			obj[row[1].replace(/<[^>]+(>|$)/g, "")] = row[2].replace(/<[^>]+(>|$)/g, "");
+			obj.data[row[1].replace(/<[^>]+(>|$)/g, "")] = row[2].replace(/<[^>]+(>|$)/g, "");
 		}
 		return [obj];
 	}
