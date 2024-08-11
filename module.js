@@ -8,7 +8,7 @@ class PetQueryModule{
 		}
 		return this._cfg[key];
 	}
-	async query(){
+	async query(query){
 	}
 }
 module.exports = PetQueryModule;
