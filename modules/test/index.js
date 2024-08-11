@@ -7,7 +7,7 @@ class PetQueryModulesTest extends PetQueryModule{
 	async query(query){
 		return [{
 				name: {
-					first: "Bob",
+					first: this.getConfigValue('ain'),
 					last: "Smith",
 				}
 			},{
