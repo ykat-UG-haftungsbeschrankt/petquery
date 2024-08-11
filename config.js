@@ -3,7 +3,7 @@ module.exports = {
 	,max_results_per_module:10
 	,max_results_total:1000
 	,module:{
-		bambi:{
+		test:{
 			ain:1234
 		}
 	}
