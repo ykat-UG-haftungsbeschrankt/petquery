@@ -1,9 +1,7 @@
 const express = require('express');
-const app = express();
 const fs = require("fs");
 const util = require("util");
 const config = require("./config.js");
-const modules = [];
 
 function escapeHtml(str){
 	const map = {
@@ -17,8 +15,20 @@ function escapeHtml(str){
 	return str.replace(/[&<>"']/g,function(m){return map[m];});
 }
 
+function escapeHtmlAttribute(str){
+	const map = {
+		'&': '&amp;',
+		'"': '&quot;',
+		"'": '&#039;'
+	};
+	
+	return str.replace(/[&"']/g,function(m){return map[m];});
+}
+
 function loadModules(){
+	let modules = [];
 	let dirent;
+
 	const dir = fs.opendirSync('./modules');
 	while((dirent = dir.readSync()) !== null){
 		if(fs.existsSync('./modules/'+dirent.name+'/index.js')){
@@ -32,8 +42,12 @@ function loadModules(){
 		}
 	}
 	dir.closeSync();
+
+	return modules;
 }
-loadModules();
+
+const modules = loadModules();
+const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded());
@@ -51,22 +65,41 @@ app.all('/',async function(req,res){
 
 		results = await Promise.all(results.map(p => p.catch(e => e)));
 
-		for(result of results.filter(result => (result instanceof Error))){
+		for(const result of results.filter(result => (result instanceof Error))){
 			errors_html.push('<pre>'+escapeHtml(util.inspect(result))+'</pre>');
 		}
 
-		for(result of results.filter(result => !(result instanceof Error))){
+		for(const result of results.filter(result => !(result instanceof Error))){
 			for(row of result.slice(0,config.max_results_per_module)){
 				results_html.push(
 					'<div class=result>'
-						+(row.preview ? '<img src='+row.preview+' class=preview>' : '')
-						+'<a href='+row.source.url+' target=_blank class=source><img src='+row.source.favicon+' class=favicon> '+row.source.name+'</a>'
+						+(
+							row.preview
+							? '<img src="'+escapeHtmlAttribute(row.preview)+'" class=preview>'
+							: ''
+						)
+						+'<a '+(
+							row.source?.url
+							? 'href="'+escapeHtmlAttribute(row.source.url)+'"'
+							: ''
+						)+' target=_blank class=source>'
+							+(
+								row.source?.favicon
+								? '<img src="'+escapeHtmlAttribute(row.source.favicon)+'" class=favicon> '
+								: ''
+							)
+							+escapeHtml(row.source?.name || '')
+						+'</a>'
 						+'<pre>'+escapeHtml(JSON.stringify(row.data,null,4))+'</pre>'
-						+'<div class=files><ul>'
-							+row.files.map(v=>{
-								return '<li><a href="'+v+'" target=_blank>'+v+'</a>';
-							})
-						+'</div>'
+						+(
+							row.files?.length
+							? '<div class=files><ul>'
+								+row.files.map(v=>{
+									return '<li><a href="'+escapeHtmlAttribute(v)+'" target=_blank>'+escapeHtml(v)+'</a>';
+								})
+							+'</div>'
+							: ''
+						)
 					+'</div>'
 				);
 			}
@@ -133,22 +166,27 @@ app.all('/',async function(req,res){
 						color:#666;
 						font-size:0.7 em;
 					}
+					.lynx{
+						display:none;
+					}
 				</style>
 			</head>
 			<body>
 				<h1>Pet Query</h1>
 
-				<form method="POST">
-					<input type="text" id="site-search" name="query" placeholder="Enter identification number
+				<form method=post>
+					<input type="text" name="query" placeholder="Enter identification number
 " required/>
 					<input type="submit" value="Search">
 					<br><br>
 					<div class=example_id>Example identification number: 112093400000465</div>
 				</form>
+				<hr class=lynx>
 				<h2>Errors:</h2>
 				<div class=errors>
 					${errors_html}
 				</div>
+				<hr class=lynx>
 				<h2>Results:</h2>
 				<div class=results>
 					${results_html}
