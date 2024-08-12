@@ -66,9 +66,9 @@ If enabled in PetQueryConfig.route.json to render results in existing websites
 
 ### http://127.0.0.1:50000/api?query=112093400000465 ###
 
-Only returns results from ./module/(PetQueryConfig.route.api.module)/index.js.
+If enabled in PetQueryConfig.route.api it only returns results from a single module ./module/(PetQueryConfig.route.api.module)/index.js.
 
-So if you are running petquery on your server and implemented a module to add your own data to the result set, the api can make this data available to other authorities by simply extending the petquery module and specify unique uri and authorization credentials in PetQueryConfig for the new module.
+So if you are running petquery on your server and implemented a module to add your local database data to the result set, the api uri can make this data available to other authorities by simply extending the petquery module and specify unique uri and authorization credentials in PetQueryConfig for the new module.
 
 ```C
 [
