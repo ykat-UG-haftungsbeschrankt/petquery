@@ -1,6 +1,4 @@
 const PetQueryModule = require('../../module.js');
-const FormData = require('form-data');
-const request = require('request');
 
 class PetQueryModulesAnimalidBy extends PetQueryModule{
 	constructor(cfg){

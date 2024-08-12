@@ -11,4 +11,8 @@ module.exports = {
 			enabled:false
 		}
 	}
+	,authenticate:{
+		 api:false
+		,json:false
+	}
 };

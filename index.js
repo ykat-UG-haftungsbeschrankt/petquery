@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require("fs");
 const util = require("util");
 const config = require("./config.js");
+const { authenticate } = require('express-oauth2-jwt-bearer');
 
 function escapeHtml(str){
 	const map = {
@@ -47,6 +48,30 @@ function loadModules(){
 	return modules;
 }
 
+async function queryModules(query){
+	let results = [];
+	let ret = {
+		 error:[]
+		,data:[]
+	};
+
+	for(module of modules){
+		results.push(module.query(query));
+	}
+
+	results = await Promise.all(results.map(p => p.catch(e => e)));
+
+	ret.error = results.filter(result => (result instanceof Error));
+
+	for(const result of results.filter(result => !(result instanceof Error))){
+		for(row of result.slice(0,config.max_results_per_module)){
+			ret.data.push(row);
+		}
+	}
+
+	return ret;
+}
+
 function objectMap(obj,fn){
 	let ret = [];
 	Object.keys(obj).forEach(function(key){
@@ -69,27 +94,58 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded());
 
+if(config.authenticate?.json){
+	app.all('/json',authenticate(config.authenticate.json),async function(req,res){
+		try{
+			res.json(await queryModules({...req.query,...req.body}));
+		}catch(e){
+			res.status(500).send(util.inspect(e));
+		}
+	});
+}
+
+if(config.authenticate?.api){
+	app.all('/api',authenticate(config.authenticate.api),async function(req,res){
+		//perform local db lookup
+		return [{
+				data: {
+					name: {
+						first: this.getConfigValue('ain'),
+						last: "Smith",
+					}
+				}
+			}, {
+				source: {
+					favicon: 'https://animalid.by/favicon.ico'
+					, url: 'https://animalid.by'
+					, name: 'Animalid'
+				}
+				, preview: undefined
+				, files: []
+				, data: {
+					name: {
+						first: "Bob",
+						last: "Smith",
+					}
+				}
+			}
+		];
+	});
+}
+
 app.all('/',async function(req,res){
 	let query = {...req.query,...req.body};
-	let results = [];
+	let data = await queryModules(query);
+
 	let errors_html = [];
 	let results_html = [];
 
 	try{
+			for(const result of data.error){
+				errors_html.push('<pre>'+escapeHtml(util.inspect(result))+'</pre>');
+			}
 
-	if(query.query){
-		for(module of modules){
-			results.push(module.query(query));
-		}
-
-		results = await Promise.all(results.map(p => p.catch(e => e)));
-
-		for(const result of results.filter(result => (result instanceof Error))){
-			errors_html.push('<pre>'+escapeHtml(util.inspect(result))+'</pre>');
-		}
-
-		for(const result of results.filter(result => !(result instanceof Error))){
-			for(row of result.slice(0,config.max_results_per_module)){
+			for(const result of data.data){
 				results_html.push(
 					'<div class=result>'
 						+(
@@ -134,9 +190,6 @@ app.all('/',async function(req,res){
 					+'</div>'
 				);
 			}
-		}
-	}
-
 	}catch(e){
 		errors_html.push('<pre>'+escapeHtml(util.inspect(e))+'</pre>');
 	}
