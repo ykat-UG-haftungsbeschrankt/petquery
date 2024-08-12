@@ -20,24 +20,27 @@ module.exports = {
 	,module:{
 		test:{
 			ain:1234
-			,enabled:false
+			,enabled:true
 		}
 		,error:{
+			enabled:false
+		}
+		,petquery:{
 			enabled:false
 		}
 	}
 	,route:{
 		api:{
 			module:'test'
-			,enabled:false
+			,enabled:true
 			,authenticate:false//authenticate_api
 		}
 		,json:{
-			enabled:false
+			enabled:true
 			,authenticate:false//authenticate_json
 		}
 		,"/":{
-			enabled:false
+			enabled:true
 		}
 	}
 };

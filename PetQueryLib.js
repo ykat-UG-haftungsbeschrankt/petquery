@@ -40,5 +40,6 @@ class PetQueryLib{
 	static next(req, res, next){
 		return next();
 	}
-}
+};
+
 module.exports = PetQueryLib;

@@ -1,9 +1,9 @@
 const express = require('express');
 const https = require("https");
 const util = require("util");
-const PetQueryConfig = require("./PetQueryPetQueryConfig.js");
+const PetQueryConfig = require("./PetQueryConfig.js");
 const PetQueryLib = require("./PetQueryLib.js");
-const PetQueryModules = require("./PetQueryModules.js");
+const PetQueryModules = require("./PetQueryModules.js")(PetQueryConfig);
 const app = express();
 
 app.use(express.json());
@@ -55,32 +55,32 @@ app.all('/',async function(req,res){
 	let results_html = [];
 
 	try{
-			for(const result of data.error){
-				errors_html.push('<pre>'+PetQueryLib.escapeHtml(util.inspect(result))+'</pre>');
+			for(const obj of data.error){
+				errors_html.push('<pre>'+PetQueryLib.escapeHtml(util.inspect(obj))+'</pre>');
 			}
 
-			for(const result of data.data){
+			for(const obj of data.data){
 				results_html.push(
 					'<div class=result>'
 						+(
-							row.preview
-							? '<img src="'+PetQueryLib.escapeHtmlAttribute(row.preview)+'" class=preview>'
+							obj.preview
+							? '<img src="'+PetQueryLib.escapeHtmlAttribute(obj.preview)+'" class=preview>'
 							: ''
 						)
 						+'<a '+(
-							row.source?.url
-							? 'href="'+PetQueryLib.escapeHtmlAttribute(row.source.url)+'"'
+							obj.source?.url
+							? 'href="'+PetQueryLib.escapeHtmlAttribute(obj.source.url)+'"'
 							: ''
 						)+' target=_blank class=source>'
 							+(
-								row.source?.favicon
-								? '<img src="'+PetQueryLib.escapeHtmlAttribute(row.source.favicon)+'" class=favicon> '
+								obj.source?.favicon
+								? '<img src="'+PetQueryLib.escapeHtmlAttribute(obj.source.favicon)+'" class=favicon> '
 								: ''
 							)
-							+PetQueryLib.escapeHtml(row.source?.name || '')
+							+PetQueryLib.escapeHtml(obj.source?.name || '')
 						+'</a>'
 						+'<table class=data>'
-							+PetQueryLib.objectMap(row.data,(key,value)=>{
+							+PetQueryLib.objectMap(obj.data,(key,value)=>{
 								return '<tr><th>'+PetQueryLib.escapeHtml(key)+'</th>'
 									 + '<td>'
 								     + (
@@ -93,9 +93,9 @@ app.all('/',async function(req,res){
 							}).join('')
 						+'</table>'
 						+(
-							row.files?.length
+							obj.files?.length
 							? '<div class=files><ul>'
-								+row.files.map(v=>{
+								+obj.files.map(v=>{
 									return '<li><a href="'+PetQueryLib.escapeHtmlAttribute(v)+'" target=_blank>'+PetQueryLib.escapeHtml(v)+'</a>';
 								})
 							+'</div>'

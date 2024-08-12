@@ -1,26 +1,25 @@
 const fs = require("fs");
 
 class PetQueryModules{
-	constructor(){
-		let modules = {};
-		let dirent;
+	constructor(petQueryConfig){
+		this._cfg = petQueryConfig;
+		this._modules = {};
 
+		let dirent;
 		const dir = fs.opendirSync('./modules');
 		while((dirent = dir.readSync()) !== null){
 			if(fs.existsSync('./modules/'+dirent.name+'/index.js')
-			&& config.module[dirent.name]?.enabled !== false){
+			&& this._cfg.module[dirent.name]?.enabled !== false){
 				console.log('Loading module '+dirent.name);
 				let module = require('./modules/'+dirent.name+'/index.js');
-				modules[dirent.name] = new module(
-					config.module
-					? config.module[dirent.name]
+				this._modules[dirent.name] = new module(
+					this._cfg.module
+					? this._cfg.module[dirent.name]
 					: undefined
 				);
 			}
 		}
 		dir.closeSync();
-
-		this._modules = modules;
 	}
 
 	async query(query){
@@ -30,7 +29,7 @@ class PetQueryModules{
 			,data:[]
 		};
 
-		for(module of this._modules.values()){
+		for(const module of Object.values(this._modules)){
 			results.push(module.query(query));
 		}
 
@@ -39,7 +38,7 @@ class PetQueryModules{
 		ret.error = results.filter(result => (result instanceof Error));
 
 		for(const result of results.filter(result => !(result instanceof Error))){
-			for(row of result.slice(0,config.max_results_per_module)){
+			for(const row of result.slice(0,this._cfg.max_results_per_module)){
 				ret.data.push(row);
 			}
 		}
@@ -50,6 +49,8 @@ class PetQueryModules{
 	async queryModule(module,query){
 		return await this._modules[module].query(query);
 	}
-}
+};
 
-module.exports = new PetQueryModules();
+module.exports = function(petQueryConfig){
+	return new PetQueryModules(petQueryConfig);
+};

@@ -25,5 +25,6 @@ class PetQueryModule{
 			}
 		}];
 	}
-}
+};
+
 module.exports = PetQueryModule;

@@ -55,5 +55,3 @@ class PetQueryModulesAnimalidBy extends PetQueryModule{
 };
 
 module.exports = PetQueryModulesAnimalidBy;
-
-
