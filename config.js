@@ -11,6 +11,11 @@ module.exports = {
 			enabled:false
 		}
 	}
+	,api:{
+		 module:'test'
+		,enabled:false
+		,authenticate:false
+	}
 	,authenticate:{
 		 api:false
 		,json:false

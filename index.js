@@ -27,7 +27,7 @@ function escapeHtmlAttribute(str){
 }
 
 function loadModules(){
-	let modules = [];
+	let modules = {};
 	let dirent;
 
 	const dir = fs.opendirSync('./modules');
@@ -36,11 +36,11 @@ function loadModules(){
 		&& config.module[dirent.name]?.enabled !== false){
 			console.log('Loading module '+dirent.name);
 			let module = require('./modules/'+dirent.name+'/index.js');
-			modules.push(new module(
+			modules[dirent.name] = new module(
 				  config.module
 				? config.module[dirent.name]
 				: undefined
-			));
+			);
 		}
 	}
 	dir.closeSync();
@@ -55,7 +55,7 @@ async function queryModules(query){
 		,data:[]
 	};
 
-	for(module of modules){
+	for(module of modules.values()){
 		results.push(module.query(query));
 	}
 
@@ -104,33 +104,23 @@ if(config.authenticate?.json){
 	});
 }
 
-if(config.authenticate?.api){
-	app.all('/api',authenticate(config.authenticate.api),async function(req,res){
-		//perform local db lookup
-		return [{
-				data: {
-					name: {
-						first: this.getConfigValue('ain'),
-						last: "Smith",
-					}
-				}
-			}, {
-				source: {
-					favicon: 'https://animalid.by/favicon.ico'
-					, url: 'https://animalid.by'
-					, name: 'Animalid'
-				}
-				, preview: undefined
-				, files: []
-				, data: {
-					name: {
-						first: "Bob",
-						last: "Smith",
-					}
-				}
+if(config.api?.enabled === true
+&& config.api?.module){
+	app.all(
+		'/api'
+		,config.api?.authenticate
+		? authenticate(config.api.authenticate)
+		: (req, res, next) => {next();}
+		,async function(req,res){
+			try{
+				res.json(await modules[config.api.module].query(
+					{...req.query,...req.body}
+				));
+			}catch(e){
+				res.status(500).send(util.inspect(e));
 			}
-		];
-	});
+		}
+	);
 }
 
 app.all('/',async function(req,res){
