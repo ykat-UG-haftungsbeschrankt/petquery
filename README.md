@@ -68,7 +68,7 @@ If enabled in PetQueryConfig.route.json to render results in existing websites
 
 Only returns results from ./module/(PetQueryConfig.route.api.module)/index.js.
 
-So if you are running petquery on your server and implemented a module to add your own data to the result set, the api can make this data available to other authorities by simply extending the petquery module and specify uniqe uri and authorization credentials in PetQueryConfig for the new module.
+So if you are running petquery on your server and implemented a module to add your own data to the result set, the api can make this data available to other authorities by simply extending the petquery module and specify unique uri and authorization credentials in PetQueryConfig for the new module.
 
 ```C
 [
