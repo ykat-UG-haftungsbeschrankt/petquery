@@ -1,5 +1,6 @@
 const fs = require("fs");
 
+/** Actually should be singleton to load the modules in ./modules */
 class PetQueryModules{
 	constructor(petQueryConfig){
 		this._cfg = petQueryConfig;
@@ -21,7 +22,14 @@ class PetQueryModules{
 		}
 		dir.closeSync();
 	}
-
+	/**
+	 * Querys all enabled modules in ./modules folder
+	 * @param {object} query Moste likely you want to pass is something like https://www.mongodb.com/docs/manual/tutorial/query-documents/
+	 * @return {object} {
+			error:[string,string,string]
+			,data:[array of return values from PetQueryModule.query]
+		}
+	 */
 	async query(query){
 		let results = [];
 		let ret = {
@@ -46,6 +54,12 @@ class PetQueryModules{
 		return ret;
 	}
 
+	/**
+	 * Querys single module
+	 * @param {string} module the directory name in ./modules
+	 * @param {object} query Moste likely you want to pass is something like https://www.mongodb.com/docs/manual/tutorial/query-documents/
+	 * @return {object} example object in PetQueryModule.query function body
+	 */
 	async queryModule(module,query){
 		return await this._modules[module].query(query);
 	}

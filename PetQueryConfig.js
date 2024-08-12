@@ -18,13 +18,16 @@ module.exports = {
 	,max_results_per_module:10
 	,max_results_total:1000
 	,module:{
+		//config object for ./modules/test/index.js accessible via this.getConfigValue()
 		test:{
 			ain:1234
 			,enabled:true
 		}
+		//config object for ./modules/error/index.js accessible via this.getConfigValue()
 		,error:{
 			enabled:false
 		}
+		//config object for ./modules/petquery/index.js accessible via this.getConfigValue()
 		,petquery:{
 			enabled:false
 		}
