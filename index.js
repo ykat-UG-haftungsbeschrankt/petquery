@@ -2,7 +2,6 @@ const express = require('express');
 const fs = require("fs");
 const util = require("util");
 const config = require("./config.js");
-const { authenticate } = require('express-oauth2-jwt-bearer');
 
 function escapeHtml(str){
 	const map = {
@@ -94,14 +93,19 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded());
 
-if(config.authenticate?.json){
-	app.all('/json',authenticate(config.authenticate.json),async function(req,res){
-		try{
-			res.json(await queryModules({...req.query,...req.body}));
-		}catch(e){
-			res.status(500).send(util.inspect(e));
+if(config.json?.enabled === true){
+	app.all('/json'
+		,config.json?.authenticate
+		? config.json.authenticate
+		: (req, res, next) => {next();}
+		,async function(req,res){
+			try{
+				res.json(await queryModules({...req.query,...req.body}));
+			}catch(e){
+				res.status(500).send(util.inspect(e));
+			}
 		}
-	});
+	);
 }
 
 if(config.api?.enabled === true
@@ -109,7 +113,7 @@ if(config.api?.enabled === true
 	app.all(
 		'/api'
 		,config.api?.authenticate
-		? authenticate(config.api.authenticate)
+		? config.api.authenticate
 		: (req, res, next) => {next();}
 		,async function(req,res){
 			try{

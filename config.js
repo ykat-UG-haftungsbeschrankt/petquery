@@ -1,3 +1,6 @@
+//const { authenticate_api } = require('express-oauth2-jwt-bearer');
+//const { authenticate_json } = require('express-oauth2-jwt-bearer');
+
 module.exports = {
 	 port:50000
 	,max_results_per_module:10
@@ -14,10 +17,10 @@ module.exports = {
 	,api:{
 		 module:'test'
 		,enabled:false
-		,authenticate:false
+		,authenticate:authenticate_api
 	}
-	,authenticate:{
-		 api:false
-		,json:false
+	,json:{
+		 enabled:false
+		,authenticate:authenticate_json
 	}
 };
