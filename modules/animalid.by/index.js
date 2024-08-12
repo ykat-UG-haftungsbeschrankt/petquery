@@ -1,4 +1,4 @@
-const PetQueryModule = require('../../module.js');
+const PetQueryModule = require('../../PetQueryModule.js');
 
 class PetQueryModulesAnimalidBy extends PetQueryModule{
 	constructor(cfg){

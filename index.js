@@ -1,106 +1,22 @@
 const express = require('express');
-const fs = require("fs");
+const https = require("https");
 const util = require("util");
-const config = require("./config.js");
-
-function escapeHtml(str){
-	const map = {
-		'&': '&amp;',
-		'<': '&lt;',
-		'>': '&gt;',
-		'"': '&quot;',
-		"'": '&#039;'
-	};
-	
-	return str.replace(/[&<>"']/g,function(m){return map[m];});
-}
-
-function escapeHtmlAttribute(str){
-	const map = {
-		'&': '&amp;',
-		'"': '&quot;',
-		"'": '&#039;'
-	};
-	
-	return str.replace(/[&"']/g,function(m){return map[m];});
-}
-
-function loadModules(){
-	let modules = {};
-	let dirent;
-
-	const dir = fs.opendirSync('./modules');
-	while((dirent = dir.readSync()) !== null){
-		if(fs.existsSync('./modules/'+dirent.name+'/index.js')
-		&& config.module[dirent.name]?.enabled !== false){
-			console.log('Loading module '+dirent.name);
-			let module = require('./modules/'+dirent.name+'/index.js');
-			modules[dirent.name] = new module(
-				  config.module
-				? config.module[dirent.name]
-				: undefined
-			);
-		}
-	}
-	dir.closeSync();
-
-	return modules;
-}
-
-async function queryModules(query){
-	let results = [];
-	let ret = {
-		 error:[]
-		,data:[]
-	};
-
-	for(module of modules.values()){
-		results.push(module.query(query));
-	}
-
-	results = await Promise.all(results.map(p => p.catch(e => e)));
-
-	ret.error = results.filter(result => (result instanceof Error));
-
-	for(const result of results.filter(result => !(result instanceof Error))){
-		for(row of result.slice(0,config.max_results_per_module)){
-			ret.data.push(row);
-		}
-	}
-
-	return ret;
-}
-
-function objectMap(obj,fn){
-	let ret = [];
-	Object.keys(obj).forEach(function(key){
-		ret.push(fn(key,obj[key]));
-	});
-	return ret;
-}
-
-function isArray(a) {
-    return (!!a) && (a.constructor === Array);
-}
-
-function isObject(a){
-    return (!!a) && (a.constructor === Object);
-}
-
-const modules = loadModules();
+const PetQueryConfig = require("./PetQueryPetQueryConfig.js");
+const PetQueryLib = require("./PetQueryLib.js");
+const PetQueryModules = require("./PetQueryModules.js");
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded());
 
-if(config.json?.enabled === true){
+if(PetQueryConfig.route.json?.enabled === true){
 	app.all('/json'
-		,config.json?.authenticate
-		? config.json.authenticate
-		: (req, res, next) => {next();}
+		,PetQueryConfig.route.json?.authenticate
+		? PetQueryConfig.route.json.authenticate
+		: PetQueryLib.next
 		,async function(req,res){
 			try{
-				res.json(await queryModules({...req.query,...req.body}));
+				res.json(await PetQueryModules.query({...req.query,...req.body}));
 			}catch(e){
 				res.status(500).send(util.inspect(e));
 			}
@@ -108,18 +24,21 @@ if(config.json?.enabled === true){
 	);
 }
 
-if(config.api?.enabled === true
-&& config.api?.module){
+if(PetQueryConfig.route.api?.enabled === true
+&& PetQueryConfig.route.api?.module){
 	app.all(
 		'/api'
-		,config.api?.authenticate
-		? config.api.authenticate
-		: (req, res, next) => {next();}
+		,PetQueryConfig.route.api?.authenticate
+		? PetQueryConfig.route.api.authenticate
+		: PetQueryLib.next
 		,async function(req,res){
 			try{
-				res.json(await modules[config.api.module].query(
-					{...req.query,...req.body}
-				));
+				res.json(
+					await PetQueryModules.queryModule(
+						 PetQueryConfig.route.api.module
+						,{...req.query,...req.body}
+					)
+				);
 			}catch(e){
 				res.status(500).send(util.inspect(e));
 			}
@@ -127,16 +46,17 @@ if(config.api?.enabled === true
 	);
 }
 
+if(PetQueryConfig.route['/']?.enabled === true){
 app.all('/',async function(req,res){
 	let query = {...req.query,...req.body};
-	let data = await queryModules(query);
+	let data = await PetQueryModules.query(query);
 
 	let errors_html = [];
 	let results_html = [];
 
 	try{
 			for(const result of data.error){
-				errors_html.push('<pre>'+escapeHtml(util.inspect(result))+'</pre>');
+				errors_html.push('<pre>'+PetQueryLib.escapeHtml(util.inspect(result))+'</pre>');
 			}
 
 			for(const result of data.data){
@@ -144,29 +64,29 @@ app.all('/',async function(req,res){
 					'<div class=result>'
 						+(
 							row.preview
-							? '<img src="'+escapeHtmlAttribute(row.preview)+'" class=preview>'
+							? '<img src="'+PetQueryLib.escapeHtmlAttribute(row.preview)+'" class=preview>'
 							: ''
 						)
 						+'<a '+(
 							row.source?.url
-							? 'href="'+escapeHtmlAttribute(row.source.url)+'"'
+							? 'href="'+PetQueryLib.escapeHtmlAttribute(row.source.url)+'"'
 							: ''
 						)+' target=_blank class=source>'
 							+(
 								row.source?.favicon
-								? '<img src="'+escapeHtmlAttribute(row.source.favicon)+'" class=favicon> '
+								? '<img src="'+PetQueryLib.escapeHtmlAttribute(row.source.favicon)+'" class=favicon> '
 								: ''
 							)
-							+escapeHtml(row.source?.name || '')
+							+PetQueryLib.escapeHtml(row.source?.name || '')
 						+'</a>'
 						+'<table class=data>'
-							+objectMap(row.data,(key,value)=>{
-								return '<tr><th>'+escapeHtml(key)+'</th>'
+							+PetQueryLib.objectMap(row.data,(key,value)=>{
+								return '<tr><th>'+PetQueryLib.escapeHtml(key)+'</th>'
 									 + '<td>'
 								     + (
-										  isArray(value) || isObject(value)
-										? '<pre>'+escapeHtml(JSON.stringify(value,null,4))+'</pre>'
-										: escapeHtml(value)
+										  PetQueryLib.isArray(value) || PetQueryLib.isObject(value)
+										? '<pre>'+PetQueryLib.escapeHtml(JSON.stringify(value,null,4))+'</pre>'
+										: PetQueryLib.escapeHtml(value)
 									 )
 								     + '</td>'
 								;
@@ -176,7 +96,7 @@ app.all('/',async function(req,res){
 							row.files?.length
 							? '<div class=files><ul>'
 								+row.files.map(v=>{
-									return '<li><a href="'+escapeHtmlAttribute(v)+'" target=_blank>'+escapeHtml(v)+'</a>';
+									return '<li><a href="'+PetQueryLib.escapeHtmlAttribute(v)+'" target=_blank>'+PetQueryLib.escapeHtml(v)+'</a>';
 								})
 							+'</div>'
 							: ''
@@ -185,11 +105,11 @@ app.all('/',async function(req,res){
 				);
 			}
 	}catch(e){
-		errors_html.push('<pre>'+escapeHtml(util.inspect(e))+'</pre>');
+		errors_html.push('<pre>'+PetQueryLib.escapeHtml(util.inspect(e))+'</pre>');
 	}
 
 	errors_html = errors_html.join('');
-	results_html = results_html.slice(0,config.max_results_total).join('');
+	results_html = results_html.slice(0,PetQueryConfig.max_results_total).join('');
 
 	if(errors_html != ''){
 		errors_html = `
@@ -297,7 +217,20 @@ app.all('/',async function(req,res){
 		</html>
 	`);
 });
+}
 
-app.listen(config.port,function(){
-   console.log(`Express App running at http://127.0.0.1:${config.port}/`);
-});
+if(PetQueryConfig.http.enabled){
+	app.listen(PetQueryConfig.http.port,function(){
+		console.log(`Express App running at http://127.0.0.1:${PetQueryConfig.http.port}/`);
+	});
+}
+
+if(PetQueryConfig.https.enabled){
+	https
+		.createServer(PetQueryConfig.https.certificate)
+		.listen(PetQueryConfig.https.port,function(){
+			console.log(`Express App running at https://127.0.0.1:${PetQueryConfig.https.port}/`);
+		})
+	;
+}
+
