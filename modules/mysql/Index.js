@@ -40,7 +40,9 @@ class PetQueryModulesMysql extends PetQueryModule {
 				resolve(result);
 			});
 		});
-
+for(const row of result){
+	ret.push({data:row});
+}
 		return ret;
 	}
 };
