@@ -15,7 +15,7 @@ class PetQueryModulesMysql extends PetQueryModule {
 				  password: "yourpassword",
 				  database: "mydb"
 				}*/
-			);
+			);/*
 			await new Promise((resolve, reject) => {
 				this._db.connect(function(err) {
 					if (err) {
@@ -23,7 +23,7 @@ class PetQueryModulesMysql extends PetQueryModule {
 					}
 					resolve();
 				});
-			});
+			});*/
 		}
 
 		return this._db;
