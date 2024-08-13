@@ -8,7 +8,7 @@ class PetQueryModulesMysql extends PetQueryModule {
 	}
 	async _getConnection() {
 		if (this._db === null) {
-			this._db = mysql.createConnection(this.getConfigValue('db')
+			this._db = mysql.createPool(this.getConfigValue('db')
 				/*{
 				  host: "localhost",
 				  user: "yourusername",
