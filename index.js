@@ -89,7 +89,7 @@ app.all(
 	let query = req.petQuery.query;
 	let data = await PetQueryModules.query(query);
 
-	let header_html = [];
+	let header_html = '';
 	let errors_html = [];
 	let results_html = [];
 
