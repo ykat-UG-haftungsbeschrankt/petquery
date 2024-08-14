@@ -27,6 +27,12 @@ module.exports = {
 		,error:{
 			enabled:false
 		}
+		,mongodb:{
+			enabled:false
+		}
+		,mysql:{
+			enabled:false
+		}
 		//config object for ./modules/petquery/index.js accessible via this.getConfigValue()
 		,petquery:{
 			enabled:false

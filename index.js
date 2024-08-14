@@ -239,18 +239,23 @@ app.all(
 				</style>
 			</head>
 			<body>
-				<h1>Pet Query</h1>
+				<div class=header>
+					<h1>Pet Query</h1>
 
-				<form method=post>
-					<input type="text" name="query" placeholder="Enter identification number
-" required/>
-					<input type="submit" value="Search">
-					<br><br>
-					<div class=example_id>Example identification number: 112093400000465</div>
-				</form>
-
-				${errors_html}
-				${results_html}
+					<form method=post>
+						<input type="text" name="query" placeholder="Enter identification number
+	" required/>
+						<input type="submit" value="Search">
+						<br><br>
+						<div class=example_id>Example identification number: 112093400000465</div>
+					</form>
+				</div>
+				<div class=body>
+					${errors_html}
+					${results_html}
+				</div>
+				<div class=footer>
+				</div>
 			</body>
 		</html>
 	`);
