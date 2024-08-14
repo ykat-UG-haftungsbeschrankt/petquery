@@ -1,9 +1,9 @@
 const express = require('express');
 const https = require("https");
 const util = require("util");
-const PetQueryConfig = require("./PetQueryConfig.js");
-const PetQueryLib = require("./PetQueryLib.js");
-const PetQueryModules = require("./PetQueryModules.js")(PetQueryConfig);
+const PetQueryConfig = require("PetQuery/Config.js");
+const PetQueryLib = require("PetQuery/Lib.js");
+const PetQueryModules = require("PetQuery/Modules.js")(PetQueryConfig);
 const app = express();
 
 app.use(express.json());

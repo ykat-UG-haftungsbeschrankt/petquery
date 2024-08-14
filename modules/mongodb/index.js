@@ -1,4 +1,4 @@
-const PetQueryModule = require('../../PetQueryModule.js');
+const PetQueryModule = require('PetQuery/Module.js');
 const { MongoClient } = require('mongodb');
 
 class PetQueryModulesMongodb extends PetQueryModule{

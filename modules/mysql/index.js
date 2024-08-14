@@ -1,5 +1,5 @@
-const PetQueryModule = require('../../PetQueryModule.js');
-const PetQueryLibStringFormat = require('../../PetQueryLibStringFormat.js');
+const PetQueryModule = require('PetQuery/Module.js');
+const PetQueryLibStringFormat = require('PetQuery/LibStringFormat.js');
 const mysql = require('mysql');
 
 class PetQueryModulesMysqlFormat extends PetQueryLibStringFormat{

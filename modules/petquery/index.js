@@ -1,4 +1,4 @@
-const PetQueryModule = require('../../PetQueryModule.js');
+const PetQueryModule = require('PetQuery/Module.js');
 
 class PetQueryModulesTest extends PetQueryModule{
 	constructor(cfg){
@@ -8,7 +8,7 @@ class PetQueryModulesTest extends PetQueryModule{
 		let response = await fetch(this.getConfigValue('uri'),{
 			headers:{
 				...{
-					"accept": "application/json"
+					 "accept": "application/json"
 					,"accept-language": "en-US,en;q=0.9"
 					,"cache-control": "max-age=0"
 					,"content-type": "application/json"
