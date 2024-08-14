@@ -9,14 +9,48 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded());
 
+if(PetQueryConfig.file?.upload){
+	app.use(require('express-fileupload')({
+		 ...PetQueryConfig.file?.upload
+		,...{
+			 abortOnLimit:true
+			,useTempFiles:false
+		}
+	}));
+}
+
+async function mergeRequestParams(req,res,next){
+	let files = [];
+	req.petQuery = petQuery || {};
+	if(req.files){
+		let keys = Object.keys(req.files);
+		if(keys.length){
+			for(const key of keys){
+				let file = req.files[key];
+				files.push({
+					 name:file.name
+					,mimetype:file.mimetype
+					,data:file.data.toString('base64')
+					,size:file.size
+					,md5:file.md5
+				});
+			}
+		}
+	}
+	req.petQuery.query = {...req.query,...req.body,...{files:files}};
+
+	next();
+}
+
 if(PetQueryConfig.route.json?.enabled === true){
 	app.all('/json'
 		,PetQueryConfig.route.json?.authenticate
 		? PetQueryConfig.route.json.authenticate
 		: PetQueryLib.next
+		,mergeRequestParams
 		,async function(req,res){
 			try{
-				res.json(await PetQueryModules.query({...req.query,...req.body}));
+				res.json(await PetQueryModules.query(req.petQuery.query));
 			}catch(e){
 				res.status(500).send(util.inspect(e));
 			}
@@ -31,12 +65,13 @@ if(PetQueryConfig.route.api?.enabled === true
 		,PetQueryConfig.route.api?.authenticate
 		? PetQueryConfig.route.api.authenticate
 		: PetQueryLib.next
+		,mergeRequestParams
 		,async function(req,res){
 			try{
 				res.json(
 					await PetQueryModules.queryModule(
 						 PetQueryConfig.route.api.module
-						,{...req.query,...req.body}
+						,req.petQuery.query
 					)
 				);
 			}catch(e){
@@ -47,8 +82,11 @@ if(PetQueryConfig.route.api?.enabled === true
 }
 
 if(PetQueryConfig.route['/']?.enabled === true){
-app.all('/',async function(req,res){
-	let query = {...req.query,...req.body};
+app.all(
+	'/'
+	,mergeRequestParams
+	,async function(req,res){
+	let query = req.petQuery.query;
 	let data = await PetQueryModules.query(query);
 
 	let errors_html = [];

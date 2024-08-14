@@ -1,13 +1,13 @@
 const PetQueryModule = require('../../PetQueryModule.js');
 const mysql = require('mysql');
 
-class PetQueryModulesMysql extends PetQueryModule {
-	constructor(cfg) {
+class PetQueryModulesMysql extends PetQueryModule{
+	constructor(cfg){
 		this._db = null;
 		super(cfg);
 	}
-	async _getConnection() {
-		if (this._db === null) {
+	async _getConnection(){
+		if(this._db === null){
 			this._db = mysql.createPool(this.getConfigValue('db')
 				/*{
 				  host: "localhost",
@@ -28,21 +28,31 @@ class PetQueryModulesMysql extends PetQueryModule {
 
 		return this._db;
 	}
-	async _buildSqlQuery(query) {}
-	async query(query) {
+	async _buildSqlQuery(query){
+
+	}
+	async query(query){
 		let ret = [];
 		let db = await this._getConnection();
-		let result = await new Promise((resolve, reject) => {
-			db.query(await this._buildSqlQuery(query), function(err, result, fields) {
-				if (err) {
-					reject(err);
+		let result = await new Promise(async (resolve, reject)=>{
+			db.query(
+				 await this._buildSqlQuery(query)
+				,function(err, result, fields){
+					if(err){
+						reject(err);
+					}
+					resolve(result);
 				}
-				resolve(result);
-			});
+			);
 		});
-for(const row of result){
-	ret.push({data:row});
-}
+
+		for(const row of result){
+			ret.push({
+				 source:this.getConfigValue('source')
+				,data:row
+			});
+		}
+
 		return ret;
 	}
 };
