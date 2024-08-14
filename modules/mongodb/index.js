@@ -8,7 +8,13 @@ class PetQueryModulesMongodb extends PetQueryModule{
 		);
 		super(cfg);
 	}
-	async query(query) {
+	async _normalizeQuery(obj){
+		return obj;
+	}
+	_normalizeResult(obj){
+		return obj;
+	}
+	async query(query){
 		let ret = [];
 
 		await this._db.connect();
@@ -17,12 +23,12 @@ class PetQueryModulesMongodb extends PetQueryModule{
 			this._db
 				.db(this.getConfigValue('db').name)
 				.collection(this.getConfigValue('db').collection)
-				.find(query)
+				.find(await this._normalizeQuery(query))
 				.toArray()
 		){
 			ret.push({
 				 source:this.getConfigValue('source')
-				,data:row
+				,data:this._normalizeResult(row)
 			});
 		}
 
