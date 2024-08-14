@@ -43,7 +43,7 @@ class PetQueryModulesMysql extends PetQueryModule{
 		return this._db;
 	}
 	async _normalizeQuery(obj){
-		return this._template(
+		return this._template.format(
 			 this.getConfigValue('query')
 			,obj
 		);
