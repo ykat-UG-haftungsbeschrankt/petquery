@@ -21,8 +21,8 @@ class PetQueryModulesAnimalidBy extends PetQueryModule{
 		});
 		let body = await data.text();
 
-		if(!body.match(/Чип должен состоять из 15 цифр!/)
-		&& !body.match(/Чип \d+ не найден!/)){
+		if(!body.match(/Чип должен состоять из 15 цифр!/g)
+		&& !body.match(/Чип \d+ не найден!/g)){
 			let img = body.match(/<td\s+id="img">[\s\S]*?<img[^>]+src="([^"]+)"[^>]*>/);
 			let table = [...body.matchAll(/<tr[^>]*>[\s\S]*?<td[^>]*>([\s\S]*?)<\/td[^>]*>[\s\S]*?<td[^>]*>([\s\S]*?)<\/td[^>]*>[\s\S]*?<\/tr[^>]*>/g)];
 			let obj = {
