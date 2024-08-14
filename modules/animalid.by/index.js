@@ -15,7 +15,7 @@ class PetQueryModulesAnimalidBy extends PetQueryModule{
 			},
 			"referrer": "https://animalid.by/",
 			"referrerPolicy": "strict-origin-when-cross-origin",
-			"body": "id="+query.query.replace(/[^0-9]/g,''),
+			"body": "id="+String(query.query).replace(/[^0-9]/g,''),
 			"method": "POST",
 			"mode": "cors"
 		});
