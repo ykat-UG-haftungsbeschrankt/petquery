@@ -96,6 +96,7 @@ app.all(
 			res.end();
 			return;
 		}
+		next();
 	}
 	,async function(req,res){
 	let query = req.petQuery.query;
