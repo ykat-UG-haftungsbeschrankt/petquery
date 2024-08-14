@@ -20,13 +20,13 @@ So petquery is a pretty simple plugin based meta query search engine for travele
 Examples
 ------------
 
-### https://petquery.org ###
+### https://petquery.org?bearer=c815512c071af26c864e6af29c2e2080 ###
 
-If enabled in PetQueryConfig.route["/"] a small html page with search field to query all modules
+If enabled in PetQueryConfig.route["/"] a small html page with search field to query all modules.
 
-### https://petquery.org?iframe=true&query=112093400000465 ###
+### https://petquery.org?bearer=c815512c071af26c864e6af29c2e2080&iframe=true&query=112093400000465 ###
 
-If enabled in PetQueryConfig.route["/"] a small html page with search field to query all modules
+If enabled in PetQueryConfig.route["/"] a small html page to embed in an iframe.
 
 ### https://petquery.org/json ###
 
