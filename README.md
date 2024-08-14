@@ -20,83 +20,60 @@ So petquery is a pretty simple plugin based meta query search engine for travele
 Examples
 ------------
 
-### http://127.0.0.1:50000 ###
+### https://petquery.org ###
 
 If enabled in PetQueryConfig.route["/"] a small html page with search field to query all modules
 
-### http://127.0.0.1:50000/json?query=112093400000465 ###
+### https://petquery.org?iframe=true&query=112093400000465 ###
+
+If enabled in PetQueryConfig.route["/"] a small html page with search field to query all modules
+
+### https://petquery.org/json ###
 
 If enabled in PetQueryConfig.route.json to render results in existing websites
 
-```JSON
-{
-   "error":[
-      
-   ],
-   "data":[
-      {
-         "source":{
-            "favicon":"https://animalid.by/favicon.ico",
-            "url":"https://animalid.by",
-            "name":"Animalid"
-         },
-         "data":{
-            "Код микрочипа":"112093400000465",
-            "Организация, проводившая чипирование":"Унитарное предприятие \"ВетМедиаСервис\"\t\t\t\t\t\t\r\n\t\t\t\t\t\tАдрес: Беларусь, Витебская, Витебск, ул. Чкалова, 68\t\t\t\t\t\t\r\n\t\t\t\t\t\tТелефоны:  +375-29-319-61-19, +375-33-319-61-19 \t\t\t\t\t\t\r\n\t\t\t\t\t\te-mail: trade@zooportal.by\t\t\t\t\t",
-            "Ф.И.О. проводившего чипирование":"Базылевский Алексей Александрович",
-            "Дата чипирования":"03.08.2015",
-            "Вид животного":"Кот",
-            "Кличка животного":"Моника",
-            "Фото":"",
-            "Порода":"Сиамская",
-            "Окрас":"колор-пойнт",
-            "Пол":"Самка",
-            "Дата рождения":"30.12.1999",
-            "Особые приметы":"-",
-            "Владелец":"Обратитесь в организацию, проводившую чипирование"
-         },
-         "preview":"https://animalid.by/avatars/112093400000465_1492788685.jpg",
-         "files":[
-            "https://animalid.by/avatars/112093400000465_1492788685.jpg"
-         ]
-      }
-   ]
-}
+```JS
+(async function(){
+	let data = await fetch("https://petquery.org/json",{
+		headers:{
+			"accept": "application/json"
+			,"cache-control": "max-age=0"
+			,"content-type": "application/json"
+			,"authorization": "Bearer 75258ce9e0a7e751ce4e78cf20dd3f8f"
+		}
+		,body: JSON.stringify({query:'112093400000465'})
+		,method: "POST"
+	});
+	if(!data.ok){
+		throw new Error(data.statusText);
+	}
+	let json = await data.json();
+	console.log(JSON.stringify(json));
+})();
 ```
 
-### http://127.0.0.1:50000/api?query=112093400000465 ###
+### https://petquery.org/api ###
 
 If enabled in PetQueryConfig.route.api it only returns results from a single module ./module/(PetQueryConfig.route.api.module)/index.js.
 
 So if you are running petquery on your server and implemented a module to add your local database data to the result set, the api uri can make this data available to other authorities by simply extending the petquery module and specify unique uri and authorization credentials in PetQueryConfig for the new module.
 
-```C
-[
-      {
-         "source":{
-            "favicon":"https://animalid.by/favicon.ico",
-            "url":"https://animalid.by",
-            "name":"Animalid"
-         },
-         "data":{
-            "Код микрочипа":"112093400000465",
-            "Организация, проводившая чипирование":"Унитарное предприятие \"ВетМедиаСервис\"\t\t\t\t\t\t\r\n\t\t\t\t\t\tАдрес: Беларусь, Витебская, Витебск, ул. Чкалова, 68\t\t\t\t\t\t\r\n\t\t\t\t\t\tТелефоны:  +375-29-319-61-19, +375-33-319-61-19 \t\t\t\t\t\t\r\n\t\t\t\t\t\te-mail: trade@zooportal.by\t\t\t\t\t",
-            "Ф.И.О. проводившего чипирование":"Базылевский Алексей Александрович",
-            "Дата чипирования":"03.08.2015",
-            "Вид животного":"Кот",
-            "Кличка животного":"Моника",
-            "Фото":"",
-            "Порода":"Сиамская",
-            "Окрас":"колор-пойнт",
-            "Пол":"Самка",
-            "Дата рождения":"30.12.1999",
-            "Особые приметы":"-",
-            "Владелец":"Обратитесь в организацию, проводившую чипирование"
-         },
-         "preview":"https://animalid.by/avatars/112093400000465_1492788685.jpg",
-         "files":[
-            "https://animalid.by/avatars/112093400000465_1492788685.jpg"
-         ]
-      }
-   ]
+```JS
+(async function(){
+	let data = await fetch("https://petquery.org/api",{
+		headers:{
+			"accept": "application/json"
+			,"cache-control": "max-age=0"
+			,"content-type": "application/json"
+			,"authorization": "Bearer 75258ce9e0a7e751ce4e78cf20dd3f8f"
+		}
+		,body: JSON.stringify({query:'112093400000465'})
+		,method: "POST"
+	});
+	if(!data.ok){
+		throw new Error(data.statusText);
+	}
+	let json = await data.json();
+	console.log(JSON.stringify(json));
+})();
 ```
