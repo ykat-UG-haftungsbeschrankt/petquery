@@ -13,5 +13,5 @@
 		throw new Error(data.statusText);
 	}
 	let json = await data.json();
-	console.log(json);
+	console.log(JSON.stringify(json));
 })();
