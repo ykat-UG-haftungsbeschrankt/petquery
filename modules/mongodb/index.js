@@ -14,7 +14,7 @@ class PetQueryModulesMongodb extends PetQueryModule{
 		await this._db.connect();
 
 		for(const row of
-			client
+			this._db
 				.db(this.getConfigValue('db').name)
 				.collection(this.getConfigValue('db').collection)
 				.find(query)
