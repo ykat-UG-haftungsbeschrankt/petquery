@@ -85,6 +85,18 @@ if(PetQueryConfig.route['/']?.enabled === true){
 app.all(
 	'/'
 	,mergeRequestParams
+	,function(req,res,next){
+		if(String(request.headers?.host).match(/petquery.org/)
+		&& PetQueryConfig.authenticate.bearer[
+				req.petQuery.query?.bearer
+		] !== true){
+			res.writeHead(307,{
+				'Location': 'https://github.com/ykat-UG-haftungsbeschrankt/petquery'
+			});
+			res.end();
+			return;
+		}
+	}
 	,async function(req,res){
 	let query = req.petQuery.query;
 	let data = await PetQueryModules.query(query);
