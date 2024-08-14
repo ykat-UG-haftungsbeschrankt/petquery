@@ -21,7 +21,7 @@ if(PetQueryConfig.file?.upload){
 
 async function mergeRequestParams(req,res,next){
 	let files = [];
-	req.petQuery = petQuery || {};
+	req.petQuery = req.petQuery || {};
 	if(req.files){
 		let keys = Object.keys(req.files);
 		if(keys.length){
@@ -89,6 +89,7 @@ app.all(
 	let query = req.petQuery.query;
 	let data = await PetQueryModules.query(query);
 
+	let header_html = [];
 	let errors_html = [];
 	let results_html = [];
 
@@ -169,6 +170,20 @@ app.all(
 		`;
 	}
 
+	if(!query.iframe){
+		header_html = `
+					<h1>Pet Query</h1>
+
+					<form method=post>
+						<input type="text" name="query" placeholder="Enter identification number
+	" required/>
+						<input type="submit" value="Search">
+						<br><br>
+						<div class=example_id>Example identification number: 112093400000465</div>
+					</form>
+		`;
+	}
+
 	res.end(`
 		<!DOCTYPE html>
 		<html lang="en">
@@ -240,15 +255,7 @@ app.all(
 			</head>
 			<body>
 				<div class=header>
-					<h1>Pet Query</h1>
-
-					<form method=post>
-						<input type="text" name="query" placeholder="Enter identification number
-	" required/>
-						<input type="submit" value="Search">
-						<br><br>
-						<div class=example_id>Example identification number: 112093400000465</div>
-					</form>
+					${header_html}
 				</div>
 				<div class=body>
 					${errors_html}

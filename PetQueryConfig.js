@@ -20,8 +20,8 @@ module.exports = {
 	,module:{
 		//config object for ./modules/test/index.js accessible via this.getConfigValue()
 		test:{
-			ain:1234
-			,enabled:true
+			enabled:false
+			,ain:1234
 		}
 		//config object for ./modules/error/index.js accessible via this.getConfigValue()
 		,error:{
