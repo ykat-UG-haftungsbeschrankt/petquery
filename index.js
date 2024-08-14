@@ -86,7 +86,7 @@ app.all(
 	'/'
 	,mergeRequestParams
 	,function(req,res,next){
-		if(String(request.headers?.host).match(/petquery.org/)
+		if(String(req.headers?.host).match(/petquery\.org/)
 		&& PetQueryConfig.authenticate.bearer[
 				req.petQuery.query?.bearer
 		] !== true){
