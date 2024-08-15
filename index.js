@@ -236,6 +236,7 @@ app.all(
 					.results .data th{
 						text-align:left;
 						white-space:nowrap;
+						vertical-align: top;
 					}
 					.results .source{
 					    float: right;
@@ -252,7 +253,7 @@ app.all(
 						padding: 3px 7px;
 					}
 					.results pre{
-						margin-left: 160px;
+						margin-left: 0px;
 					}
 					.results .files{
 						margin-left: 160px;

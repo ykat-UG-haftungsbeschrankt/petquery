@@ -28,7 +28,7 @@ class PetQueryModulesEuropetnetOrg extends PetQueryModule{
 			for(const row of body.userData.Data){
 				let obj = {
 					source:{
-						favicon:'https://europetnet.org/favicon.ico'
+						favicon:'https://europetnet.org/templates/t3_bs3_blank/favicon.ico'
 						,url:'https://europetnet.org'
 						,name:'europetnet'
 					}
