@@ -34,10 +34,11 @@ class PetQueryModulesEuropetnetOrg extends PetQueryModule{
 					}
 					,data:{
 						 ...row
-						,...row.MemberDetail
 					}
 				};
-
+				Object.keys(row?.MemberDetail||{}).forEach(function(key, index) {
+					obj.data["MemberDetail "+key] = row.MemberDetail[key];
+				});
 				ret.push(obj);
 			}
 		}
@@ -47,10 +48,9 @@ class PetQueryModulesEuropetnetOrg extends PetQueryModule{
 };
 
 module.exports = PetQueryModulesEuropetnetOrg;
-/*
+
 (async function(){
 	let cls = new PetQueryModulesEuropetnetOrg({});
 	let res = await cls.query({query:'112093400000465'});
 	debugger;
 }());
-*/

@@ -265,6 +265,21 @@ app.all(
 					.lynx{
 						display:none;
 					}
+					@media only screen and (max-width: 768px){
+						.results .preview{
+							display:block;
+						}
+						.results .data th{
+							display:block;
+						}
+						.results .data td{
+							display:block;
+							padding-left:21px;
+						}
+						.results .files{
+							margin-left: 21px;
+						}
+					}
 				</style>
 			</head>
 			<body>
