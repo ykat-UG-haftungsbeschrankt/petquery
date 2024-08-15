@@ -37,8 +37,11 @@ class PetQueryModulesEuropetnetOrg extends PetQueryModule{
 					}
 				};
 				Object.keys(row?.MemberDetail||{}).forEach(function(key, index) {
-					obj.data["MemberDetail "+key] = row.MemberDetail[key];
+					obj.data["MemberDetail"+key] = row.MemberDetail[key];
 				});
+
+				delete obj.data.MemberDetail;
+
 				ret.push(obj);
 			}
 		}
