@@ -52,9 +52,10 @@ class PetQueryModulesEuropetnetOrg extends PetQueryModule{
 };
 
 module.exports = PetQueryModulesEuropetnetOrg;
-
+/*
 (async function(){
 	let cls = new PetQueryModulesEuropetnetOrg({});
 	let res = await cls.query({query:'112093400000465'});
 	debugger;
 }());
+*/
