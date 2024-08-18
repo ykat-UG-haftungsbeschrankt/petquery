@@ -5,7 +5,7 @@ class PetQueryModulesTest extends PetQueryModule{
 		super(cfg);
 	}
 	async query(query){
-		let response = await fetch(this.getConfigValue('uri'),{
+		let data = await fetch(this.getConfigValue('uri'),{
 			headers:{
 				...{
 					 "accept": "application/json"
@@ -17,8 +17,12 @@ class PetQueryModulesTest extends PetQueryModule{
 			}
 			,body: JSON.stringify(query)
 			,method: 'POST'
+			,signal: AbortSignal.timeout(this.getConfigValue('timeout')||5000)
 		});
-		return await response.json();
+		if(!data.ok){
+			throw new Error(data.statusText);
+		}
+		return await data.json();
 	}
 };
 

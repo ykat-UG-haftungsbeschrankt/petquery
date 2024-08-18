@@ -22,7 +22,8 @@ class PetQueryModulesAnimalidBy extends PetQueryModule{
 			"referrerPolicy": "strict-origin-when-cross-origin",
 			"body": "id="+query,
 			"method": "POST",
-			"mode": "cors"
+			"mode": "cors",
+			signal: AbortSignal.timeout(this.getConfigValue('timeout')||5000)
 		});
 		let body = await data.text();
 

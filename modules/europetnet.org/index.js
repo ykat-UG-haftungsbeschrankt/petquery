@@ -20,7 +20,8 @@ class PetQueryModulesEuropetnetOrg extends PetQueryModule{
 			},
 			"referrer": "https://europetnet.org/",
 			"body": null,
-			"method": "GET"
+			"method": "GET",
+			signal: AbortSignal.timeout(this.getConfigValue('timeout')||5000)
 		});
 		let body = await data.json();
 
