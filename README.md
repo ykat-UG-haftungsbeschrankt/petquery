@@ -14,6 +14,13 @@ Once a pet is lost, most national authorities will only query national and local
 
 So petquery is a pretty simple plugin based meta query search engine for travelers.
 
+Build and run
+-------------
+
+Install the project dependencies, then run `npm start`. The build compiles the
+TypeScript sources to native ES modules in `dist/` before starting the server.
+The generated files are ignored by Git.
+
 
 🔗 <img src=https://github.com/favicon.ico width=16 height=16> [Repository](https://github.com/ykat-UG-haftungsbeschrankt/petquery)
 

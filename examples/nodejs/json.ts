@@ -1,4 +1,4 @@
-(async function(){
+(async function():Promise<void>{
 	let data = await fetch("https://petquery.org/json",{
 		headers:{
 			"accept": "application/json"

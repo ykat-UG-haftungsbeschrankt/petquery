@@ -1,0 +1,20 @@
+export class PetQueryTypes{
+	static isArray(a:unknown):boolean{
+		return (!!a) && (a.constructor === Array);
+	}
+	static isObject(a:unknown):boolean{
+		return (!!a) && (a.constructor === Object);
+	}
+	static isString(a:unknown):boolean{
+		return (!!a) && (a.constructor === String);
+	}
+	static isInstanceOf<T extends object>(
+		constructor:ConstructorType<T>,
+		obj:unknown
+	):obj is T{
+		return null !== obj && obj instanceof constructor;
+	}
+	static isBoolean(a:unknown):boolean{
+		return (typeof a === 'boolean');
+	}
+};

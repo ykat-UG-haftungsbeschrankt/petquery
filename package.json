@@ -1,0 +1,25 @@
+{
+	"private": true,
+	"type": "module",
+	"main": "./dist/index.js",
+	"imports": {
+		"#petquery/*.js": "./dist/src/pet/query/*.js"
+	},
+	"scripts": {
+		"build": "tsc --project tsconfig.json",
+		"start": "npm run build && node dist/index.js"
+	},
+	"dependencies": {
+		"express": "^5.2.1",
+		"express-fileupload": "^1.5.2",
+		"mongodb": "^6.20.0",
+		"mysql2": "^3.24.5",
+		"mysql2-async": "^2.0.5"
+	},
+	"devDependencies": {
+		"@types/express": "^5.0.6",
+		"@types/express-fileupload": "^1.5.1",
+		"@types/node": "^22.15.30",
+		"typescript": "^5.9.3"
+	}
+}

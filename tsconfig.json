@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"paths": {
+			"#petquery/*.js": ["./src/pet/query/*.ts"]
+		},
+		"rootDir": ".",
+		"outDir": "dist",
+		"sourceMap": true,
+		"lib": ["ES2022", "DOM"],
+		"types": ["node"],
+		"strict": false,
+		"noImplicitAny": true,
+		"noImplicitOverride": true,
+		"noEmitOnError": true,
+		"skipLibCheck": true
+	},
+	"include": [
+		"index.ts",
+		"src/**/*.ts",
+		"examples/**/*.ts",
+		"types/**/*.d.ts"
+	],
+	"exclude": ["node_modules", "dist"]
+}

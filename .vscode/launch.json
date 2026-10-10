@@ -7,12 +7,22 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch File",
-			"args": [
-                "--experimental-vm-modules",
-				"${file}"
+            "name": "Launch PetQuery",
+            "program": "${workspaceFolder}/dist/index.js",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "npm: build",
+            "serverReadyAction": {
+                "pattern": "Express App running at (https?://\\S+)",
+                "uriFormat": "%s",
+                "action": "openExternally"
+            },
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js"
             ],
-			"runtimeExecutable": "/usr/bin/node"
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         }
     ]
 }
