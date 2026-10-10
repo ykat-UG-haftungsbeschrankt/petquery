@@ -9,6 +9,13 @@ export class PetQueryLibStringFormat{
 		]);
 	}
 
+	protected _getEscapeFunction(fn:string):((val:unknown)=>string){
+		if(!this._escape.has(fn)){
+			throw new Error(`Escape function "${fn}" is not registered`);
+		}
+		return this._escape.get(fn)!;
+	}
+
 	protected _quote(val:unknown):string{
 		return String(val);
 	}
@@ -25,31 +32,36 @@ export class PetQueryLibStringFormat{
 				,'gmi'
 			),(unused_arg:string,key:string)=>{
 				var matches;
+				var ret = '';
 
 				if(!key.length){
-					return this._delimiters[1];
+					ret = this._delimiters[1];
 				}else if(key.length == 1
-				      && key == this._delimiters[0]){
-					return this._delimiters[0];
+				      && key == this._delimiters[0]
+				){
+					ret = this._delimiters[0];
 				}else if(key.charAt(0) == '@'){
-					return arr[key.substring(1)];
+					ret = String(arr[key.substring(1)]);
 				}else if(key.charAt(0) == '#'){
-					return '{'+key.substring(1)+'}';
+					ret = '{'+key.substring(1)+'}';
 				}else if(key.charAt(0) == '|'){
 					var args = key.split('|');
 					args.shift();
-					var fn = args.shift();
-					return this._escape.get(fn).apply(this,args);
-				}else if((matches = key.match(/([^|]+)\|(.*)/))
-				      && matches.length){
+					var fn = args.shift() ?? '';
+					ret = this._getEscapeFunction(fn)(arr[args[0]]);
+				}else if(null !== (matches = key.match(/([^|]+)\|(.*)/))
+				      && matches.length
+				){
 					var str = arr[matches[1].trim()];
 					matches[2].split('|').map((val:string)=>{
-						str = this._escape.get(val.trim())(str);
+						str = this._getEscapeFunction(val.trim())(str);
 					},this);
-					return str;
+					ret = String(str);
 				}else{
-					return this._escape.get('default')(arr[key]);
+					ret = this._getEscapeFunction('default')(arr[key]);
 				}
+
+				return ret;
 			}
 		);
 	}

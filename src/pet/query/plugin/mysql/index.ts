@@ -21,7 +21,7 @@ class PetQueryModulesMysqlFormat extends PetQueryLibStringFormat{
 
 		this._delimiters = ['{','}'];
 		this._escape = new Map([
-			['default', (value:unknown)=>escape(value as SqlValue)]
+			 ['default', (value:unknown)=>escape(String(value) as SqlValue)]
 			,['id', (value:unknown)=>escapeId(String(value))]
 		]);
 	}

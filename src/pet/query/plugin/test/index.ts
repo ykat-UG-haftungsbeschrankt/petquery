@@ -27,7 +27,7 @@ export class PetQueryPluginTest extends PetQueryPlugin{
 				, url: 'https://animalid.by'
 				, name: 'Animalid'
 			})
-			,preview: undefined
+			,preview: ''
 			,files: []
 			,attributes: {
 				name: {

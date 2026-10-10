@@ -1,48 +1,53 @@
 export class PetQueryLib{
-	static escapeHtml(str:unknown):string{
-		const map:Record<string,string> = {
-			'&': '&amp;',
-			'<': '&lt;',
-			'>': '&gt;',
-			'"': '&quot;',
-			"'": '&#039;'
-		};
-		
-		return String(str).replace(
+	protected static readonly _htmlEscapeMap:ReadonlyMap<string,string>
+		=new Map([
+			['&', '&amp;'],
+			['<', '&lt;'],
+			['>', '&gt;'],
+			['"', '&quot;'],
+			["'", '&#039;']
+		]);
+	protected static readonly _htmlAttributeEscapeMap:
+		ReadonlyMap<string,string>=new Map([
+			['&', '&amp;'],
+			['"', '&quot;'],
+			["'", '&#039;']
+		]);
+
+	protected static _escapeHtmlCharacter(match:string):string{
+		return PetQueryLib._htmlEscapeMap.get(match)
+			?? match;
+	}
+
+	protected static _escapeHtmlAttributeCharacter(
+		match:string
+	):string{
+		return PetQueryLib._htmlAttributeEscapeMap.get(match)
+			?? match;
+	}
+
+	static escapeHtml(str:string):string{
+		return str.replace(
 			/[&<>"']/g,
-			function(m:string):string{return map[m];}
+			PetQueryLib._escapeHtmlCharacter
 		);
 	}
 
-	static escapeHtmlAttribute(str:unknown):string{
-		const map:Record<string,string> = {
-			'&': '&amp;',
-			'"': '&quot;',
-			"'": '&#039;'
-		};
-		
-		return String(str).replace(
+	static escapeHtmlAttribute(str:string):string{
+		return str.replace(
 			/[&"']/g,
-			function(m:string):string{return map[m];}
+			PetQueryLib._escapeHtmlAttributeCharacter
 		);
 	}
 
-	static objectMap(
-		obj:Record<string,unknown>,
-		fn:(key:string,value:unknown)=>unknown
-	):unknown[]{
-		const ret:unknown[] = [];
-		Object.keys(obj).forEach(function(key:string){
+	static objectMap<VALUE_T,RETURN_T>(
+		obj:Record<string,VALUE_T>,
+		fn:(key:string,value:VALUE_T)=>RETURN_T
+	):RETURN_T[]{
+		const ret:RETURN_T[] = [];
+		for(const key of Object.keys(obj)){
 			ret.push(fn(key,obj[key]));
-		});
+		}
 		return ret;
-	}
-
-	static next(
-		req:unknown,
-		res:unknown,
-		next:()=>void
-	):void{
-		return next();
 	}
 };

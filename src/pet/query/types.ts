@@ -11,7 +11,7 @@ export class PetQueryTypes{
 	static isInstanceOf<T extends object>(
 		constructor:ConstructorType<T>,
 		obj:unknown
-	):obj is T{
+	):boolean{
 		return null !== obj && obj instanceof constructor;
 	}
 	static isBoolean(a:unknown):boolean{

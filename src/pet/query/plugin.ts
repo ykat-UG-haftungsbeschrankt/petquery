@@ -1,3 +1,6 @@
+import { PetQueryAssert } from "./assert.js";
+import { PetQueryJson } from "./json.js";
+
 export class PetQueryPluginConfig{
 	private _enabled:boolean;
 	private _timeout:milliseconds_t;
@@ -142,6 +145,36 @@ export class PetQueryPluginResult{
 	}
 	getAttributes():json_object_t{
 		return this._attributes;
+	}
+	static fromJson(json:json_t):PetQueryPluginResult[]{
+		const results:PetQueryPluginResult[] = [];
+
+		PetQueryJson.assertArray(json);
+		for(const item of json){
+			PetQueryJson.assertObject(item);
+			PetQueryJson.assertObject(item.source);
+			PetQueryJson.assertString(item.source.favicon);
+			PetQueryJson.assertString(item.source.url);
+			PetQueryJson.assertString(item.source.name);
+			PetQueryJson.assertString(item.preview);
+			PetQueryJson.assertArray(item.files);
+			for(const file of item.files){
+				PetQueryJson.assertString(file);
+			}
+			PetQueryJson.assertObject(item.attributes);
+			results.push(new PetQueryPluginResult({
+				source: new PetQueryPluginResultSource({
+					favicon: item.source.favicon,
+					url: item.source.url,
+					name: item.source.name
+				}),
+				preview: item.preview,
+				files: item.files as uri_t[],
+				attributes: item.attributes
+			}));
+		}
+
+		return results;
 	}
 };
 

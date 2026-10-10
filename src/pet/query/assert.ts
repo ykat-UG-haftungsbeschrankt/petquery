@@ -12,8 +12,7 @@ export class PetQueryAssert{
 		}
 	}
 	static assertInstanceOf<T extends object>(ctor:ConstructorType<T>,value:unknown):asserts value is T{
-		if(!PetQueryTypes.isObject(value)
-		|| !PetQueryTypes.isInstanceOf<T>(ctor,value)){
+		if(!PetQueryTypes.isInstanceOf<T>(ctor,value)){
 			throw new Error(`Value is not an instance of ${ctor.name}`);
 		}
 	}

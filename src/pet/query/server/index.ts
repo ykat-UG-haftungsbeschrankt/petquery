@@ -72,12 +72,20 @@ export class PetQueryServer{
 		}
 	}
 
+	protected static _next(
+		req:PetQueryServerRequest,
+		res:PetQueryServerResponse,
+		next:()=>void
+	):void{
+		return next();
+	}
+
 	protected _registerRoutes():void{
 		const jsonRoute = this._config.route.json;
 		if(jsonRoute?.enabled === true){
 			this._app.all(
 				'/json',
-				jsonRoute.authenticate || PetQueryLib.next,
+				jsonRoute.authenticate ?? PetQueryServer._next,
 				this._mergeRequestParams.bind(this),
 				this._handleJson.bind(this)
 			);
@@ -87,7 +95,7 @@ export class PetQueryServer{
 		if(apiRoute?.enabled === true && apiRoute.module){
 			this._app.all(
 				'/api',
-				apiRoute.authenticate || PetQueryLib.next,
+				apiRoute.authenticate ?? PetQueryServer._next,
 				this._mergeRequestParams.bind(this),
 				this._handleApi.bind(this)
 			);
@@ -148,7 +156,7 @@ export class PetQueryServer{
 		res:PetQueryServerResponse,
 		next:()=>void
 	):void{
-		const bearer = req.petQueryPluginQuery.getBearer();
+		const bearer = req.petQueryPluginQuery?.getBearer() ?? '';
 		if(String(req.headers?.host).match(/petquery\.org/)
 		&& !this._config.authenticate.bearer.has(bearer)){
 			res.redirect(307,
@@ -180,43 +188,50 @@ export class PetQueryServer{
 			if(plugin === undefined){
 				throw new Error(`Plugin "${pluginName}" is not registered`);
 			}
-			res.json(await plugin.query(req.petQueryPluginQuery));
+			if(req.petQueryPluginQuery !== undefined){
+				res.json(await plugin.query(req.petQueryPluginQuery));
+			}else{
+				res.json([]);
+			}
 		}catch(error){
 			res.status(500).send(util.inspect(error));
 		}
 	}
 
 	protected async _queryAll(
-		query:PetQueryPluginQuery
+		query:PetQueryPluginQuery|undefined
 	):Promise<PetQueryResult>{
-		const promises = [];
-		for(const plugin of this._plugins.values()){
-			promises.push(plugin.query(query));
-		}
-		const settled = await Promise.allSettled(promises);
 		const result:PetQueryResult = {
 			error:[],
 			data:[]
 		};
 
-		for(const item of settled){
-			if('rejected' === item.status){
-				result.error.push(item.reason);
-				continue;
+		if(query !== undefined){
+			const promises = [];
+			for(const plugin of this._plugins.values()){
+				promises.push(plugin.query(query));
+			}
+			const settled = await Promise.allSettled(promises);
+
+			for(const item of settled){
+				if('rejected' === item.status){
+					result.error.push(item.reason);
+					continue;
+				}
+
+				result.data.push(
+					...item.value.slice(
+						0,
+						this._config.max_results_per_module
+					)
+				);
 			}
 
-			result.data.push(
-				...item.value.slice(
-					0,
-					this._config.max_results_per_module
-				)
+			result.data = result.data.slice(
+				0,
+				this._config.max_results_total
 			);
 		}
-
-		result.data = result.data.slice(
-			0,
-			this._config.max_results_total
-		);
 
 		return result;
 	}
@@ -235,7 +250,7 @@ export class PetQueryServer{
 		const rows = result.data.map(
 			(item)=>this._renderResult(item)
 		).join('');
-		const header = query.isIframe() ? '' : `
+		const header = query?.isIframe() ? '' : `
 			<h1>Pet Query</h1>
 			<form method=post>
 				<input type="text" name="query"
@@ -330,6 +345,6 @@ export class PetQueryServer{
 				JSON.stringify(value,null,4)
 			)}</pre>`;
 		}
-		return PetQueryLib.escapeHtml(value);
+		return PetQueryLib.escapeHtml(String(value));
 	}
 }

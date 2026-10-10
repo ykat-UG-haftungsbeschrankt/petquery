@@ -10,6 +10,7 @@ import { PetQueryPluginErrorConfig } from './plugin/error/index.js';
 import { PetQueryPluginTestConfig } from './plugin/test/index.js';
 import { PetQueryPluginAnimalidByConfig } from './plugin/animalid.by/index.js';
 import fileUpload from 'express-fileupload';
+import { PetQueryAssert } from './assert.js';
 
 //const { authenticate_api } = require('express-oauth2-jwt-bearer');
 //const { authenticate_json } = require('express-oauth2-jwt-bearer');
@@ -198,6 +199,8 @@ export class PetQueryConfig{
 		|| !PetQueryTypes.isInstanceOf<T>(obj,config)){
 			throw new Error(`Unknown plugin "${name}"`);
 		}
+		
+		PetQueryAssert.assertInstanceOf<T>(obj,config);
 
 		return config;
 	}

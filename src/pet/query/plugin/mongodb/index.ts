@@ -1,5 +1,5 @@
 import {PetQueryPlugin, PetQueryPluginConfig, PetQueryPluginQuery, PetQueryPluginResult} from '#petquery/plugin.js';
-import {MongoClient} from 'mongodb';
+import {Filter, MongoClient, Document} from 'mongodb';
 
 export class PetQueryPluginMongodbConfig
 	extends PetQueryPluginConfig{
@@ -36,8 +36,12 @@ export class PetQueryPluginMongodb extends PetQueryPlugin{
 		);
 	}
 	protected _db:MongoClient;
-	async _normalizeQuery(obj:PetQueryPluginQuery):Promise<unknown>{
-		return obj;
+	_normalizeQuery(obj:PetQueryPluginQuery):Filter<Document>{
+		return {
+			uid:{
+				$eq: obj.getQuery().trim()
+			}
+		};
 	}
 	_normalizeResult(obj:json_object_t):PetQueryPluginResult{
 		return new PetQueryPluginResult({
@@ -56,7 +60,7 @@ export class PetQueryPluginMongodb extends PetQueryPlugin{
 			await this._db
 				.db(this._cfg.getDb())
 				.collection(this._cfg.getCollection())
-				.find(await this._normalizeQuery(query))
+				.find(this._normalizeQuery(query))
 				.toArray()
 		){
 			ret.push(this._normalizeResult(row));

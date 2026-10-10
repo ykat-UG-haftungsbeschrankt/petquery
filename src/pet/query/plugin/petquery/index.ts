@@ -46,6 +46,6 @@ export class PetQueryPluginPetquery extends PetQueryPlugin{
 		if(!data.ok){
 			throw new Error(data.statusText);
 		}
-		return await data.json();
+		return PetQueryPluginResult.fromJson(await data.json() as json_t);
 	}
 };
