@@ -26,7 +26,7 @@ export class PetQueryPluginPetquery extends PetQueryPlugin{
 		super('petquery',cfg);
 		this._cfg = cfg;
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult[]>{
+	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult>{
 		const data = await fetch(this._cfg.getUri(),{
 			headers:{
 				...{
@@ -46,6 +46,6 @@ export class PetQueryPluginPetquery extends PetQueryPlugin{
 		if(!data.ok){
 			throw new Error(data.statusText);
 		}
-		return PetQueryPluginResult.fromJson(await data.json() as json_t);
+		return PetQueryPluginResult.fromJson(await data.json());
 	}
 };

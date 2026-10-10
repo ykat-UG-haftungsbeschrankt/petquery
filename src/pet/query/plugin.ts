@@ -118,9 +118,27 @@ export class PetQueryPluginResultSource{
 	getName():string{
 		return this._name;
 	}
+	toJson(){
+		return {
+			favicon: this._favicon,
+			url: this._url,
+			name: this._name
+		};
+	}
+	static fromJson(json:unknown):PetQueryPluginResultSource{
+		PetQueryJson.assertObject(json);
+		PetQueryJson.assertString(json.favicon);
+		PetQueryJson.assertString(json.url);
+		PetQueryJson.assertString(json.name);
+		return new PetQueryPluginResultSource({
+			favicon: json.favicon,
+			url: json.url,
+			name: json.name
+		});
+	}
 };
 
-export class PetQueryPluginResult{
+export class PetQueryPluginResultEntry{
 	protected _source:PetQueryPluginResultSource;
 	protected _preview:uri_t;
 	protected _files:uri_t[];
@@ -146,35 +164,65 @@ export class PetQueryPluginResult{
 	getAttributes():json_object_t{
 		return this._attributes;
 	}
-	static fromJson(json:json_t):PetQueryPluginResult[]{
-		const results:PetQueryPluginResult[] = [];
+	toJson():json_t{
+		return {
+			source: this._source.toJson(),
+			preview: this._preview,
+			files: this._files,
+			attributes: this._attributes
+		};
+	}
+	static fromJson(json:unknown):PetQueryPluginResultEntry{
+		PetQueryJson.assertObject(json);
+		PetQueryJson.assertObject(json.source);
+		PetQueryJson.assertString(json.preview);
+		PetQueryJson.assertArray(json.files);
+		for(const file of json.files){
+			PetQueryJson.assertString(file);
+		}
+		PetQueryJson.assertObject(json.attributes);
+		return new PetQueryPluginResultEntry({
+			source: PetQueryPluginResultSource.fromJson(
+				json.source
+			),
+			preview: json.preview,
+			files: json.files as uri_t[],
+			attributes: json.attributes
+		});
+	}
+};
+
+export class PetQueryPluginResult{
+	protected _data;
+	constructor(data:PetQueryPluginResultEntry[]){
+		this._data = data;
+	}
+	getData(){
+		return this._data;
+	}
+	toJson(){
+		const ret:json_array_t = [];
+		for(const item of this._data){
+			ret.push(item.toJson());
+		}
+		return ret;
+	}
+	static fromJson(json:unknown):PetQueryPluginResult{
+		const results:PetQueryPluginResultEntry[] = [];
 
 		PetQueryJson.assertArray(json);
 		for(const item of json){
 			PetQueryJson.assertObject(item);
-			PetQueryJson.assertObject(item.source);
-			PetQueryJson.assertString(item.source.favicon);
-			PetQueryJson.assertString(item.source.url);
-			PetQueryJson.assertString(item.source.name);
 			PetQueryJson.assertString(item.preview);
 			PetQueryJson.assertArray(item.files);
 			for(const file of item.files){
 				PetQueryJson.assertString(file);
 			}
 			PetQueryJson.assertObject(item.attributes);
-			results.push(new PetQueryPluginResult({
-				source: new PetQueryPluginResultSource({
-					favicon: item.source.favicon,
-					url: item.source.url,
-					name: item.source.name
-				}),
-				preview: item.preview,
-				files: item.files as uri_t[],
-				attributes: item.attributes
-			}));
+			results.push(PetQueryPluginResultEntry.fromJson(item));
 		}
 
-		return results;
+		return new PetQueryPluginResult(results);
 	}
 };
 
@@ -204,5 +252,5 @@ export abstract class PetQueryPlugin{
 	 */
 	abstract query(
 		query:PetQueryPluginQuery
-	):Promise<PetQueryPluginResult[]>;
+	):Promise<PetQueryPluginResult>;
 };

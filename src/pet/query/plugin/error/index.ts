@@ -13,9 +13,9 @@ export class PetQueryPluginError extends PetQueryPlugin{
 	constructor(cfg:PetQueryPluginErrorConfig){
 		super('error',cfg);
 	}
-	override async query(UNUSED_query:PetQueryPluginQuery):Promise<PetQueryPluginResult[]>{
+	override async query(UNUSED_query:PetQueryPluginQuery):Promise<PetQueryPluginResult>{
 
 		//throw new Error("1234");
-		return [];
+		return new PetQueryPluginResult([]);
 	}
 };

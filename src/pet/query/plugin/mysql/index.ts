@@ -2,7 +2,8 @@ import {
 	PetQueryPlugin,
 	PetQueryPluginConfig,
 	PetQueryPluginQuery,
-	PetQueryPluginResult
+	PetQueryPluginResult,
+    PetQueryPluginResultEntry
 } from '#petquery/plugin.js';
 import {PetQueryLibStringFormat} from
 	'#petquery/string/format.js';
@@ -90,15 +91,15 @@ export class PetQueryPluginMysql extends PetQueryPlugin{
 			,obj.toJson()
 		);
 	}
-	protected _normalizeResult(obj:json_object_t):PetQueryPluginResult{
-		return new PetQueryPluginResult({
+	protected _normalizeResult(obj:json_object_t):PetQueryPluginResultEntry{
+		return new PetQueryPluginResultEntry({
 			 source:this.getSource()
 			,preview:''
 			,files:[]
 			,attributes:obj
 		});
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult[]>{
+	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult>{
 		const ret = [];
 		const db = await this._getConnection();
 		const result = await db.getall<json_object_t>(
@@ -109,6 +110,6 @@ export class PetQueryPluginMysql extends PetQueryPlugin{
 			ret.push(this._normalizeResult(row));
 		}
 
-		return ret;
+		return new PetQueryPluginResult(ret);
 	}
 };

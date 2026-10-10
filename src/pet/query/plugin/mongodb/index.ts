@@ -1,4 +1,4 @@
-import {PetQueryPlugin, PetQueryPluginConfig, PetQueryPluginQuery, PetQueryPluginResult} from '#petquery/plugin.js';
+import {PetQueryPlugin, PetQueryPluginConfig, PetQueryPluginQuery, PetQueryPluginResult, PetQueryPluginResultEntry} from '#petquery/plugin.js';
 import {Filter, MongoClient, Document} from 'mongodb';
 
 export class PetQueryPluginMongodbConfig
@@ -43,15 +43,15 @@ export class PetQueryPluginMongodb extends PetQueryPlugin{
 			}
 		};
 	}
-	_normalizeResult(obj:json_object_t):PetQueryPluginResult{
-		return new PetQueryPluginResult({
+	_normalizeResult(obj:json_object_t):PetQueryPluginResultEntry{
+		return new PetQueryPluginResultEntry({
 			 source:this.getSource()
 			,preview:''
 			,files:[]
 			,attributes:obj
 		});
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult[]>{
+	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult>{
 		const ret = [];
 
 		await this._db.connect();
@@ -66,6 +66,6 @@ export class PetQueryPluginMongodb extends PetQueryPlugin{
 			ret.push(this._normalizeResult(row));
 		}
 
-		return ret;
+		return new PetQueryPluginResult(ret);
 	}
 };

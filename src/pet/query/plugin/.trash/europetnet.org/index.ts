@@ -13,7 +13,7 @@ export class PetQueryPluginEuropetnetOrg extends PetQueryPlugin{
 	constructor(cfg:PetQueryPluginEuropetnetOrgConfig){
 		super('europetnet.org',cfg);
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult[]>{
+	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult>{
 		const queryId = String(query.getQuery()).replace(/[^0-9A-Za-z]/g,'');
 		if(queryId === ''){
 			return [];

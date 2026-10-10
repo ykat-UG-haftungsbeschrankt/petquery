@@ -3,7 +3,7 @@ import fileUpload, { UploadedFile } from 'express-fileupload';
 import https from 'node:https';
 import util from 'node:util';
 import {PetQueryLib} from '#petquery/lib.js';
-import {PetQueryPlugin, PetQueryPluginQueryFile} from '#petquery/plugin.js';
+import {PetQueryPlugin, PetQueryPluginQueryFile, PetQueryPluginResultEntry} from '#petquery/plugin.js';
 import {PetQueryTypes} from '#petquery/types.js';
 import {PetQueryPluginQuery, PetQueryPluginResult} from '#petquery/plugin.js';
 import { PetQueryConfigServerType } from '#petquery/config.js';
@@ -14,9 +14,28 @@ export type PetQueryServerRequest = Express.Request & {
 };
 export type PetQueryServerResponse = Express.Response;
 
-export type PetQueryResult = {
-	error:unknown[];
-	data:PetQueryPluginResult[];
+export class PetQueryResult{
+	protected _success:boolean;
+	protected _error:json_string_t[];
+	protected _data:PetQueryPluginResult;
+	constructor(success:boolean, error:json_string_t[], data:PetQueryPluginResult){
+		this._success = success;
+		this._error = error;
+		this._data = data;
+	}
+	getError():json_string_t[]{
+		return this._error;
+	}
+	getData():PetQueryPluginResult{
+		return this._data;
+	}
+	toJson():json_t{
+		return {
+			success: this._success,
+			error: this._error,
+			data: this._data.toJson()
+		};
+	}
 };
 
 export class PetQueryServer{
@@ -82,7 +101,7 @@ export class PetQueryServer{
 
 	protected _registerRoutes():void{
 		const jsonRoute = this._config.route.json;
-		if(jsonRoute?.enabled === true){
+		if(jsonRoute.enabled === true){
 			this._app.all(
 				'/json',
 				jsonRoute.authenticate ?? PetQueryServer._next,
@@ -92,7 +111,7 @@ export class PetQueryServer{
 		}
 
 		const apiRoute = this._config.route.api;
-		if(apiRoute?.enabled === true && apiRoute.module){
+		if(apiRoute.enabled === true){
 			this._app.all(
 				'/api',
 				apiRoute.authenticate ?? PetQueryServer._next,
@@ -101,7 +120,7 @@ export class PetQueryServer{
 			);
 		}
 
-		if(this._config.route['/']?.enabled === true){
+		if(this._config.route['/'].enabled === true){
 			this._app.all(
 				'/',
 				this._mergeRequestParams.bind(this),
@@ -172,7 +191,12 @@ export class PetQueryServer{
 		res:PetQueryServerResponse
 	):Promise<void>{
 		try{
-			res.json(await this._queryAll(req.petQueryPluginQuery));
+			if(req.petQueryPluginQuery === undefined){
+				throw new Error(`req.petQueryPluginQuery is undefined`);
+			}
+
+			const result = await this._queryAll(req.petQueryPluginQuery);
+			res.json(result.toJson());
 		}catch(error){
 			res.status(500).send(util.inspect(error));
 		}
@@ -185,69 +209,78 @@ export class PetQueryServer{
 		try{
 			const pluginName = this._config.route.api.module;
 			const plugin = this._plugins.get(pluginName);
+
 			if(plugin === undefined){
 				throw new Error(`Plugin "${pluginName}" is not registered`);
 			}
-			if(req.petQueryPluginQuery !== undefined){
-				res.json(await plugin.query(req.petQueryPluginQuery));
-			}else{
-				res.json([]);
+
+			if(req.petQueryPluginQuery === undefined){
+				throw new Error(`req.petQueryPluginQuery is undefined`);
 			}
+
+			const result = await plugin.query(req.petQueryPluginQuery);
+			res.json(result.toJson());
 		}catch(error){
 			res.status(500).send(util.inspect(error));
 		}
 	}
 
 	protected async _queryAll(
-		query:PetQueryPluginQuery|undefined
+		query:PetQueryPluginQuery
 	):Promise<PetQueryResult>{
-		const result:PetQueryResult = {
-			error:[],
-			data:[]
+		const result = {
+			success:true,
+			error:new Array<json_string_t>(),
+			data:new Array<PetQueryPluginResultEntry>()
 		};
+		const promises = [];
+		for(const plugin of this._plugins.values()){
+			promises.push(plugin.query(query));
+		}
+		const settled = await Promise.allSettled(promises);
 
-		if(query !== undefined){
-			const promises = [];
-			for(const plugin of this._plugins.values()){
-				promises.push(plugin.query(query));
+		for(const item of settled){
+			if('rejected' === item.status){
+				result.error.push(util.inspect(item.reason));
+				continue;
 			}
-			const settled = await Promise.allSettled(promises);
-
-			for(const item of settled){
-				if('rejected' === item.status){
-					result.error.push(item.reason);
-					continue;
-				}
-
-				result.data.push(
-					...item.value.slice(
-						0,
-						this._config.max_results_per_module
-					)
-				);
-			}
-
-			result.data = result.data.slice(
+			const data = item.value.getData().slice(
 				0,
-				this._config.max_results_total
+				this._config.max_results_per_module
+			);
+			result.data.push(
+				...data
 			);
 		}
 
-		return result;
+		result.data = result.data.slice(
+			0,
+			this._config.max_results_total
+		);
+
+		return new PetQueryResult(
+			result.success,
+			result.error,
+			new PetQueryPluginResult(result.data)
+		);
 	}
 
 	protected async _handleHtml(
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
+		if(req.petQueryPluginQuery === undefined){
+			throw new Error(`req.petQueryPluginQuery is undefined`);
+		}
+
 		const query = req.petQueryPluginQuery;
 		const result = await this._queryAll(query);
-		const errors = result.error.map(
+		const errors = result.getError().map(
 			(error)=>`<pre>${PetQueryLib.escapeHtml(
 				util.inspect(error)
 			)}</pre>`
 		).join('');
-		const rows = result.data.map(
+		const rows = result.getData().getData().map(
 			(item)=>this._renderResult(item)
 		).join('');
 		const header = query?.isIframe() ? '' : `
@@ -301,7 +334,7 @@ export class PetQueryServer{
 </html>`);
 	}
 
-	protected _renderResult(item:PetQueryPluginResult):string{
+	protected _renderResult(item:PetQueryPluginResultEntry):string{
 		const source = item.getSource();
 		const data = PetQueryLib.objectMap(
 			item.getAttributes() || {},

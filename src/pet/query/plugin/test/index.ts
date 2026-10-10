@@ -1,4 +1,4 @@
-import {PetQueryPlugin, PetQueryPluginConfig, PetQueryPluginQuery, PetQueryPluginResult} from '#petquery/plugin.js';
+import {PetQueryPlugin, PetQueryPluginConfig, PetQueryPluginQuery, PetQueryPluginResult, PetQueryPluginResultEntry} from '#petquery/plugin.js';
 import {PetQueryPluginResultSource} from '#petquery/plugin.js';
 
 export class PetQueryPluginTestConfig
@@ -20,8 +20,8 @@ export class PetQueryPluginTest extends PetQueryPlugin{
 	constructor(cfg:PetQueryPluginTestConfig){
 		super('test',cfg);
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult[]>{
-		return [new PetQueryPluginResult({
+	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult>{
+		return new PetQueryPluginResult([new PetQueryPluginResultEntry({
 			source: new PetQueryPluginResultSource({
 				favicon: 'https://animalid.by/favicon.ico'
 				, url: 'https://animalid.by'
@@ -35,6 +35,6 @@ export class PetQueryPluginTest extends PetQueryPlugin{
 					last: "Smith",
 				}
 			}
-		})];
+		})]);
 	}
 };
