@@ -20,6 +20,8 @@ declare type filename_t = string;
 declare type double_t = number;
 declare type float_t = number;
 declare type port_t = uint16_t;
+declare type uuid_t = string;
+
 
 declare type json_primitive_t = string | number | boolean | null;
 declare type json_array_t = json_t[];

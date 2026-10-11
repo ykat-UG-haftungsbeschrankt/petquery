@@ -1,5 +1,5 @@
-import { PetQueryAssert } from "./assert.js";
 import { PetQueryJson } from "./json.js";
+import { PetQueryCast } from "./cast.js";
 
 export class PetQueryPluginConfig{
 	private _enabled:boolean;
@@ -26,6 +26,24 @@ export class PetQueryPluginConfig{
 };
 
 export class PetQueryPluginQueryFile{
+	static readonly _parser = PetQueryCast.object({
+		 filename:PetQueryCast.string()
+		,mime:PetQueryCast.string()
+		,size:PetQueryCast.int({min:0})
+		,data:PetQueryCast.string()
+		,md5:PetQueryCast.string()
+	});
+	// Parses straight into an instance, for use as a nested field parser.
+	static readonly _instanceParser:
+		PetQueryCast.Parser<PetQueryPluginQueryFile> = {
+			 type:PetQueryPluginQueryFile._parser.type
+			,sampleValue:new PetQueryPluginQueryFile(
+				PetQueryPluginQueryFile._parser.sampleValue
+			)
+			,randomSample:PetQueryPluginQueryFile._randomSample
+			,parse:PetQueryPluginQueryFile._parse
+		};
+
 	protected _filename:filename_t;
 	protected _mime:mime_t;
 	protected _size:number;
@@ -53,19 +71,69 @@ export class PetQueryPluginQueryFile{
 	getMd5():md5_hex_string_t{
 		return this._md5;
 	}
+	static fromJson(json:unknown):PetQueryPluginQueryFile{
+		return PetQueryPluginQueryFile._parse(json);
+	}
+	protected static _parse(
+		input:unknown,
+		context?:PetQueryCast.ParserContext
+	):PetQueryPluginQueryFile{
+		return new PetQueryPluginQueryFile(
+			PetQueryPluginQueryFile._parser.parse(input,context)
+		);
+	}
+	protected static _randomSample():PetQueryPluginQueryFile{
+		return new PetQueryPluginQueryFile(
+			PetQueryPluginQueryFile._parser.randomSample()
+		);
+	}
 };
 
 export class PetQueryPluginQuery{
+	static readonly _uuidParser = PetQueryCast.string({
+		 match:/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i
+		,sampleValue:'00000000-0000-0000-0000-000000000000'
+	});
+	static readonly _parser = PetQueryCast.object({
+		 query:PetQueryCast.string()
+		,bearer:PetQueryCast.string()
+		,files:PetQueryCast.array(PetQueryPluginQueryFile._instanceParser)
+		// Strict: PetQueryCast.boolean() treats any non-empty string as true.
+		,iframe:PetQueryCast.values([true,false])
+		,serverUuid:PetQueryPluginQuery._uuidParser
+		,tracerouteUuid:PetQueryCast.array(PetQueryPluginQuery._uuidParser)
+	});
+
 	protected _query:string;
 	protected _bearer:string;
 	protected _files:Array<PetQueryPluginQueryFile>;
 	protected _iframe:boolean;
+	protected _serverUuid:uuid_t;
+	protected _tracerouteUuid:Set<uuid_t>;
 
-	constructor(obj:{query:string, bearer:string, files:Array<PetQueryPluginQueryFile>, iframe:boolean}){
+	constructor(obj:{
+		query:string,
+		bearer:string,
+		files:Array<PetQueryPluginQueryFile>,
+		iframe:boolean,
+		serverUuid:uuid_t,
+		tracerouteUuid:Set<uuid_t>
+	}){
 		this._query = obj.query;
 		this._bearer = obj.bearer;
 		this._files = obj.files;
 		this._iframe = obj.iframe;
+		this._serverUuid = obj.serverUuid;
+		this._tracerouteUuid = obj.tracerouteUuid;
+	}
+	getServerUuid():uuid_t{
+		return this._serverUuid;
+	}
+	getTracerouteUuid():Set<uuid_t>{
+		return this._tracerouteUuid;
+	}
+	isCircularQuery():boolean{
+		return this._tracerouteUuid.has(this._serverUuid);
 	}
 	getQuery():string{
 		return this._query;
@@ -87,18 +155,52 @@ export class PetQueryPluginQuery{
 				filename: file.getFilename(),
 				mime: file.getMime(),
 				size: file.getSize(),
-				data: file.getData()
+				data: file.getData(),
+				md5: file.getMd5()
 			})),
-			iframe: this._iframe
+			iframe: this._iframe,
+			serverUuid: this._serverUuid,
+			tracerouteUuid: [...this._tracerouteUuid]
 		};
+	}
+	static fromJson(json:unknown):PetQueryPluginQuery{
+		const obj = PetQueryPluginQuery._parser.parse(json);
+		return new PetQueryPluginQuery({
+			 query:obj.query
+			,bearer:obj.bearer
+			,files:obj.files
+			,iframe:obj.iframe
+			,serverUuid:obj.serverUuid
+			,tracerouteUuid:new Set(obj.tracerouteUuid)
+		});
 	}
 };
 
 export class PetQueryPluginResultSource{
+	static readonly _parser = PetQueryCast.object({
+		 favicon:PetQueryCast.string()
+		,url:PetQueryCast.string()
+		,name:PetQueryCast.string()
+	});
+	// Parses straight into an instance, for use as a nested field parser.
+	static readonly _instanceParser:
+		PetQueryCast.Parser<PetQueryPluginResultSource> = {
+			 type:PetQueryPluginResultSource._parser.type
+			,sampleValue:new PetQueryPluginResultSource(
+				PetQueryPluginResultSource._parser.sampleValue
+			)
+			,randomSample:PetQueryPluginResultSource._randomSample
+			,parse:PetQueryPluginResultSource._parse
+		};
+
 	protected _favicon:uri_t;
 	protected _url:uri_t;
 	protected _name:string;
-	constructor(obj:{favicon:uri_t, url:uri_t, name:string}){
+	constructor(
+		obj:PetQueryCast.ParseResult<
+			typeof PetQueryPluginResultSource._parser
+		>
+	){
 		this._favicon = obj.favicon;
 		this._url = obj.url;
 		this._name = obj.name;
@@ -126,24 +228,40 @@ export class PetQueryPluginResultSource{
 		};
 	}
 	static fromJson(json:unknown):PetQueryPluginResultSource{
-		PetQueryJson.assertObject(json);
-		PetQueryJson.assertString(json.favicon);
-		PetQueryJson.assertString(json.url);
-		PetQueryJson.assertString(json.name);
-		return new PetQueryPluginResultSource({
-			favicon: json.favicon,
-			url: json.url,
-			name: json.name
-		});
+		return PetQueryPluginResultSource._parse(json);
+	}
+	protected static _parse(
+		input:unknown,
+		context?:PetQueryCast.ParserContext
+	):PetQueryPluginResultSource{
+		return new PetQueryPluginResultSource(
+			PetQueryPluginResultSource._parser.parse(input,context)
+		);
+	}
+	protected static _randomSample():PetQueryPluginResultSource{
+		return new PetQueryPluginResultSource(
+			PetQueryPluginResultSource._parser.randomSample()
+		);
 	}
 };
 
 export class PetQueryPluginResultEntry{
+	static readonly _parser = PetQueryCast.object({
+		 source:PetQueryPluginResultSource._instanceParser
+		,preview:PetQueryCast.string()
+		,files:PetQueryCast.array(PetQueryCast.string())
+		,attributes:PetQueryJson.objectParser
+	});
+
 	protected _source:PetQueryPluginResultSource;
 	protected _preview:uri_t;
 	protected _files:uri_t[];
 	protected _attributes:json_object_t;
-	constructor(obj:{source:PetQueryPluginResultSource, preview:uri_t, files:uri_t[], attributes:json_object_t}){
+	constructor(
+		obj:PetQueryCast.ParseResult<
+			typeof PetQueryPluginResultEntry._parser
+		>
+	){
 		this._source = obj.source;
 		this._preview = obj.preview;
 		this._files = obj.files;
@@ -173,22 +291,9 @@ export class PetQueryPluginResultEntry{
 		};
 	}
 	static fromJson(json:unknown):PetQueryPluginResultEntry{
-		PetQueryJson.assertObject(json);
-		PetQueryJson.assertObject(json.source);
-		PetQueryJson.assertString(json.preview);
-		PetQueryJson.assertArray(json.files);
-		for(const file of json.files){
-			PetQueryJson.assertString(file);
-		}
-		PetQueryJson.assertObject(json.attributes);
-		return new PetQueryPluginResultEntry({
-			source: PetQueryPluginResultSource.fromJson(
-				json.source
-			),
-			preview: json.preview,
-			files: json.files as uri_t[],
-			attributes: json.attributes
-		});
+		return new PetQueryPluginResultEntry(
+			PetQueryPluginResultEntry._parser.parse(json)
+		);
 	}
 };
 
@@ -209,16 +314,11 @@ export class PetQueryPluginResult{
 	}
 	static fromJson(json:unknown):PetQueryPluginResult{
 		const results:PetQueryPluginResultEntry[] = [];
+		const items = PetQueryCast.array(
+			PetQueryJson.objectParser
+		).parse(json);
 
-		PetQueryJson.assertArray(json);
-		for(const item of json){
-			PetQueryJson.assertObject(item);
-			PetQueryJson.assertString(item.preview);
-			PetQueryJson.assertArray(item.files);
-			for(const file of item.files){
-				PetQueryJson.assertString(file);
-			}
-			PetQueryJson.assertObject(item.attributes);
+		for(const item of items){
 			results.push(PetQueryPluginResultEntry.fromJson(item));
 		}
 

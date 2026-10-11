@@ -8,6 +8,7 @@ import {PetQueryTypes} from '#petquery/types.js';
 import {PetQueryPluginQuery, PetQueryPluginResult} from '#petquery/plugin.js';
 import { PetQueryConfigServerType } from '#petquery/config.js';
 import { PetQueryAssert } from '#petquery/assert.js';
+import {v1 as uuidv1, validate as uuidValidate} from 'uuid';
 
 export type PetQueryServerRequest = Express.Request & {
 	petQueryPluginQuery?: PetQueryPluginQuery;
@@ -42,11 +43,13 @@ export class PetQueryServer{
 	protected readonly _config:PetQueryConfigServerType;
 	protected readonly _app:Express.Express;
 	protected readonly _plugins:Map<string,PetQueryPlugin>;
+	protected readonly _uuid:uuid_t;
 
 	constructor(config:PetQueryConfigServerType){
 		this._config = config;
 		this._app = Express();
 		this._plugins = new Map();
+		this._uuid = uuidv1();
 	}
 
 	addPlugin(plugin:PetQueryPlugin):void{
@@ -165,9 +168,30 @@ export class PetQueryServer{
 			,bearer:(PetQueryTypes.isString(query.bearer) ? query.bearer : '')
 			,files:files
 			,iframe:(PetQueryTypes.isBoolean(query.iframe) ? query.iframe : false)
+			,serverUuid:this._uuid
+			,tracerouteUuid:this._parseTracerouteUuid(
+				query.tracerouteUuid
+			)
 		});
 
 		next();
+	}
+
+	protected _parseTracerouteUuid(
+		tracerouteUuid:unknown
+	):Set<uuid_t>{
+		const ret = new Set<uuid_t>();
+		const hops = PetQueryTypes.isArray(tracerouteUuid)
+			? tracerouteUuid as unknown[]
+			: [];
+
+		for(const hop of hops){
+			if(PetQueryTypes.isString(hop) && uuidValidate(hop as string)){
+				ret.add(hop as uuid_t);
+			}
+		}
+
+		return ret;
 	}
 
 	protected _redirectPetQueryOrg(
