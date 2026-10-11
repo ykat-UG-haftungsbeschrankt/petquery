@@ -277,7 +277,7 @@ server.addPlugin(new PetQueryPluginMyRegistry(
 | `npm start` | Build, then start the server |
 | `npm run build` | Lint, then compile to `dist/` |
 | `npm run lint` | ESLint: unused code and copyright headers |
-| `npm run doc` | Generate the API documentation into `doc/` |
+| `npm run doc` | Generate the API documentation into `docs/` |
 
 Coding conventions, including one class per file, naming and the copyright
 header, are described in [`AGENTS.md`](AGENTS.md).
@@ -291,7 +291,7 @@ The API documentation is generated from the source with
 npm run doc
 ```
 
-Then open `doc/index.html`, or use the **Generate and Open Docs** debug
+Then open `docs/index.html`, or use the **Generate and Open Docs** debug
 configuration in VS Code.
 
 ## 📄 License

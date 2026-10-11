@@ -7,7 +7,7 @@
 
 import {PetQueryCast} from '#petquery/cast.js';
 
-export class PetQueryPluginResultSource{
+export class PetQueryResultDataSource{
 	static readonly _parser = PetQueryCast.object({
 		 favicon:PetQueryCast.string()
 		,url:PetQueryCast.string()
@@ -15,13 +15,13 @@ export class PetQueryPluginResultSource{
 	});
 	// Parses straight into an instance, for use as a nested field parser.
 	static readonly _instanceParser:
-		PetQueryCast.Parser<PetQueryPluginResultSource> = {
-			 type:PetQueryPluginResultSource._parser.type
-			,sampleValue:new PetQueryPluginResultSource(
-				PetQueryPluginResultSource._parser.sampleValue
+		PetQueryCast.Parser<PetQueryResultDataSource> = {
+			 type:PetQueryResultDataSource._parser.type
+			,sampleValue:new PetQueryResultDataSource(
+				PetQueryResultDataSource._parser.sampleValue
 			)
-			,randomSample:PetQueryPluginResultSource._randomSample
-			,parse:PetQueryPluginResultSource._parse
+			,randomSample:PetQueryResultDataSource._randomSample
+			,parse:PetQueryResultDataSource._parse
 		};
 
 	protected _favicon:uri_t;
@@ -29,7 +29,7 @@ export class PetQueryPluginResultSource{
 	protected _name:string;
 	constructor(
 		obj:PetQueryCast.ParseResult<
-			typeof PetQueryPluginResultSource._parser
+			typeof PetQueryResultDataSource._parser
 		>
 	){
 		this._favicon = obj.favicon;
@@ -58,20 +58,20 @@ export class PetQueryPluginResultSource{
 			name: this._name
 		};
 	}
-	static fromJson(json:unknown):PetQueryPluginResultSource{
-		return PetQueryPluginResultSource._parse(json);
+	static fromJson(json:unknown):PetQueryResultDataSource{
+		return PetQueryResultDataSource._parse(json);
 	}
 	protected static _parse(
 		input:unknown,
 		context?:PetQueryCast.ParserContext
-	):PetQueryPluginResultSource{
-		return new PetQueryPluginResultSource(
-			PetQueryPluginResultSource._parser.parse(input,context)
+	):PetQueryResultDataSource{
+		return new PetQueryResultDataSource(
+			PetQueryResultDataSource._parser.parse(input,context)
 		);
 	}
-	protected static _randomSample():PetQueryPluginResultSource{
-		return new PetQueryPluginResultSource(
-			PetQueryPluginResultSource._parser.randomSample()
+	protected static _randomSample():PetQueryResultDataSource{
+		return new PetQueryResultDataSource(
+			PetQueryResultDataSource._parser.randomSample()
 		);
 	}
 };

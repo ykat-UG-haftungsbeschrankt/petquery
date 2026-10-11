@@ -5,17 +5,17 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {PetQueryPluginResultSource} from
+import type {PetQueryResultDataSource} from
 	'#petquery/plugin/result/source.js';
 
 export class PetQueryPluginConfig{
 	private _enabled:boolean;
 	private _timeout:milliseconds_t;
-	private _source:PetQueryPluginResultSource;
+	private _source:PetQueryResultDataSource;
 	constructor(obj:{
 		 enabled:boolean
 		,timeout:milliseconds_t
-		,source:PetQueryPluginResultSource
+		,source:PetQueryResultDataSource
 	}){
 		this._enabled = obj.enabled;
 		this._timeout = obj.timeout;
@@ -27,7 +27,7 @@ export class PetQueryPluginConfig{
 	getTimeout():milliseconds_t{
 		return this._timeout;
 	}
-	getSource():PetQueryPluginResultSource{
+	getSource():PetQueryResultDataSource{
 		return this._source;
 	}
 };

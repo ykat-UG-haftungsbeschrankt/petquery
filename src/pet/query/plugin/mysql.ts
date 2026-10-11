@@ -7,8 +7,8 @@
 
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import {PetQueryPluginResult} from '#petquery/plugin/result.js';
-import {PetQueryPluginResultEntry} from '#petquery/plugin/result/entry.js';
+import {PetQueryResultData} from '#petquery/plugin/result.js';
+import {PetQueryResultDataEntry} from '#petquery/plugin/result/entry.js';
 import Mysql2Async, {
 	type DbConfig
 } from 'mysql2-async';
@@ -58,7 +58,7 @@ export class PetQueryPluginMysql extends PetQueryPlugin{
 			,obj.toJson()
 		);
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult>{
+	override async query(query:PetQueryPluginQuery):Promise<PetQueryResultData>{
 		const ret = [];
 		const db = await this._getConnection();
 		const result = await db.getall<json_object_t>(
@@ -66,7 +66,7 @@ export class PetQueryPluginMysql extends PetQueryPlugin{
 		);
 
 		for(const row of result){
-			ret.push(PetQueryPluginResultEntry.fromJson({
+			ret.push(PetQueryResultDataEntry.fromJson({
 				 source:this.getSource().toJson()
 				,preview:''
 				,files:[]
@@ -74,6 +74,6 @@ export class PetQueryPluginMysql extends PetQueryPlugin{
 			}));
 		}
 
-		return new PetQueryPluginResult(ret);
+		return new PetQueryResultData(ret);
 	}
 };

@@ -7,7 +7,7 @@
 
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import {PetQueryPluginResult} from '#petquery/plugin/result.js';
+import {PetQueryResultData} from '#petquery/plugin/result.js';
 import {PetQueryPluginPetqueryConfig} from
 	'#petquery/plugin/petquery/config.js';
 
@@ -17,7 +17,7 @@ export class PetQueryPluginPetquery extends PetQueryPlugin{
 		super('petquery',cfg);
 		this._cfg = cfg;
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult>{
+	override async query(query:PetQueryPluginQuery):Promise<PetQueryResultData>{
 		const data = await fetch(this._cfg.getUri(),{
 			headers:{
 				...{
@@ -37,6 +37,6 @@ export class PetQueryPluginPetquery extends PetQueryPlugin{
 		if(!data.ok){
 			throw new Error(data.statusText);
 		}
-		return PetQueryPluginResult.fromJson(await data.json());
+		return PetQueryResultData.fromJson(await data.json());
 	}
 };

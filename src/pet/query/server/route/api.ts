@@ -16,6 +16,8 @@ import type {
 	PetQueryServerRequest,
 	PetQueryServerResponse
 } from '#petquery/server/types.js';
+import { PetQueryResultData } from '#petquery/plugin/result.js';
+import { PetQueryResult } from '#petquery/result.js';
 
 export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	register(app:Express.Express):void{
@@ -39,21 +41,28 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		res:PetQueryServerResponse
 	):Promise<void>{
 		try{
-			const pluginName = this._server._getConfig().route.api.module;
-			const plugin = this._server._getPlugin(pluginName);
-
-			if(undefined === plugin){
-				throw new Error(`Plugin "${pluginName}" is not registered`);
-			}
+			const pluginNames = this._server._getConfig().route.api.plugins;
 
 			if(undefined === req.petQueryPluginQuery){
 				throw new Error(`req.petQueryPluginQuery is undefined`);
 			}
 
-			const result = await plugin.query(req.petQueryPluginQuery);
+			if(req.petQueryPluginQuery.isCircularQuery()){
+				throw new Error(`Circular query detected`);
+			}
+
+			const result = await this._query(
+				 req.petQueryPluginQuery
+				,pluginNames
+			);
 			res.json(result.toJson());
 		}catch(error){
-			res.status(500).send(util.inspect(error));
+			const result = new PetQueryResult(
+				false,
+				[util.inspect(error)],
+				new PetQueryResultData([])
+			);
+			res.json(result.toJson());
 		}
 	}
 };

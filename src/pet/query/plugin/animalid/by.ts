@@ -7,8 +7,8 @@
 
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import {PetQueryPluginResult} from '#petquery/plugin/result.js';
-import {PetQueryPluginResultEntry} from '#petquery/plugin/result/entry.js';
+import {PetQueryResultData} from '#petquery/plugin/result.js';
+import {PetQueryResultDataEntry} from '#petquery/plugin/result/entry.js';
 import {PetQueryPluginAnimalidByConfig} from
 	'#petquery/plugin/animalid/by/config.js';
 
@@ -18,10 +18,10 @@ export class PetQueryPluginAnimalidBy extends PetQueryPlugin{
 		super('animalid.by',cfg);
 		this._cfg = cfg;
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult>{
+	override async query(query:PetQueryPluginQuery):Promise<PetQueryResultData>{
 		const queryId = String(query.getQuery()).replace(/[^0-9]/g,'');
 		if(queryId === ''){
-			return new PetQueryPluginResult([]);
+			return new PetQueryResultData([]);
 		}
 
 		const ret = [];
@@ -58,7 +58,7 @@ export class PetQueryPluginAnimalidBy extends PetQueryPlugin{
 				obj[row[1].replace(/<[^>]+(>|$)/g, "")] = row[2].replace(/<[^>]+(>|$)/g, "");
 			}
 
-			ret.push(new PetQueryPluginResultEntry({
+			ret.push(new PetQueryResultDataEntry({
 				 source:this.getSource()
 				,preview:preview
 				,files:files
@@ -66,6 +66,6 @@ export class PetQueryPluginAnimalidBy extends PetQueryPlugin{
 			}));
 		}
 
-		return new PetQueryPluginResult(ret);
+		return new PetQueryResultData(ret);
 	}
 };

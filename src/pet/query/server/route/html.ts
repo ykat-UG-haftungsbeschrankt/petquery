@@ -8,7 +8,7 @@
 import type {default as Express} from 'express';
 import util from 'node:util';
 import {PetQueryLib} from '#petquery/lib.js';
-import type {PetQueryPluginResultEntry} from '#petquery/plugin/result/entry.js';
+import type {PetQueryResultDataEntry} from '#petquery/plugin/result/entry.js';
 import {PetQueryTypes} from '#petquery/types.js';
 import {PetQueryServerRoute} from '#petquery/server/route.js';
 import {PetQueryServerCallbackMergeRequestParams} from
@@ -44,6 +44,9 @@ export class PetQueryServerRouteHtml extends PetQueryServerRoute{
 	):Promise<void>{
 		if(undefined === req.petQueryPluginQuery){
 			throw new Error(`req.petQueryPluginQuery is undefined`);
+		}
+		if(req.petQueryPluginQuery.isCircularQuery()){
+			throw new Error(`Circular query detected`);
 		}
 
 		const query = req.petQueryPluginQuery;
@@ -107,7 +110,7 @@ export class PetQueryServerRouteHtml extends PetQueryServerRoute{
 </html>`);
 	}
 
-	protected _renderResult(item:PetQueryPluginResultEntry):string{
+	protected _renderResult(item:PetQueryResultDataEntry):string{
 		const source = item.getSource();
 		const data = PetQueryLib.objectMap(
 			item.getAttributes() || {},

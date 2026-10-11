@@ -12,8 +12,8 @@ import util from 'node:util';
 import {v1 as uuidv1} from 'uuid';
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import {PetQueryPluginResult} from '#petquery/plugin/result.js';
-import {PetQueryPluginResultEntry} from '#petquery/plugin/result/entry.js';
+import {PetQueryResultData} from '#petquery/plugin/result.js';
+import {PetQueryResultDataEntry} from '#petquery/plugin/result/entry.js';
 import {PetQueryResult} from '#petquery/result.js';
 import type {PetQueryConfigServerType} from '#petquery/config.js';
 import type {PetQueryServerRoute} from '#petquery/server/route.js';
@@ -42,6 +42,9 @@ export class PetQueryServer{
 		this._plugins = new Map();
 		this._uuid = uuidv1();
 	}
+	getConfig():PetQueryConfigServerType{
+		return this._config;
+	}
 
 	addPlugin(plugin:PetQueryPlugin):void{
 		if(!plugin.isEnabled()){
@@ -53,6 +56,22 @@ export class PetQueryServer{
 			);
 		}
 		this._plugins.set(plugin.getName(),plugin);
+	}
+	getPlugins(pluginFilter:Set<string>|null):Iterable<PetQueryPlugin>{
+		const ret = [];
+		
+		if(pluginFilter === null){
+			return this._plugins.values();
+		}
+		
+		for(const name of pluginFilter){
+			const plugin = this._plugins.get(name);
+			if(plugin !== undefined){
+				ret.push(plugin);
+			}
+		}
+
+		return ret;
 	}
 
 	start():void{
@@ -82,46 +101,6 @@ export class PetQueryServer{
 
 	_getPlugin(name:string):PetQueryPlugin|undefined{
 		return this._plugins.get(name);
-	}
-
-	async _queryAll(
-		query:PetQueryPluginQuery
-	):Promise<PetQueryResult>{
-		const result = {
-			success:true,
-			error:new Array<json_string_t>(),
-			data:new Array<PetQueryPluginResultEntry>()
-		};
-		const promises = [];
-		for(const plugin of this._plugins.values()){
-			promises.push(plugin.query(query));
-		}
-		const settled = await Promise.allSettled(promises);
-
-		for(const item of settled){
-			if('rejected' === item.status){
-				result.error.push(util.inspect(item.reason));
-				continue;
-			}
-			const data = item.value.getData().slice(
-				0,
-				this._config.max_results_per_module
-			);
-			result.data.push(
-				...data
-			);
-		}
-
-		result.data = result.data.slice(
-			0,
-			this._config.max_results_total
-		);
-
-		return new PetQueryResult(
-			result.success,
-			result.error,
-			new PetQueryPluginResult(result.data)
-		);
 	}
 
 	registerRoutes(routes:PetQueryServerRoute[]):void{

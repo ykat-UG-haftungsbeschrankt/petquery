@@ -16,6 +16,8 @@ import type {
 	PetQueryServerRequest,
 	PetQueryServerResponse
 } from '#petquery/server/types.js';
+import { PetQueryResult } from '#petquery/result.js';
+import { PetQueryResultData } from '#petquery/plugin/result.js';
 
 export class PetQueryServerRouteJson extends PetQueryServerRoute{
 	register(app:Express.Express):void{
@@ -43,12 +45,21 @@ export class PetQueryServerRouteJson extends PetQueryServerRoute{
 				throw new Error(`req.petQueryPluginQuery is undefined`);
 			}
 
+			if(req.petQueryPluginQuery.isCircularQuery()){
+				throw new Error(`Circular query detected`);
+			}
+
 			const result = await this._server._queryAll(
 				req.petQueryPluginQuery
 			);
 			res.json(result.toJson());
 		}catch(error){
-			res.status(500).send(util.inspect(error));
+			const result = new PetQueryResult(
+				false,
+				[util.inspect(error)],
+				new PetQueryResultData([])
+			);
+			res.json(result.toJson());
 		}
 	}
 };

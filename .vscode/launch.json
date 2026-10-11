@@ -34,7 +34,7 @@
             "outputCapture": "std",
             "serverReadyAction": {
                 "pattern": "html generated at",
-                "uriFormat": "file://${workspaceFolder}/doc/index.html",
+                "uriFormat": "file://${workspaceFolder}/docs/index.html",
                 "action": "openExternally"
             },
             "skipFiles": [

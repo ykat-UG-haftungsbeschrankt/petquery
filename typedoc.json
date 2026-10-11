@@ -5,11 +5,12 @@
 	"entryPointStrategy": "expand",
 	"exclude": ["**/.trash/**"],
 	"tsconfig": "tsconfig.json",
-	"out": "doc",
+	"out": "docs",
 	"readme": "README.md",
 	"cleanOutputDir": true,
 	"highlightLanguages": [
 		"bash", "console", "css", "html", "javascript", "json",
-		"jsonc", "json5", "yaml", "tsx", "typescript", "php"
+		"jsonc", "json5", "yaml", "tsx", "typescript", "php",
+		"mermaid"
 	]
 }

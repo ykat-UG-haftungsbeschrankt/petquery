@@ -7,7 +7,7 @@
 
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import {PetQueryPluginResult} from '#petquery/plugin/result.js';
+import {PetQueryResultData} from '#petquery/plugin/result.js';
 import {PetQueryPluginTestConfig} from '#petquery/plugin/test/config.js';
 
 export class PetQueryPluginTest extends PetQueryPlugin{
@@ -16,8 +16,8 @@ export class PetQueryPluginTest extends PetQueryPlugin{
 	}
 	override async query(
 		UNUSED_query:PetQueryPluginQuery
-	):Promise<PetQueryPluginResult>{
-		return PetQueryPluginResult.fromJson([{
+	):Promise<PetQueryResultData>{
+		return PetQueryResultData.fromJson([{
 			source: {
 				favicon: 'https://animalid.by/favicon.ico'
 				, url: 'https://animalid.by'

@@ -7,15 +7,18 @@
 
 import {PetQueryCast} from '#petquery/cast.js';
 import {PetQueryJson} from '#petquery/json.js';
-import {PetQueryPluginResultEntry} from '#petquery/plugin/result/entry.js';
+import {PetQueryResultDataEntry} from '#petquery/plugin/result/entry.js';
 
-export class PetQueryPluginResult{
+export class PetQueryResultData{
 	protected _data;
-	constructor(data:PetQueryPluginResultEntry[]){
+	constructor(data:PetQueryResultDataEntry[]){
 		this._data = data;
 	}
 	getData(){
 		return this._data;
+	}
+	append(data:PetQueryResultData):void{
+		this._data = this._data.concat(data.getData());
 	}
 	toJson(){
 		const ret:json_array_t = [];
@@ -24,16 +27,16 @@ export class PetQueryPluginResult{
 		}
 		return ret;
 	}
-	static fromJson(json:unknown):PetQueryPluginResult{
-		const results:PetQueryPluginResultEntry[] = [];
+	static fromJson(json:unknown):PetQueryResultData{
+		const results:PetQueryResultDataEntry[] = [];
 		const items = PetQueryCast.array(
 			PetQueryJson.objectParser
 		).parse(json);
 
 		for(const item of items){
-			results.push(PetQueryPluginResultEntry.fromJson(item));
+			results.push(PetQueryResultDataEntry.fromJson(item));
 		}
 
-		return new PetQueryPluginResult(results);
+		return new PetQueryResultData(results);
 	}
 };

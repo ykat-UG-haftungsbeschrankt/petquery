@@ -7,8 +7,8 @@
 
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import {PetQueryPluginResult} from '#petquery/plugin/result.js';
-import {PetQueryPluginResultEntry} from '#petquery/plugin/result/entry.js';
+import {PetQueryResultData} from '#petquery/plugin/result.js';
+import {PetQueryResultDataEntry} from '#petquery/plugin/result/entry.js';
 import {
 	Filter,
 	MongoClient,
@@ -33,7 +33,7 @@ export class PetQueryPluginMongodb extends PetQueryPlugin{
 			}
 		};
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryPluginResult>{
+	override async query(query:PetQueryPluginQuery):Promise<PetQueryResultData>{
 		const ret = [];
 
 		await this._db.connect();
@@ -45,9 +45,9 @@ export class PetQueryPluginMongodb extends PetQueryPlugin{
 				.find(this._normalizeQuery(query))
 				.toArray()
 		){
-			ret.push(PetQueryPluginResultEntry.fromJson(row));
+			ret.push(PetQueryResultDataEntry.fromJson(row));
 		}
 
-		return new PetQueryPluginResult(ret);
+		return new PetQueryResultData(ret);
 	}
 };

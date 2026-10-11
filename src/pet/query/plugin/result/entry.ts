@@ -7,23 +7,23 @@
 
 import {PetQueryCast} from '#petquery/cast.js';
 import {PetQueryJson} from '#petquery/json.js';
-import {PetQueryPluginResultSource} from '#petquery/plugin/result/source.js';
+import {PetQueryResultDataSource} from '#petquery/plugin/result/source.js';
 
-export class PetQueryPluginResultEntry{
+export class PetQueryResultDataEntry{
 	static readonly _parser = PetQueryCast.object({
-		 source:PetQueryPluginResultSource._instanceParser
+		 source:PetQueryResultDataSource._instanceParser
 		,preview:PetQueryCast.string()
 		,files:PetQueryCast.array(PetQueryCast.string())
 		,attributes:PetQueryJson.objectParser
 	});
 
-	protected _source:PetQueryPluginResultSource;
+	protected _source:PetQueryResultDataSource;
 	protected _preview:uri_t;
 	protected _files:uri_t[];
 	protected _attributes:json_object_t;
 	constructor(
 		obj:PetQueryCast.ParseResult<
-			typeof PetQueryPluginResultEntry._parser
+			typeof PetQueryResultDataEntry._parser
 		>
 	){
 		this._source = obj.source;
@@ -31,7 +31,7 @@ export class PetQueryPluginResultEntry{
 		this._files = obj.files;
 		this._attributes = obj.attributes;
 	}
-	getSource():PetQueryPluginResultSource{
+	getSource():PetQueryResultDataSource{
 		return this._source;
 	}
 	hasPreview():boolean{
@@ -54,9 +54,9 @@ export class PetQueryPluginResultEntry{
 			attributes: this._attributes
 		};
 	}
-	static fromJson(json:unknown):PetQueryPluginResultEntry{
-		return new PetQueryPluginResultEntry(
-			PetQueryPluginResultEntry._parser.parse(json)
+	static fromJson(json:unknown):PetQueryResultDataEntry{
+		return new PetQueryResultDataEntry(
+			PetQueryResultDataEntry._parser.parse(json)
 		);
 	}
 };

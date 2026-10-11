@@ -7,7 +7,7 @@
 
 import {PetQueryCast} from '#petquery/cast.js';
 import {PetQueryJson} from '#petquery/json.js';
-import {PetQueryPluginResult} from '#petquery/plugin/result.js';
+import {PetQueryResultData} from '#petquery/plugin/result.js';
 
 export class PetQueryResult{
 	static readonly _parser = PetQueryCast.object({
@@ -20,21 +20,29 @@ export class PetQueryResult{
 
 	protected _success:boolean;
 	protected _error:json_string_t[];
-	protected _data:PetQueryPluginResult;
+	protected _data:PetQueryResultData;
 	constructor(
 		success:boolean,
 		error:json_string_t[],
-		data:PetQueryPluginResult
+		data:PetQueryResultData
 	){
 		this._success = success;
 		this._error = error;
 		this._data = data;
 	}
+	isSuccess():boolean{
+		return this._success;
+	}
 	getError():json_string_t[]{
 		return this._error;
 	}
-	getData():PetQueryPluginResult{
+	getData():PetQueryResultData{
 		return this._data;
+	}
+	append(data:PetQueryResult):void{
+		this._success = this._success && data._success;
+		this._error = this._error.concat(data.getError());
+		this._data.append(data.getData());
 	}
 	toJson():json_t{
 		return {
@@ -48,7 +56,7 @@ export class PetQueryResult{
 		return new PetQueryResult(
 			obj.success,
 			obj.error,
-			PetQueryPluginResult.fromJson(obj.data)
+			PetQueryResultData.fromJson(obj.data)
 		);
 	}
 };

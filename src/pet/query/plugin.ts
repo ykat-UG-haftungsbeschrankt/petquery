@@ -7,9 +7,9 @@
 
 import type {PetQueryPluginConfig} from '#petquery/plugin/config.js';
 import type {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import type {PetQueryPluginResult} from '#petquery/plugin/result.js';
-import type {PetQueryPluginResultSource} from
+import type {PetQueryResultDataSource} from
 	'#petquery/plugin/result/source.js';
+import { PetQueryResult } from './result.js';
 
 export abstract class PetQueryPlugin{
 	private readonly _name:string;
@@ -28,7 +28,7 @@ export abstract class PetQueryPlugin{
 	isEnabled():boolean{
 		return this._baseCfg.isEnabled();
 	}
-	getSource():PetQueryPluginResultSource{
+	getSource():PetQueryResultDataSource{
 		return this._baseCfg.getSource();
 	}
 	/**
@@ -37,5 +37,5 @@ export abstract class PetQueryPlugin{
 	 */
 	abstract query(
 		query:PetQueryPluginQuery
-	):Promise<PetQueryPluginResult>;
+	):Promise<PetQueryResult>;
 };

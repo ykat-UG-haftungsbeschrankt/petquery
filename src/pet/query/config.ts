@@ -6,7 +6,7 @@
  */
 
 import {PetQueryPluginMongodbConfig} from '#petquery/plugin/mongodb/config.js';
-import {PetQueryPluginResultSource} from '#petquery/plugin/result/source.js';
+import {PetQueryResultDataSource} from '#petquery/plugin/result/source.js';
 //import { PetQueryPluginEuropetnetOrgConfig } from './plugin/europetnet.org/index.js';
 import { PetQueryTypes } from './types.js';
 import {PetQueryPluginConfig} from '#petquery/plugin/config.js';
@@ -82,7 +82,7 @@ const settings = {
 		,max_results_total:1000 as uint_t
 		,route:{
 			api:{
-				module:'test'
+				 plugins:new Set<string>(['test'])
 				,enabled:true
 				,authenticate:authenticate
 			}
@@ -100,7 +100,7 @@ const settings = {
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryPluginResultSource({
+				source:new PetQueryResultDataSource({
 					 favicon:'https://animalid.by/favicon.ico'
 					,url:'https://animalid.by'
 					,name:'Animalid'
@@ -111,7 +111,7 @@ const settings = {
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryPluginResultSource({
+				source:new PetQueryResultDataSource({
 					 favicon:'https://europetnet.org/favicon.ico'
 					,url:'https://europetnet.org'
 					,name:'Europetnet'
@@ -122,7 +122,7 @@ const settings = {
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryPluginResultSource({
+				source:new PetQueryResultDataSource({
 					favicon:'',
 					url:'',
 					name:'test'
@@ -136,7 +136,7 @@ const settings = {
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryPluginResultSource({
+				source:new PetQueryResultDataSource({
 					favicon:'',
 					url:'',
 					name:'test'
@@ -147,7 +147,7 @@ const settings = {
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryPluginResultSource({
+				source:new PetQueryResultDataSource({
 					favicon:'',
 					url:'',
 					name:'test'
@@ -163,7 +163,7 @@ const settings = {
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryPluginResultSource({
+				source:new PetQueryResultDataSource({
 					favicon:'',
 					url:'',
 					name:'test'
@@ -178,7 +178,7 @@ const settings = {
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryPluginResultSource({
+				source:new PetQueryResultDataSource({
 					favicon:'',
 					url:'',
 					name:'test'
