@@ -201,10 +201,16 @@ Response:
 }
 ```
 
+An invalid request, for example a `query` that is not a string or a
+`tracerouteUuid` that is not a UUID, returns `400` with the messages in
+`error`. An unexpected server error returns `500`. A circular query returns
+`200` with `success: false`. The request and response are described in
+[`schema/search/`](schema/search).
+
 ### `/api`: share your own registry
 
-`/api` returns results from the **single** plugin named in `route.api.module`,
-as a plain array of result entries.
+`/api` returns results from the plugins listed in `route.api.plugins`, in the
+same format as `/json`.
 
 This is how authorities share their data. Run petquery next to your local
 database, expose it through `/api`, and give other petquery servers a token.
@@ -413,9 +419,27 @@ Request and response bodies are defined in [`schema/`](schema) with
 The path mirrors the route, for example
 `schema/api/server/put/request.ts` for `PUT /api/server/put/:uuid`.
 
-- Each `.ts` file exports a class with a static `schema`, a `parse()` that
-  returns the typed value or throws, and a `...Values` type. Import it with
-  `#schema/...`, for example `#schema/api/server/put/request.js`.
+- Each `.ts` file exports a class with a static `schema`, a `fromJson()`
+  that returns a typed instance or throws, and a `...Values` type. Import it
+  with `#schema/...`, for example `#schema/api/server/put/request.js`.
+- Every JSON route validates its request with the request class's static
+  `_handle()`, which calls the route handler with the typed request and sends
+  the response it returns:
+
+  ```ts
+  app.put(
+  	'/api/server/put/:uuid',
+  	authenticate,
+  	PetQuerySchemaApiServerPutRequest._handle.bind(
+  		this,
+  		this._handleAddServer.bind(this)
+  	)
+  );
+  ```
+
+  An invalid request returns `400` and a handler error `500`, both with
+  `success: false` and the messages in `error`
+  ([`schema/error.json`](schema/error.json)).
 - The `.json` files next to them are JSON Schema for clients in other
   languages. They are generated; edit the `.ts` file and run
   `npm run build:schema` (part of `npm run build`).

@@ -6,28 +6,39 @@
  */
 
 import type {default as Express} from 'express';
-import util from 'node:util';
-import {validate as uuidValidate} from 'uuid';
 import {PetQueryServerRoute} from '#petquery/server/route.js';
-import {PetQueryTypes} from '#petquery/types.js';
 import {PetQueryServerCallbackNext} from
 	'#petquery/server/callback/next.js';
-import {PetQueryServerCallbackMergeRequestParams} from
-	'#petquery/server/callback/merge/request/params.js';
-import type {
-	PetQueryServerRequest,
-	PetQueryServerResponse
-} from '#petquery/server/types.js';
-import { PetQueryResultData } from '#petquery/plugin/result.js';
-import { PetQueryResult } from '#petquery/result.js';
 import {PetQueryServerConfig} from '#petquery/server/config.js';
 import type {PetQueryServerConfigValues} from
 	'#petquery/server/config.js';
+import {PetQueryServerResponseSchemaError} from
+	'#petquery/server/response/schema/error.js';
+import {PetQuerySchemaSearchRequest} from '#schema/search/request.js';
+import {PetQuerySchemaApiPingGetRequest} from
+	'#schema/api/ping/get/request.js';
+import {PetQuerySchemaApiPingGetResponse} from
+	'#schema/api/ping/get/response.js';
+import {PetQuerySchemaApiServerGetRequest} from
+	'#schema/api/server/get/request.js';
+import {PetQuerySchemaApiServerGetResponse} from
+	'#schema/api/server/get/response.js';
 import {PetQuerySchemaApiServerPutRequest} from
 	'#schema/api/server/put/request.js';
 import {PetQuerySchemaApiServerPutResponse} from
 	'#schema/api/server/put/response.js';
-
+import {PetQuerySchemaApiServerDeleteRequest} from
+	'#schema/api/server/delete/request.js';
+import {PetQuerySchemaApiServerDeleteResponse} from
+	'#schema/api/server/delete/response.js';
+import {PetQuerySchemaApiConfigGetRequest} from
+	'#schema/api/config/get/request.js';
+import {PetQuerySchemaApiConfigGetResponse} from
+	'#schema/api/config/get/response.js';
+import {PetQuerySchemaApiConfigPutRequest} from
+	'#schema/api/config/put/request.js';
+import {PetQuerySchemaApiConfigPutResponse} from
+	'#schema/api/config/put/response.js';
 
 export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	register(app:Express.Express):void{
@@ -36,24 +47,30 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 			return;
 		}
 
-		const mergeRequestParams =
-			new PetQueryServerCallbackMergeRequestParams(this._server);
 		const authenticate =
 			config.authenticate ?? PetQueryServerCallbackNext.handle;
 		app.all(
 			'/api',
 			authenticate,
-			mergeRequestParams.handle.bind(mergeRequestParams),
-			this._handle.bind(this)
+			PetQuerySchemaSearchRequest._handle.bind(
+				this,
+				this._handleSearch.bind(this,config.plugins)
+			)
 		);
 		app.get(
 			'/api/ping/get',
-			this._handlePing.bind(this)
+			PetQuerySchemaApiPingGetRequest._handle.bind(
+				this,
+				this._handlePing.bind(this)
+			)
 		);
 		// Public so that peers can sync their server index.
 		app.get(
 			'/api/server/get',
-			this._handleListServer.bind(this)
+			PetQuerySchemaApiServerGetRequest._handle.bind(
+				this,
+				this._handleListServer.bind(this)
+			)
 		);
 		app.put(
 			'/api/server/put/:uuid',
@@ -66,26 +83,84 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		app.delete(
 			'/api/server/delete/:uuid',
 			authenticate,
-			this._handleDeleteServer.bind(this)
+			PetQuerySchemaApiServerDeleteRequest._handle.bind(
+				this,
+				this._handleDeleteServer.bind(this)
+			)
 		);
 		app.get(
 			'/api/config/get',
 			authenticate,
-			this._handleGetConfig.bind(this)
+			PetQuerySchemaApiConfigGetRequest._handle.bind(
+				this,
+				this._handleGetConfig.bind(this)
+			)
 		);
 		app.put(
 			'/api/config/put',
 			authenticate,
-			this._handlePutConfig.bind(this)
+			PetQuerySchemaApiConfigPutRequest._handle.bind(
+				this,
+				this._handlePutConfig.bind(this)
+			)
 		);
+	}
+
+	protected async _handlePing(
+		UNUSED_request:PetQuerySchemaApiPingGetRequest
+	):Promise<PetQuerySchemaApiPingGetResponse>{
+		return new PetQuerySchemaApiPingGetResponse(200,{
+			success:true,
+			error:[],
+			data:{uuid:this._server._getUuid()}
+		});
+	}
+
+	protected async _handleListServer(
+		UNUSED_request:PetQuerySchemaApiServerGetRequest
+	):Promise<PetQuerySchemaApiServerGetResponse>{
+		const servers =
+			await this._server._getServerIndex().getServerList();
+		const data = [];
+
+		for(const [uuid,uri] of servers){
+			data.push({uuid,uri});
+		}
+		return new PetQuerySchemaApiServerGetResponse(200,{
+			success:true,
+			error:[],
+			data
+		});
+	}
+
+	protected async _handleAddServer(
+		request:PetQuerySchemaApiServerPutRequest
+	):Promise<PetQuerySchemaApiServerPutResponse>{
+		await this._server._getServerIndex().addServer(
+			request.getUuid(),
+			request.getUri()
+		);
+		return new PetQuerySchemaApiServerPutResponse(200,{
+			success:true,
+			error:[]
+		});
+	}
+
+	protected async _handleDeleteServer(
+		request:PetQuerySchemaApiServerDeleteRequest
+	):Promise<PetQuerySchemaApiServerDeleteResponse>{
+		await this._server._getServerIndex().deleteServer(request.getUuid());
+		return new PetQuerySchemaApiServerDeleteResponse(200,{
+			success:true,
+			error:[]
+		});
 	}
 
 	// Returns the running values, the saved values (applied on restart)
 	// and the plugin names that route.api.plugins may contain.
 	protected async _handleGetConfig(
-		UNUSED_req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
+		UNUSED_request:PetQuerySchemaApiConfigGetRequest
+	):Promise<PetQuerySchemaApiConfigGetResponse>{
 		const configFile = this._server._getConfigFile();
 		const active = PetQueryServerConfig.fromServerConfig(
 			this._server._getConfig()
@@ -98,8 +173,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		}catch(error){
 			savedError = this._getErrorMessage(error);
 		}
-		res.set('Cache-Control','no-store');
-		res.json({
+		return new PetQuerySchemaApiConfigGetResponse(200,{
 			success:true,
 			error:[],
 			data:{
@@ -111,134 +185,28 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		});
 	}
 
+	// Saves the values, applied on restart. Unknown plugin names get a 400.
 	protected async _handlePutConfig(
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
+		request:PetQuerySchemaApiConfigPutRequest
+	):Promise<
+		PetQuerySchemaApiConfigPutResponse|PetQueryServerResponseSchemaError
+	>{
 		const configFile = this._server._getConfigFile();
+		let saved:PetQueryServerConfigValues;
 
-		res.set('Cache-Control','no-store');
 		try{
-			configFile.parse(req.body);
+			saved = configFile.normalize(request.getConfig());
 		}catch(error){
-			res.status(400).json({
-				success:false,
-				error:[this._getErrorMessage(error)]
-			});
-			return;
+			return new PetQueryServerResponseSchemaError(
+				400,
+				[this._getErrorMessage(error)]
+			);
 		}
-		try{
-			const saved = await configFile.save(req.body);
-			res.json({success:true,error:[],data:{saved}});
-		}catch(error){
-			this._sendServerError(res,500,error);
-		}
-	}
-
-	protected _handlePing(
-		UNUSED_req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):void{
-		res.json({
+		await configFile.save(saved);
+		return new PetQuerySchemaApiConfigPutResponse(200,{
 			success:true,
 			error:[],
-			data:{uuid:this._server._getUuid()}
+			data:{saved}
 		});
-	}
-
-	protected async _handleListServer(
-		UNUSED_req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		try{
-			const servers =
-				await this._server._getServerIndex().getServerList();
-			const data = [];
-			for(const [uuid,uri] of servers){
-				data.push({uuid,uri});
-			}
-			res.json({success:true,error:[],data});
-		}catch(error){
-			this._sendServerError(res,500,error);
-		}
-	}
-
-	protected async _handleAddServer(
-		request:PetQuerySchemaApiServerPutRequest
-	):Promise<PetQuerySchemaApiServerPutResponse>{
-		await this._server._getServerIndex().addServer(
-			request.getUuid(),
-			request.getUri()
-		);
-		return new PetQuerySchemaApiServerPutResponse(
-			200,
-			{success:true,error:[]}
-		);
-	}
-
-	protected async _handleDeleteServer(
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		const uuid = this._getUuidParam(req);
-		if(null === uuid){
-			this._sendServerError(res,400,'Invalid server UUID');
-			return;
-		}
-		try{
-			await this._server._getServerIndex().deleteServer(uuid);
-			res.json({success:true,error:[]});
-		}catch(error){
-			this._sendServerError(res,500,error);
-		}
-	}
-
-	protected _getUuidParam(req:PetQueryServerRequest):uuid_t|null{
-		const uuid:unknown = req.params.uuid;
-		if(!PetQueryTypes.isString(uuid) || !uuidValidate(uuid as string)){
-			return null;
-		}
-		return uuid as uuid_t;
-	}
-
-	protected _sendServerError(
-		res:PetQueryServerResponse,
-		status:uint16_t,
-		error:unknown
-	):void{
-		res.status(status).json({
-			success:false,
-			error:[util.inspect(error)]
-		});
-	}
-
-	protected async _handle(
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		try{
-			const pluginNames = this._server._getConfig().route.api.plugins;
-
-			if(undefined === req.petQueryPluginQuery){
-				throw new Error(`req.petQueryPluginQuery is undefined`);
-			}
-
-			if(req.petQueryPluginQuery.isCircularQuery()){
-				throw new Error(`Circular query detected`);
-			}
-
-			const result = await this._query(
-				 req.petQueryPluginQuery
-				,pluginNames
-			);
-			res.json(result.toJson());
-		}catch(error){
-			const result = new PetQueryResult(
-				false,
-				[util.inspect(error)],
-				new PetQueryResultData([])
-			);
-			res.json(result.toJson());
-		}
 	}
 };

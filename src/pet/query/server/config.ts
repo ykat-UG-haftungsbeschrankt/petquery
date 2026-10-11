@@ -8,62 +8,70 @@
 import {randomUUID} from 'node:crypto';
 import {mkdir, readFile, rename, rm, writeFile} from 'node:fs/promises';
 import path from 'node:path';
-import {PetQueryCast} from '#petquery/cast.js';
+import {PetQuerySchema} from '#petquery/schema.js';
+import type {
+	PetQuerySchemaProperties,
+	PetQuerySchemaStatic
+} from '#petquery/schema.js';
 import type {PetQueryConfigServerType} from '#petquery/config.js';
 
-const cast = PetQueryCast;
-const flag = cast.values([true,false]);
+const T = PetQuerySchema.type;
+const flag = T.Boolean();
 // setTimeout() fires immediately for delays above 2^31-1 ms.
 const MAX_TIMER_MS = 2147483647;
 
-const valuesParser = cast.object({
-	 http:cast.object({
-		port:cast.int({min:1,max:65535})
+// Object that rejects unknown keys.
+function strict<P extends PetQuerySchemaProperties>(properties:P){
+	return T.Object(properties,{additionalProperties:false});
+}
+
+const schema = strict({
+	 http:strict({
+		port:T.Integer({minimum:1,maximum:65535})
 	})
-	,authenticate:cast.object({
+	,authenticate:strict({
 		// Printable ASCII without spaces, see authenticate() in config.ts.
-		bearer:cast.array(
-			cast.string({match:/^[\x21-\x7e]{16,256}$/}),
-			{minLength:1,maxLength:100}
+		bearer:T.Array(
+			T.String({pattern:'^[\\x21-\\x7e]{16,256}$'}),
+			{minItems:1,maxItems:100}
 		)
 	})
-	,file:cast.object({
-		upload:cast.object({
+	,file:strict({
+		upload:strict({
 			 enabled:flag
-			,max_file_size:cast.int({min:1})
+			,max_file_size:T.Integer({minimum:1})
 		})
 	})
-	,max_results_per_module:cast.int({min:1,max:1000000})
-	,max_results_total:cast.int({min:1,max:1000000})
-	,server_index:cast.object({
-		sync:cast.object({
+	,max_results_per_module:T.Integer({minimum:1,maximum:1000000})
+	,max_results_total:T.Integer({minimum:1,maximum:1000000})
+	,server_index:strict({
+		sync:strict({
 			 enabled:flag
-			,interval:cast.int({min:1000,max:MAX_TIMER_MS})
-			,timeout:cast.int({min:100,max:MAX_TIMER_MS})
-			,max_servers:cast.int({min:1,max:1000000})
+			,interval:T.Integer({minimum:1000,maximum:MAX_TIMER_MS})
+			,timeout:T.Integer({minimum:100,maximum:MAX_TIMER_MS})
+			,max_servers:T.Integer({minimum:1,maximum:1000000})
 		})
 	})
-	,route:cast.object({
-		 api:cast.object({
+	,route:strict({
+		 api:strict({
 			 enabled:flag
-			,plugins:cast.array(
-				cast.string({nonEmpty:true}),
-				{maxLength:1000}
-			)
+			,plugins:T.Array(T.String({minLength:1}),{maxItems:1000})
 		})
-		,json:cast.object({enabled:flag})
-		,'/':cast.object({enabled:flag})
-		,admin:cast.object({enabled:flag})
+		,json:strict({enabled:flag})
+		,'/':strict({enabled:flag})
+		,admin:strict({enabled:flag})
 	})
 });
 
-export type PetQueryServerConfigValues = ReturnType<
-	typeof valuesParser.parse
->;
+export type PetQueryServerConfigValues = PetQuerySchemaStatic<typeof schema>;
 
 // Loads, validates and atomically saves the server settings that are
 // editable in the admin GUI. Saved values take effect on restart.
 export class PetQueryServerConfig{
+	// The editable values, as stored in the file and sent by the API.
+	static readonly schema = schema;
+	static readonly _validator = PetQuerySchema.compile(schema);
+
 	protected readonly _path:filename_t;
 	protected readonly _pluginNames:Set<utf8_t>;
 	protected readonly _pending:Set<Promise<void>>;
@@ -153,11 +161,19 @@ export class PetQueryServerConfig{
 		return Array.from(this._pluginNames);
 	}
 
-	// Validates untrusted JSON, dropping unknown keys and duplicates.
-	// Throws PetQueryCast.InvalidInputError or Error on invalid input.
+	// Validates untrusted JSON, then normalize()s it. Throws an Error
+	// naming the invalid field.
 	parse(json:unknown):PetQueryServerConfigValues{
-		const values = valuesParser.parse(json);
+		return this.normalize(
+			PetQuerySchema.parse(PetQueryServerConfig._validator,json)
+		);
+	}
 
+	// Removes duplicates and checks the plugin names, which the schema
+	// cannot. Throws an Error naming an unknown plugin.
+	normalize(
+		values:PetQueryServerConfigValues
+	):PetQueryServerConfigValues{
 		values.authenticate.bearer = Array.from(
 			new Set(values.authenticate.bearer)
 		);
@@ -202,9 +218,8 @@ export class PetQueryServerConfig{
 		}
 	}
 
-	// Validates and saves values, replacing the file atomically.
-	async save(json:unknown):Promise<PetQueryServerConfigValues>{
-		const values = this.parse(json);
+	// Saves values returned by normalize(), replacing the file atomically.
+	async save(values:PetQueryServerConfigValues):Promise<void>{
 		const write = this._write(values);
 
 		this._pending.add(write);
@@ -214,8 +229,6 @@ export class PetQueryServerConfig{
 		finally{
 			this._pending.delete(write);
 		}
-
-		return values;
 	}
 
 	protected async _write(values:PetQueryServerConfigValues):Promise<void>{

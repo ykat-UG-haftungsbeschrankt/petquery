@@ -12,6 +12,8 @@ import { PetQueryResult } from '#petquery/result.js';
 import { PetQueryResultDataEntry } from '#petquery/plugin/result/entry.js';
 import util from 'node:util';
 import { PetQueryResultData } from '#petquery/plugin/result.js';
+import {PetQuerySchemaSearchRequest} from '#schema/search/request.js';
+import {PetQuerySchemaSearchResponse} from '#schema/search/response.js';
 
 export abstract class PetQueryServerRoute{
 	protected readonly _server:PetQueryServer;
@@ -24,6 +26,30 @@ export abstract class PetQueryServerRoute{
 
 	protected _getErrorMessage(error:unknown):utf8_t{
 		return error instanceof Error ? error.message : String(error);
+	}
+
+	// Searches the plugins in pluginFilter, all if null. A circular query
+	// gets an unsuccessful result instead of being forwarded again.
+	protected async _handleSearch(
+		pluginFilter:Set<string>|null,
+		request:PetQuerySchemaSearchRequest
+	):Promise<PetQuerySchemaSearchResponse>{
+		const query = request.getPluginQuery(this._server._getUuid());
+
+		if(query.isCircularQuery()){
+			return PetQuerySchemaSearchResponse.fromResult(
+				200,
+				new PetQueryResult(
+					false,
+					['Circular query detected'],
+					new PetQueryResultData([])
+				)
+			);
+		}
+		return PetQuerySchemaSearchResponse.fromResult(
+			200,
+			await this._query(query,pluginFilter)
+		);
 	}
 
 	async _query(

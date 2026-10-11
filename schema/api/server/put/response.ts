@@ -13,7 +13,7 @@ import {PetQueryServerResponseSchema} from
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	success:T.Boolean(),
+	success:T.Literal(true),
 	error:T.Array(T.String())
 },{
 	title:'PUT /api/server/put/:uuid response',
@@ -23,11 +23,10 @@ const schema = T.Object({
 export type PetQuerySchemaApiServerPutResponseValues =
 	PetQuerySchemaStatic<typeof schema>;
 
-// Response of PUT /api/server/put/:uuid, for success and errors alike.
+// Successful response of PUT /api/server/put/:uuid. Errors are sent as
+// PetQueryServerResponseSchemaError.
 export class PetQuerySchemaApiServerPutResponse
-	extends PetQueryServerResponseSchema<
-		PetQuerySchemaApiServerPutResponseValues
-	>{
+	extends PetQueryServerResponseSchema<PetQuerySchemaApiServerPutResponseValues>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);
 
@@ -39,10 +38,7 @@ export class PetQuerySchemaApiServerPutResponse
 	):PetQuerySchemaApiServerPutResponse{
 		return new PetQuerySchemaApiServerPutResponse(
 			status,
-			PetQuerySchema.parse(
-				PetQuerySchemaApiServerPutResponse._validator,
-				json
-			)
+			PetQuerySchema.parse(PetQuerySchemaApiServerPutResponse._validator,json)
 		);
 	}
 };

@@ -17,11 +17,14 @@ import type {
 import {PetQueryServerResponseSchemaError} from
 	'#petquery/server/response/schema/error.js';
 
-// The parts of an HTTP request that a request schema validates.
+// The parts of an HTTP request that a request schema validates. body is
+// {} when the request has none. files are the uploads parsed by
+// express-fileupload, if enabled.
 export type PetQueryServerRequestSchemaInput = {
 	params:unknown;
 	query:unknown;
 	body:unknown;
+	files:PetQueryServerRequest['files'];
 };
 
 // Base of all validated requests. Subclasses add a static schema, a
@@ -47,8 +50,9 @@ export abstract class PetQueryServerRequestSchema<T>{
 
 	// Validates req with parse, passes the typed request to handler and
 	// sends the response it returns. Invalid requests get a 400, handler
-	// errors a 500. Never rejects. Subclasses wrap it in a static _handle()
-	// with concrete types, so that .bind() keeps them.
+	// errors a 500. Handlers may return a PetQueryServerResponseSchemaError
+	// for errors they detect themselves. Never rejects. Subclasses wrap it
+	// in a static _handle() with concrete types, so that .bind() keeps them.
 	static async _handleRequest<
 		Request extends PetQueryServerRequestSchema<unknown>,
 		Response extends PetQueryServerResponseSchema<
@@ -69,7 +73,8 @@ export abstract class PetQueryServerRequestSchema<T>{
 				request = parse({
 					params:req.params,
 					query:req.query,
-					body:req.body
+					body:req.body ?? {},
+					files:req.files
 				});
 			}
 			catch(error){
@@ -90,6 +95,8 @@ export abstract class PetQueryServerRequestSchema<T>{
 				}
 			}
 			if(null !== response){
+				// Responses reflect the current state; never reuse them.
+				res.set('Cache-Control','no-store');
 				res.status(response.getStatus()).json(response.toJson());
 			}
 		}

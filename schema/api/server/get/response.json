@@ -1,0 +1,44 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"required": [
+		"success",
+		"error",
+		"data"
+	],
+	"properties": {
+		"success": {
+			"type": "boolean",
+			"const": true
+		},
+		"error": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"data": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": [
+					"uuid",
+					"uri"
+				],
+				"properties": {
+					"uuid": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"uri": {
+						"type": "string",
+						"format": "uri"
+					}
+				},
+				"additionalProperties": false
+			}
+		}
+	},
+	"title": "GET /api/server/get response",
+	"additionalProperties": false
+}

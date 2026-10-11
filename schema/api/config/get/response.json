@@ -1,0 +1,440 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"required": [
+		"success",
+		"error",
+		"data"
+	],
+	"properties": {
+		"success": {
+			"type": "boolean",
+			"const": true
+		},
+		"error": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"data": {
+			"type": "object",
+			"required": [
+				"active",
+				"saved",
+				"saved_error",
+				"plugins"
+			],
+			"properties": {
+				"active": {
+					"type": "object",
+					"required": [
+						"http",
+						"authenticate",
+						"file",
+						"max_results_per_module",
+						"max_results_total",
+						"server_index",
+						"route"
+					],
+					"properties": {
+						"http": {
+							"type": "object",
+							"required": [
+								"port"
+							],
+							"properties": {
+								"port": {
+									"type": "integer",
+									"minimum": 1,
+									"maximum": 65535
+								}
+							},
+							"additionalProperties": false
+						},
+						"authenticate": {
+							"type": "object",
+							"required": [
+								"bearer"
+							],
+							"properties": {
+								"bearer": {
+									"type": "array",
+									"items": {
+										"type": "string",
+										"pattern": "^[\\x21-\\x7e]{16,256}$"
+									},
+									"minItems": 1,
+									"maxItems": 100
+								}
+							},
+							"additionalProperties": false
+						},
+						"file": {
+							"type": "object",
+							"required": [
+								"upload"
+							],
+							"properties": {
+								"upload": {
+									"type": "object",
+									"required": [
+										"enabled",
+										"max_file_size"
+									],
+									"properties": {
+										"enabled": {
+											"type": "boolean"
+										},
+										"max_file_size": {
+											"type": "integer",
+											"minimum": 1
+										}
+									},
+									"additionalProperties": false
+								}
+							},
+							"additionalProperties": false
+						},
+						"max_results_per_module": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 1000000
+						},
+						"max_results_total": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 1000000
+						},
+						"server_index": {
+							"type": "object",
+							"required": [
+								"sync"
+							],
+							"properties": {
+								"sync": {
+									"type": "object",
+									"required": [
+										"enabled",
+										"interval",
+										"timeout",
+										"max_servers"
+									],
+									"properties": {
+										"enabled": {
+											"type": "boolean"
+										},
+										"interval": {
+											"type": "integer",
+											"minimum": 1000,
+											"maximum": 2147483647
+										},
+										"timeout": {
+											"type": "integer",
+											"minimum": 100,
+											"maximum": 2147483647
+										},
+										"max_servers": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 1000000
+										}
+									},
+									"additionalProperties": false
+								}
+							},
+							"additionalProperties": false
+						},
+						"route": {
+							"type": "object",
+							"required": [
+								"api",
+								"json",
+								"/",
+								"admin"
+							],
+							"properties": {
+								"api": {
+									"type": "object",
+									"required": [
+										"enabled",
+										"plugins"
+									],
+									"properties": {
+										"enabled": {
+											"type": "boolean"
+										},
+										"plugins": {
+											"type": "array",
+											"items": {
+												"type": "string",
+												"minLength": 1
+											},
+											"maxItems": 1000
+										}
+									},
+									"additionalProperties": false
+								},
+								"json": {
+									"type": "object",
+									"required": [
+										"enabled"
+									],
+									"properties": {
+										"enabled": {
+											"type": "boolean"
+										}
+									},
+									"additionalProperties": false
+								},
+								"/": {
+									"type": "object",
+									"required": [
+										"enabled"
+									],
+									"properties": {
+										"enabled": {
+											"type": "boolean"
+										}
+									},
+									"additionalProperties": false
+								},
+								"admin": {
+									"type": "object",
+									"required": [
+										"enabled"
+									],
+									"properties": {
+										"enabled": {
+											"type": "boolean"
+										}
+									},
+									"additionalProperties": false
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
+				},
+				"saved": {
+					"anyOf": [
+						{
+							"type": "object",
+							"required": [
+								"http",
+								"authenticate",
+								"file",
+								"max_results_per_module",
+								"max_results_total",
+								"server_index",
+								"route"
+							],
+							"properties": {
+								"http": {
+									"type": "object",
+									"required": [
+										"port"
+									],
+									"properties": {
+										"port": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 65535
+										}
+									},
+									"additionalProperties": false
+								},
+								"authenticate": {
+									"type": "object",
+									"required": [
+										"bearer"
+									],
+									"properties": {
+										"bearer": {
+											"type": "array",
+											"items": {
+												"type": "string",
+												"pattern": "^[\\x21-\\x7e]{16,256}$"
+											},
+											"minItems": 1,
+											"maxItems": 100
+										}
+									},
+									"additionalProperties": false
+								},
+								"file": {
+									"type": "object",
+									"required": [
+										"upload"
+									],
+									"properties": {
+										"upload": {
+											"type": "object",
+											"required": [
+												"enabled",
+												"max_file_size"
+											],
+											"properties": {
+												"enabled": {
+													"type": "boolean"
+												},
+												"max_file_size": {
+													"type": "integer",
+													"minimum": 1
+												}
+											},
+											"additionalProperties": false
+										}
+									},
+									"additionalProperties": false
+								},
+								"max_results_per_module": {
+									"type": "integer",
+									"minimum": 1,
+									"maximum": 1000000
+								},
+								"max_results_total": {
+									"type": "integer",
+									"minimum": 1,
+									"maximum": 1000000
+								},
+								"server_index": {
+									"type": "object",
+									"required": [
+										"sync"
+									],
+									"properties": {
+										"sync": {
+											"type": "object",
+											"required": [
+												"enabled",
+												"interval",
+												"timeout",
+												"max_servers"
+											],
+											"properties": {
+												"enabled": {
+													"type": "boolean"
+												},
+												"interval": {
+													"type": "integer",
+													"minimum": 1000,
+													"maximum": 2147483647
+												},
+												"timeout": {
+													"type": "integer",
+													"minimum": 100,
+													"maximum": 2147483647
+												},
+												"max_servers": {
+													"type": "integer",
+													"minimum": 1,
+													"maximum": 1000000
+												}
+											},
+											"additionalProperties": false
+										}
+									},
+									"additionalProperties": false
+								},
+								"route": {
+									"type": "object",
+									"required": [
+										"api",
+										"json",
+										"/",
+										"admin"
+									],
+									"properties": {
+										"api": {
+											"type": "object",
+											"required": [
+												"enabled",
+												"plugins"
+											],
+											"properties": {
+												"enabled": {
+													"type": "boolean"
+												},
+												"plugins": {
+													"type": "array",
+													"items": {
+														"type": "string",
+														"minLength": 1
+													},
+													"maxItems": 1000
+												}
+											},
+											"additionalProperties": false
+										},
+										"json": {
+											"type": "object",
+											"required": [
+												"enabled"
+											],
+											"properties": {
+												"enabled": {
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false
+										},
+										"/": {
+											"type": "object",
+											"required": [
+												"enabled"
+											],
+											"properties": {
+												"enabled": {
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false
+										},
+										"admin": {
+											"type": "object",
+											"required": [
+												"enabled"
+											],
+											"properties": {
+												"enabled": {
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false
+										}
+									},
+									"additionalProperties": false
+								}
+							},
+							"additionalProperties": false
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"saved_error": {
+					"anyOf": [
+						{
+							"type": "string"
+						},
+						{
+							"type": "null"
+						}
+					]
+				},
+				"plugins": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			},
+			"additionalProperties": false
+		}
+	},
+	"title": "GET /api/config/get response",
+	"additionalProperties": false
+}

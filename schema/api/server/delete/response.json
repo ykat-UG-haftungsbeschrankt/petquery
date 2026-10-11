@@ -1,0 +1,22 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"required": [
+		"success",
+		"error"
+	],
+	"properties": {
+		"success": {
+			"type": "boolean",
+			"const": true
+		},
+		"error": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		}
+	},
+	"title": "DELETE /api/server/delete/:uuid response",
+	"additionalProperties": false
+}

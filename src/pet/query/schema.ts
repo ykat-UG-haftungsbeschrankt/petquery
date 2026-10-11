@@ -15,6 +15,7 @@ import type {
 
 export type {
 	Static as PetQuerySchemaStatic,
+	TProperties as PetQuerySchemaProperties,
 	TSchema as PetQuerySchemaType
 } from 'typebox';
 export type {Validator as PetQuerySchemaValidator} from 'typebox/compile';

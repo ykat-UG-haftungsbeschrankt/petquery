@@ -1,0 +1,36 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"required": [
+		"success",
+		"error",
+		"data"
+	],
+	"properties": {
+		"success": {
+			"type": "boolean",
+			"const": true
+		},
+		"error": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"data": {
+			"type": "object",
+			"required": [
+				"uuid"
+			],
+			"properties": {
+				"uuid": {
+					"type": "string",
+					"format": "uuid"
+				}
+			},
+			"additionalProperties": false
+		}
+	},
+	"title": "GET /api/ping/get response",
+	"additionalProperties": false
+}

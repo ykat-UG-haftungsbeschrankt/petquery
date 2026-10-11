@@ -34,27 +34,8 @@ export class PetQueryServerCallbackMergeRequestParams{
 			...req.query,
 			...req.body
 		};
-		const files = [];
-
-		for(const key of Object.keys(req.files || {})){
-			const file = req.files?.[key];
-			let fileArray:fileUpload.UploadedFile[];
-			if(PetQueryTypes.isArray(file)){
-				PetQueryAssert.assertArray(file);
-				fileArray = file;
-			}else{
-				fileArray = [file as UploadedFile];
-			}
-			for(const value of fileArray){
-				files.push(new PetQueryPluginQueryFile({
-					filename:value.name,
-					mime:value.mimetype,
-					data:value.data.toString('base64'),
-					size:value.size,
-					md5:value.md5
-				}));
-			}
-		}
+		const files =
+			PetQueryServerCallbackMergeRequestParams._getFiles(req.files);
 		req.petQueryPluginQuery = req.petQueryPluginQuery
 			?? new PetQueryPluginQuery({
 				 query:(PetQueryTypes.isString(query.query)
@@ -74,6 +55,35 @@ export class PetQueryServerCallbackMergeRequestParams{
 			});
 
 		next();
+	}
+
+	// Converts the uploads parsed by express-fileupload.
+	static _getFiles(
+		uploads:PetQueryServerRequest['files']
+	):Array<PetQueryPluginQueryFile>{
+		const files:Array<PetQueryPluginQueryFile> = [];
+
+		for(const key of Object.keys(uploads ?? {})){
+			const file = uploads?.[key];
+			let fileArray:fileUpload.UploadedFile[];
+			if(PetQueryTypes.isArray(file)){
+				PetQueryAssert.assertArray(file);
+				fileArray = file;
+			}else{
+				fileArray = [file as UploadedFile];
+			}
+			for(const value of fileArray){
+				files.push(new PetQueryPluginQueryFile({
+					filename:value.name,
+					mime:value.mimetype,
+					data:value.data.toString('base64'),
+					size:value.size,
+					md5:value.md5
+				}));
+			}
+		}
+
+		return files;
 	}
 
 	protected _parseTracerouteUuid(

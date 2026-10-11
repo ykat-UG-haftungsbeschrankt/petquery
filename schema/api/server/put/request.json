@@ -39,7 +39,5 @@
 			"additionalProperties": false
 		}
 	},
-	"title": "PUT /api/server/put/:uuid request",
-	"description": "URL path parameters, query string and JSON or form body.",
-	"additionalProperties": false
+	"title": "PUT /api/server/put/:uuid request"
 }
