@@ -3,10 +3,12 @@
 	"type": "module",
 	"main": "./dist/index.js",
 	"imports": {
-		"#petquery/*.js": "./dist/src/pet/query/*.js"
+		"#petquery/*.js": "./dist/src/pet/query/*.js",
+		"#schema/*.js": "./dist/schema/*.js"
 	},
 	"scripts": {
-		"build": "eslint . && tsc --project tsconfig.json && npm run build:gui",
+		"build": "eslint . && tsc --project tsconfig.json && npm run build:schema && npm run build:gui",
+		"build:schema": "node dist/schema/build.js",
 		"build:gui": "npm --prefix gui run build",
 		"dev:gui": "npm --prefix gui run dev",
 		"install:gui": "npm --prefix gui ci",
@@ -22,6 +24,7 @@
 		"mongodb": "^6.20.0",
 		"mysql2": "^3.24.5",
 		"mysql2-async": "^2.0.5",
+		"typebox": "^1.3.36",
 		"uuid": "^14.0.3"
 	},
 	"devDependencies": {

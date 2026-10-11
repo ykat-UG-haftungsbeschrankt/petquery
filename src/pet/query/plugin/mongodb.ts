@@ -8,6 +8,7 @@
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
 import {PetQueryResultData} from '#petquery/plugin/result.js';
+import {PetQueryResult} from '#petquery/result.js';
 import {PetQueryResultDataEntry} from '#petquery/plugin/result/entry.js';
 import {
 	Filter,
@@ -33,7 +34,7 @@ export class PetQueryPluginMongodb extends PetQueryPlugin{
 			}
 		};
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryResultData>{
+	override async query(query:PetQueryPluginQuery):Promise<PetQueryResult>{
 		const ret = [];
 
 		await this._db.connect();
@@ -48,6 +49,10 @@ export class PetQueryPluginMongodb extends PetQueryPlugin{
 			ret.push(PetQueryResultDataEntry.fromJson(row));
 		}
 
-		return new PetQueryResultData(ret);
+		return new PetQueryResult(
+			true,
+			[],
+			new PetQueryResultData(ret)
+		);
 	}
 };

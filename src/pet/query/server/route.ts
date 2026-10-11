@@ -22,44 +22,41 @@ export abstract class PetQueryServerRoute{
 
 	abstract register(app:Express.Express):void;
 
+	protected _getErrorMessage(error:unknown):utf8_t{
+		return error instanceof Error ? error.message : String(error);
+	}
+
 	async _query(
 		 query:PetQueryPluginQuery
 		,pluginFilter:Set<string>|null
 	):Promise<PetQueryResult>{
-		const result = new PetQueryResult(
-			true,
-			new Array<json_string_t>(),
-			new PetQueryResultData(new Array<PetQueryResultDataEntry>())
-		);
+		const config = this._server.getConfig();
 		const promises = [];
 		for(const plugin of this._server.getPlugins(pluginFilter)){
 			promises.push(plugin.query(query));
 		}
 		const settled = await Promise.allSettled(promises);
 
+		let success = true;
+		const error:Array<json_string_t> = [];
+		const data:Array<PetQueryResultDataEntry> = [];
 		for(const item of settled){
 			if('rejected' === item.status){
-				result.error.push(util.inspect(item.reason));
+				error.push(util.inspect(item.reason));
 				continue;
 			}
-			const data = item.value.getData().slice(
+			success = success && item.value.isSuccess();
+			error.push(...item.value.getError());
+			data.push(...item.value.getData().getData().slice(
 				0,
-				this._server.getConfig().max_results_per_module
-			);
-			result.data.push(
-				...data
-			);
+				config.max_results_per_module
+			));
 		}
 
-		result.data = result.data.slice(
-			0,
-			this._server.getConfig().max_results_total
-		);
-
 		return new PetQueryResult(
-			result.success,
-			result.error,
-			new PetQueryResultData(result.data)
+			success,
+			error,
+			new PetQueryResultData(data.slice(0,config.max_results_total))
 		);
 	}
 };

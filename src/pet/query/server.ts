@@ -29,7 +29,7 @@ export class PetQueryServer{
 	// Borrowed; its owner must call its destructor.
 	protected readonly _configFile:PetQueryServerConfig;
 
-	// uuid is this server's persistent identity, answered by /api/ping.
+	// uuid is this server's persistent identity, answered by /api/ping/get.
 	// configFile stores the values editable in the admin GUI.
 	constructor(
 		config:PetQueryConfigServerType,

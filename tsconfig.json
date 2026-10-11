@@ -4,7 +4,8 @@
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
 		"paths": {
-			"#petquery/*.js": ["./src/pet/query/*.ts"]
+			"#petquery/*.js": ["./src/pet/query/*.ts"],
+			"#schema/*.js": ["./schema/*.ts"]
 		},
 		"rootDir": ".",
 		"outDir": "dist",
@@ -20,6 +21,7 @@
 	"include": [
 		"index.ts",
 		"src/**/*.ts",
+		"schema/**/*.ts",
 		"examples/**/*.ts",
 		"types/**/*.d.ts"
 	],

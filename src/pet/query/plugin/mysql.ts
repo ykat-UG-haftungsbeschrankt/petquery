@@ -8,6 +8,7 @@
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
 import {PetQueryResultData} from '#petquery/plugin/result.js';
+import {PetQueryResult} from '#petquery/result.js';
 import {PetQueryResultDataEntry} from '#petquery/plugin/result/entry.js';
 import Mysql2Async, {
 	type DbConfig
@@ -58,7 +59,7 @@ export class PetQueryPluginMysql extends PetQueryPlugin{
 			,obj.toJson()
 		);
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryResultData>{
+	override async query(query:PetQueryPluginQuery):Promise<PetQueryResult>{
 		const ret = [];
 		const db = await this._getConnection();
 		const result = await db.getall<json_object_t>(
@@ -74,6 +75,10 @@ export class PetQueryPluginMysql extends PetQueryPlugin{
 			}));
 		}
 
-		return new PetQueryResultData(ret);
+		return new PetQueryResult(
+			true,
+			[],
+			new PetQueryResultData(ret)
+		);
 	}
 };

@@ -90,8 +90,8 @@ function getWarnings(values:ConfigValues,token:utf8_t):Array<utf8_t>{
 	}
 	if(!values.route.api.enabled){
 		ret.push(
-			'Disabling the API route also disables /api/config and'
-			+' /api/server. This page will stop working after a restart.'
+			'Disabling the API route also disables /api/config/* and'
+			+' /api/server/*. This page will stop working after a restart.'
 		);
 	}
 	if(!values.route.admin.enabled){

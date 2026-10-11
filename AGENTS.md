@@ -55,9 +55,31 @@
 - Prefer these specific aliases over primitive `number`, `boolean`, and `string`
   annotations. Reuse the global declarations rather than redeclaring them.
 - These aliases document intent but do not enforce integer ranges, widths,
-  encoding, or floating-point precision at runtime. Validate constraints when
-  needed; in particular, a `uint64_t` or `int64_t` alias does not make
-  JavaScript numbers exact beyond their safe integer range.
+  encoding, or floating-point precision at runtime. Validate constraints
+  where the runtime validation rules below require it; in particular, a
+  `uint64_t` or `int64_t` alias does not make JavaScript numbers exact beyond
+  their safe integer range.
+
+## Runtime validation
+
+- Prefer to perform runtime data validation only at trust boundaries, on
+  user input and external data. This includes:
+  - HTTP request parameters, query strings, bodies, headers, and uploaded
+    files.
+  - HTTP responses from peers, plugins, and other remote services.
+  - Database responses, configuration files, environment variables, and
+    other data read from disk or the network.
+- Validate this data once, where it enters the program, and convert it to
+  typed values (for example with `cast.ts`). Reject or report invalid data
+  through the existing error-handling mechanism.
+- Never use a type assertion such as `obj as Type` (or `<Type>obj`) to
+  convert values typed `unknown` or `any` at compile time. Use a runtime-safe type cast
+  method instead, such as a `cast.ts` parser, which checks the value at
+  runtime and returns the typed result or an error.
+- Do not re-validate data that the type system already guarantees, such as
+  arguments passed between internal functions, values already validated at a
+  boundary, or constants. Do not add defensive `typeof` or range checks for
+  internal calls.
 
 ## Lifecycle and cleanup
 

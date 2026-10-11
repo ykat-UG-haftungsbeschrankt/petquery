@@ -1,0 +1,45 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"required": [
+		"params",
+		"query",
+		"body"
+	],
+	"properties": {
+		"params": {
+			"type": "object",
+			"required": [
+				"uuid"
+			],
+			"properties": {
+				"uuid": {
+					"type": "string",
+					"format": "uuid"
+				}
+			},
+			"additionalProperties": false
+		},
+		"query": {
+			"type": "object",
+			"properties": {}
+		},
+		"body": {
+			"type": "object",
+			"required": [
+				"uri"
+			],
+			"properties": {
+				"uri": {
+					"type": "string",
+					"format": "uri",
+					"maxLength": 2048
+				}
+			},
+			"additionalProperties": false
+		}
+	},
+	"title": "PUT /api/server/put/:uuid request",
+	"description": "URL path parameters, query string and JSON or form body.",
+	"additionalProperties": false
+}

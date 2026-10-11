@@ -105,8 +105,8 @@ readable only by its owner and holds the bearer tokens.
 | `/` | — | HTML search page | `route["/"].enabled` |
 | `/json` | 🔐 | Merged results from **all** plugins | `route.json.enabled` |
 | `/api` | 🔐 | Results from **one** plugin only | `route.api.enabled` |
-| `/api/server` | 🔐 | Manage the server index (list and ping are public) | `route.api.enabled` |
-| `/api/config` | 🔐 | Read or save the editable config | `route.api.enabled` |
+| `/api/server/*` | 🔐 | Manage the server index (list and ping are public) | `route.api.enabled` |
+| `/api/config/*` | 🔐 | Read or save the editable config | `route.api.enabled` |
 | `/admin` | — | Admin GUI (see [Admin GUI](#admin-gui)) | `route.admin.enabled` |
 
 Every search endpoint accepts `GET` query strings, JSON or form `POST`
@@ -224,27 +224,32 @@ const response = await fetch('https://petquery.org/api', {
 console.log(await response.json());
 ```
 
-### `/api/server`: manage the server index
+### `/api/server/*`: manage the server index
 
 These routes manage the [persistent server index](#persistent-server-index).
 `GET` routes are public so that peers can sync; `PUT` and `DELETE` use the
-same authentication as `/api`.
+same authentication as `/api`. Each path names its HTTP method, and the
+request must use that method.
 
 | Method | Path | Body | Action |
 |---|---|---|---|
-| `GET` | `/api/ping` | — | Return this server's UUID as `data.uuid` |
-| `GET` | `/api/server` | — | List all servers |
-| `PUT` | `/api/server/:uuid` | `uri` (JSON or form) | Add or replace a server |
-| `DELETE` | `/api/server/:uuid` | — | Delete a server |
+| `GET` | `/api/ping/get` | — | Return this server's UUID as `data.uuid` |
+| `GET` | `/api/server/get` | — | List all servers |
+| `PUT` | `/api/server/put/:uuid` | `uri` (JSON or form) | Add or replace a server |
+| `DELETE` | `/api/server/delete/:uuid` | — | Delete a server |
 
 Responses are JSON with `success` and `error`; the list also has `data`, an
 array of `{uuid, uri}` objects. An invalid UUID or a missing or non-absolute
 URI returns `400`, and a database error returns `500`. Deleting a missing
 UUID succeeds.
 
+The request and response of `PUT /api/server/put/:uuid` are described as
+JSON Schema in [`schema/api/server/put/`](schema/api/server/put), see
+[Schemas](#schemas).
+
 ```js
 await fetch(
-	'https://petquery.org/api/server/550e8400-e29b-41d4-a716-446655440000',
+	'https://petquery.org/api/server/put/550e8400-e29b-41d4-a716-446655440000',
 	{
 		method: 'PUT',
 		headers: {
@@ -365,13 +370,13 @@ destruction reject. Keep the database directory outside the source tree.
 
 When `server_index.sync.enabled` is on, `PetQueryServerIndexSync` syncs the
 index at startup and then every `sync.interval` after the previous run ends.
-For each known server, it fetches `GET <uri>/api/server` and merges the
+For each known server, it fetches `GET <uri>/api/server/get` and merges the
 returned entries:
 
 - Entries with this server's own UUID, and entries already known with the
   same URI, are skipped.
 - Other entries must use `http` or `https`. Each is added, or replaces the
-  known URI, only if `GET <uri>/api/ping` answers with the same UUID.
+  known URI, only if `GET <uri>/api/ping/get` answers with the same UUID.
 - Unreachable servers and rejected entries are logged and skipped; nothing
   is deleted.
 
@@ -389,7 +394,8 @@ most `sync.max_servers` entries per peer. Peers need `route.api.enabled`.
 | Command | What it does |
 |---|---|
 | `npm start` | Build, then start the server |
-| `npm run build` | Lint, compile to `dist/`, then build the admin GUI |
+| `npm run build` | Lint, compile, write the schemas, build the admin GUI |
+| `npm run build:schema` | Write `schema/**/*.json` from the `.ts` schemas |
 | `npm run lint` | ESLint: unused code and copyright headers |
 | `npm run doc` | Generate the API documentation into `docs/` |
 | `npm run install:gui` | Install the admin GUI's dependencies |
@@ -398,6 +404,21 @@ most `sync.max_servers` entries per peer. Peers need `route.api.enabled`.
 
 Coding conventions, including one class per file, naming and the copyright
 header, are described in [`AGENTS.md`](AGENTS.md).
+
+### Schemas
+
+Request and response bodies are defined in [`schema/`](schema) with
+`PetQuerySchema`, a wrapper around
+[TypeBox](https://github.com/sinclairzx81/typebox).
+The path mirrors the route, for example
+`schema/api/server/put/request.ts` for `PUT /api/server/put/:uuid`.
+
+- Each `.ts` file exports a class with a static `schema`, a `parse()` that
+  returns the typed value or throws, and a `...Values` type. Import it with
+  `#schema/...`, for example `#schema/api/server/put/request.js`.
+- The `.json` files next to them are JSON Schema for clients in other
+  languages. They are generated; edit the `.ts` file and run
+  `npm run build:schema` (part of `npm run build`).
 
 ### Admin GUI
 
@@ -414,10 +435,10 @@ It has its own dependencies, so install them once with
 The GUI has two pages, selected from the menu:
 
 - **Config** edits the HTTP port, bearer tokens, result limits, file
-  upload, peer sync, routes and `/api` plugins. It calls `GET` and
-  `PUT /api/config`, which save to `config/server.json`. Changes apply
-  when the server restarts; until then, the page shows a pending-restart
-  notice.
+  upload, peer sync, routes and `/api` plugins. It calls
+  `GET /api/config/get` and `PUT /api/config/put`, which save to
+  `config/server.json`. Changes apply when the server restarts; until
+  then, the page shows a pending-restart notice.
 - **Servers** lists, adds, edits and deletes entries in the server index.
 
 The pages are public; listing servers needs no token. Viewing the config

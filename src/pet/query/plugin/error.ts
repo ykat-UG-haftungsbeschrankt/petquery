@@ -8,15 +8,20 @@
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
 import {PetQueryResultData} from '#petquery/plugin/result.js';
+import {PetQueryResult} from '#petquery/result.js';
 import {PetQueryPluginErrorConfig} from '#petquery/plugin/error/config.js';
 
 export class PetQueryPluginError extends PetQueryPlugin{
 	constructor(cfg:PetQueryPluginErrorConfig){
 		super('error',cfg);
 	}
-	override async query(UNUSED_query:PetQueryPluginQuery):Promise<PetQueryResultData>{
+	override async query(UNUSED_query:PetQueryPluginQuery):Promise<PetQueryResult>{
 
 		//throw new Error("1234");
-		return new PetQueryResultData([]);
+		return new PetQueryResult(
+			true,
+			[],
+			new PetQueryResultData([])
+		);
 	}
 };

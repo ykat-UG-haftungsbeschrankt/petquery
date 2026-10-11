@@ -23,6 +23,11 @@ import { PetQueryResult } from '#petquery/result.js';
 import {PetQueryServerConfig} from '#petquery/server/config.js';
 import type {PetQueryServerConfigValues} from
 	'#petquery/server/config.js';
+import {PetQuerySchemaApiServerPutRequest} from
+	'#schema/api/server/put/request.js';
+import {PetQuerySchemaApiServerPutResponse} from
+	'#schema/api/server/put/response.js';
+
 
 export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	register(app:Express.Express):void{
@@ -42,31 +47,34 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 			this._handle.bind(this)
 		);
 		app.get(
-			'/api/ping',
+			'/api/ping/get',
 			this._handlePing.bind(this)
 		);
 		// Public so that peers can sync their server index.
 		app.get(
-			'/api/server',
+			'/api/server/get',
 			this._handleListServer.bind(this)
 		);
 		app.put(
-			'/api/server/:uuid',
+			'/api/server/put/:uuid',
 			authenticate,
-			this._handleAddServer.bind(this)
+			PetQuerySchemaApiServerPutRequest._handle.bind(
+				this,
+				this._handleAddServer.bind(this)
+			)
 		);
 		app.delete(
-			'/api/server/:uuid',
+			'/api/server/delete/:uuid',
 			authenticate,
 			this._handleDeleteServer.bind(this)
 		);
 		app.get(
-			'/api/config',
+			'/api/config/get',
 			authenticate,
 			this._handleGetConfig.bind(this)
 		);
 		app.put(
-			'/api/config',
+			'/api/config/put',
 			authenticate,
 			this._handlePutConfig.bind(this)
 		);
@@ -127,10 +135,6 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		}
 	}
 
-	protected _getErrorMessage(error:unknown):utf8_t{
-		return error instanceof Error ? error.message : String(error);
-	}
-
 	protected _handlePing(
 		UNUSED_req:PetQueryServerRequest,
 		res:PetQueryServerResponse
@@ -160,28 +164,16 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	}
 
 	protected async _handleAddServer(
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		const uuid = this._getUuidParam(req);
-		const uri:unknown = req.body?.uri;
-		if(null === uuid){
-			this._sendServerError(res,400,'Invalid server UUID');
-			return;
-		}
-		if(!PetQueryTypes.isString(uri) || !URL.canParse(uri as string)){
-			this._sendServerError(res,400,'Invalid or missing server URI');
-			return;
-		}
-		try{
-			await this._server._getServerIndex().addServer(
-				uuid,
-				uri as uri_t
-			);
-			res.json({success:true,error:[]});
-		}catch(error){
-			this._sendServerError(res,500,error);
-		}
+		request:PetQuerySchemaApiServerPutRequest
+	):Promise<PetQuerySchemaApiServerPutResponse>{
+		await this._server._getServerIndex().addServer(
+			request.getUuid(),
+			request.getUri()
+		);
+		return new PetQuerySchemaApiServerPutResponse(
+			200,
+			{success:true,error:[]}
+		);
 	}
 
 	protected async _handleDeleteServer(

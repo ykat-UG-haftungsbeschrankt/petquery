@@ -14,7 +14,7 @@ export type ServerEntry = {
 };
 
 export async function ping():Promise<uuid_t>{
-	const data = await request('GET','/api/ping','',undefined);
+	const data = await request('GET','/api/ping/get','',undefined);
 	const uuid:unknown = isRecord(data) ? data.uuid : undefined;
 	if('string' !== typeof uuid){
 		throw new Error('Invalid ping response');
@@ -23,7 +23,7 @@ export async function ping():Promise<uuid_t>{
 }
 
 export async function listServers():Promise<Array<ServerEntry>>{
-	const data = await request('GET','/api/server','',undefined);
+	const data = await request('GET','/api/server/get','',undefined);
 	if(!Array.isArray(data)){
 		throw new Error('Invalid server list response');
 	}
@@ -44,14 +44,14 @@ export async function addServer(
 	uuid:uuid_t,
 	uri:uri_t
 ):Promise<void>{
-	await request('PUT',serverPath(uuid),token,{uri});
+	await request('PUT',serverPath('put',uuid),token,{uri});
 }
 
 export async function deleteServer(
 	token:utf8_t,
 	uuid:uuid_t
 ):Promise<void>{
-	await request('DELETE',serverPath(uuid),token,undefined);
+	await request('DELETE',serverPath('delete',uuid),token,undefined);
 }
 
 // Mirrors PetQueryServerConfigValues in src/pet/query/server/config.ts.
@@ -90,7 +90,7 @@ export type ConfigState = {
 
 // The server validates the response shape it produces, so it is trusted.
 export async function getConfig(token:utf8_t):Promise<ConfigState>{
-	const data = await request('GET','/api/config',token,undefined);
+	const data = await request('GET','/api/config/get',token,undefined);
 	if(!isRecord(data) || !isRecord(data.active)
 	|| !Array.isArray(data.plugins)){
 		throw new Error('Invalid config response');
@@ -111,15 +111,15 @@ export async function saveConfig(
 	token:utf8_t,
 	values:ConfigValues
 ):Promise<ConfigValues>{
-	const data = await request('PUT','/api/config',token,values);
+	const data = await request('PUT','/api/config/put',token,values);
 	if(!isRecord(data) || !isRecord(data.saved)){
 		throw new Error('Invalid save response');
 	}
 	return data.saved as ConfigValues;
 }
 
-function serverPath(uuid:uuid_t):utf8_t{
-	return `/api/server/${encodeURIComponent(uuid)}`;
+function serverPath(action:utf8_t,uuid:uuid_t):utf8_t{
+	return `/api/server/${action}/${encodeURIComponent(uuid)}`;
 }
 
 // Sends the request and returns the response's data field. Rejects with the

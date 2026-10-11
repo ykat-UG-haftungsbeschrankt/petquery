@@ -154,7 +154,7 @@ export class PetQueryServerIndexSync{
 	}
 
 	protected async _fetchServerList(uri:uri_t):Promise<Map<uuid_t,uri_t>>{
-		const json = await this._fetchJson(uri,'api/server');
+		const json = await this._fetchJson(uri,'api/server/get');
 		const ret = new Map<uuid_t,uri_t>();
 		if(!PetQueryTypes.isObject(json)){
 			throw new Error('Invalid server list response');
@@ -181,7 +181,7 @@ export class PetQueryServerIndexSync{
 	}
 
 	protected async _ping(uri:uri_t):Promise<uuid_t>{
-		const json = await this._fetchJson(uri,'api/ping');
+		const json = await this._fetchJson(uri,'api/ping/get');
 		const data:unknown = PetQueryTypes.isObject(json)
 			? (json as {data?:unknown}).data
 			: undefined;
