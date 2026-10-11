@@ -6,7 +6,10 @@
 		"#petquery/*.js": "./dist/src/pet/query/*.js"
 	},
 	"scripts": {
-		"build": "eslint . && tsc --project tsconfig.json",
+		"build": "eslint . && tsc --project tsconfig.json && npm run build:gui",
+		"build:gui": "npm --prefix gui run build",
+		"dev:gui": "npm --prefix gui run dev",
+		"install:gui": "npm --prefix gui ci",
 		"lint": "eslint .",
 		"doc": "typedoc",
 		"start": "npm run build && node dist/index.js"
@@ -15,6 +18,7 @@
 		"cast.ts": "^1.20.0",
 		"express": "^5.2.1",
 		"express-fileupload": "^1.5.2",
+		"lmdb": "^3.5.7",
 		"mongodb": "^6.20.0",
 		"mysql2": "^3.24.5",
 		"mysql2-async": "^2.0.5",

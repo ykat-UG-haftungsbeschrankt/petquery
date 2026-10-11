@@ -1,2 +1,4 @@
 /dist/
 /node_modules/
+/gui/node_modules/
+/var//config/

@@ -49,8 +49,9 @@ export class PetQueryServerRouteJson extends PetQueryServerRoute{
 				throw new Error(`Circular query detected`);
 			}
 
-			const result = await this._server._queryAll(
-				req.petQueryPluginQuery
+			const result = await this._query(
+				req.petQueryPluginQuery,
+				null
 			);
 			res.json(result.toJson());
 		}catch(error){

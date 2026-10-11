@@ -8,15 +8,11 @@
 import {default as Express} from 'express';
 import fileUpload from 'express-fileupload';
 import https from 'node:https';
-import util from 'node:util';
-import {v1 as uuidv1} from 'uuid';
 import {PetQueryPlugin} from '#petquery/plugin.js';
-import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import {PetQueryResultData} from '#petquery/plugin/result.js';
-import {PetQueryResultDataEntry} from '#petquery/plugin/result/entry.js';
-import {PetQueryResult} from '#petquery/result.js';
 import type {PetQueryConfigServerType} from '#petquery/config.js';
 import type {PetQueryServerRoute} from '#petquery/server/route.js';
+import type {PetQueryServerIndex} from '#petquery/server/index.js';
+import type {PetQueryServerConfig} from '#petquery/server/config.js';
 
 export type {
 	PetQueryServerRequest,
@@ -28,19 +24,38 @@ export class PetQueryServer{
 	protected readonly _app:Express.Express;
 	protected readonly _plugins:Map<string,PetQueryPlugin>;
 	protected readonly _uuid:uuid_t;
+	// Borrowed; its owner must call its destructor.
+	protected readonly _serverIndex:PetQueryServerIndex;
+	// Borrowed; its owner must call its destructor.
+	protected readonly _configFile:PetQueryServerConfig;
 
-	constructor(config:PetQueryConfigServerType){
+	// uuid is this server's persistent identity, answered by /api/ping.
+	// configFile stores the values editable in the admin GUI.
+	constructor(
+		config:PetQueryConfigServerType,
+		serverIndex:PetQueryServerIndex,
+		uuid:uuid_t,
+		configFile:PetQueryServerConfig
+	){
+		const upload = config.file.upload;
+
 		this._config = config;
+		this._serverIndex = serverIndex;
+		this._configFile = configFile;
 		this._app = Express();
 		this._app.use(Express.json());
 		this._app.use(Express.urlencoded());
-		if(this._config.file.upload){
-			this._app.use(fileUpload(
-				this._config.file.upload.options
-			));
+		if(upload.enabled){
+			this._app.use(fileUpload({
+				...upload.options,
+				limits:{
+					...upload.options.limits,
+					fileSize:upload.max_file_size
+				}
+			}));
 		}
 		this._plugins = new Map();
-		this._uuid = uuidv1();
+		this._uuid = uuid;
 	}
 	getConfig():PetQueryConfigServerType{
 		return this._config;
@@ -97,6 +112,14 @@ export class PetQueryServer{
 
 	_getUuid():uuid_t{
 		return this._uuid;
+	}
+
+	_getServerIndex():PetQueryServerIndex{
+		return this._serverIndex;
+	}
+
+	_getConfigFile():PetQueryServerConfig{
+		return this._configFile;
 	}
 
 	_getPlugin(name:string):PetQueryPlugin|undefined{

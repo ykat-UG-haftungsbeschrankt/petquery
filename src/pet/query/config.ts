@@ -40,7 +40,10 @@ function authenticate(
 
 const settings = {
 	server:{
-		http:{
+		// Values editable in the admin GUI, overriding the defaults below.
+		// Relative to the working directory; holds secrets, so not in git.
+		 config_file:'config/server.json' as filename_t
+		,http:{
 			port:50000 as port_t
 			,enabled:true
 		}
@@ -68,11 +71,9 @@ const settings = {
 		}
 		,file:{
 			upload:{
-				enabled:true,
-				options:{
-					limits:{
-						fileSize:10 * 1024 * 1024 // 10 MB
-					},
+				 enabled:true
+				,max_file_size:10 * 1024 * 1024 as uint_t // 10 MB
+				,options:{
 					abortOnLimit:true,
 					useTempFiles:false
 				} as fileUpload.Options
@@ -80,6 +81,21 @@ const settings = {
 		}
 		,max_results_per_module:10 as uint_t
 		,max_results_total:1000 as uint_t
+		,server_index:{
+			// LMDB environment directory, relative to the working directory.
+			 path:'var/lmdb' as filename_t
+			,name:'servers' as utf8_t
+			// Database in the same environment holding this server's UUID.
+			,settings_name:'settings' as utf8_t
+			,sync:{
+				 enabled:true
+				,interval:15 * 60 * 1000 as milliseconds_t
+				// Timeout of each request to a peer.
+				,timeout:5000 as milliseconds_t
+				// Maximum number of entries read from a peer's list.
+				,max_servers:1000 as uint_t
+			}
+		}
 		,route:{
 			api:{
 				 plugins:new Set<string>(['test'])
@@ -92,6 +108,11 @@ const settings = {
 			}
 			,"/":{
 				enabled:true
+			}
+			,admin:{
+				 enabled:true
+				// Build output of gui/, relative to the working directory.
+				,path:'dist/gui' as filename_t
 			}
 		}
 	}
@@ -217,5 +238,9 @@ export class PetQueryConfig{
 
 	static isPluginEnabled(name:string):boolean{
 		return settings.plugin.get(name)?.isEnabled() === true;
+	}
+
+	static getPluginNames():Array<utf8_t>{
+		return Array.from(settings.plugin.keys());
 	}
 }

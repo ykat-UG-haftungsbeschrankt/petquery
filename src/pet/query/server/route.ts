@@ -31,12 +31,6 @@ export abstract class PetQueryServerRoute{
 			new Array<json_string_t>(),
 			new PetQueryResultData(new Array<PetQueryResultDataEntry>())
 		);
-		// Overwrite with a mutable object for easier manipulation
-		const mutableResult = {
-			success:true,
-			error:new Array<json_string_t>(),
-			data:new Array<PetQueryResultDataEntry>()
-		};
 		const promises = [];
 		for(const plugin of this._server.getPlugins(pluginFilter)){
 			promises.push(plugin.query(query));

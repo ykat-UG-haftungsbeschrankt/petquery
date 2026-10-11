@@ -50,7 +50,7 @@ export class PetQueryServerRouteHtml extends PetQueryServerRoute{
 		}
 
 		const query = req.petQueryPluginQuery;
-		const result = await this._server._queryAll(query);
+		const result = await this._query(query,null);
 		const errors = result.getError().map(
 			(error)=>`<pre>${PetQueryLib.escapeHtml(
 				util.inspect(error)

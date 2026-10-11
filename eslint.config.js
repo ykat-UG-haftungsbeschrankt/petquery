@@ -47,10 +47,16 @@ const copyrightHeaderRule = {
 // the copyright header.
 export default tseslint.config(
 	{
-		ignores: ['dist/**', 'docs/**', 'node_modules/**', '**/.trash/**']
+		ignores: [
+			'dist/**',
+			'docs/**',
+			'node_modules/**',
+			'gui/node_modules/**',
+			'**/.trash/**'
+		]
 	},
 	{
-		files: ['**/*.ts'],
+		files: ['**/*.ts', '**/*.tsx'],
 		extends: [tseslint.configs.base],
 		plugins: {
 			petquery: {rules: {'copyright-header': copyrightHeaderRule}}
