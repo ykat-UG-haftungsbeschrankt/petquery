@@ -1,5 +1,13 @@
 # Coding conventions
 
+## Ignored directories
+
+- Ignore `.trash` directories and everything inside them. They hold archived
+  code that is no longer used.
+- Do not read, search, edit, refactor, lint, or validate files in `.trash`
+  directories, and exclude them from reviews, audits, and convention checks,
+  unless the user explicitly asks for a specific file there.
+
 ## Electron builds
 
 - When modifying source code, do not rebuild or package the Electron app unless
@@ -53,11 +61,11 @@
 
 ## Lifecycle and cleanup
 
-- Every Office class must provide a public `destructor()` method, even if it has
-  no resources to release. Override an inherited implementation when additional
-  cleanup is needed.
-- Explicitly invoke `destructor()` when an owned Office instance reaches the end
-  of its lifetime. JavaScript does not automatically call destructors when
+- Every PetQuery class must provide a public `destructor()` method, even if it
+  has no resources to release. Override an inherited implementation when
+  additional cleanup is needed.
+- Explicitly invoke `destructor()` when an owned PetQuery instance reaches the
+  end of its lifetime. JavaScript does not automatically call destructors when
   objects go out of scope.
 - Use `try/finally` for locally owned instances so cleanup runs on success and
   failure. For instances retained beyond the current scope, their owner must
@@ -67,8 +75,8 @@
   borrowed instances.
 - Destructors must never throw or return a rejected promise. Prefer a single
   `try` block around cleanup, followed by an empty `catch(UNUSED_e)` block,
-  matching the destructor in `OfficeAnimationEasing`. This is an explicit
-  exception to the general rule against swallowing errors.
+  matching the destructor in the example at the end of this file. This is an
+  explicit exception to the general rule against swallowing errors.
 - With this pattern, a failed cleanup step skips subsequent steps in the
   `try` block. Do not assume all resources are released after a failure.
 - If cleanup is asynchronous, return a promise from `destructor()` and await it.
@@ -91,16 +99,50 @@
 
 - Use `//` for inline comments, not `/* ... */`.
 
+## Copyright header
+
+- Start every TypeScript file (`.ts`, including `.d.ts`) with the following
+  header, exactly as shown, on the first line of the file. It is the only
+  permitted `/* ... */` comment.
+
+```ts
+/*
+ * Copyright (c) 2026 ykat UG (haftungsbeschraenkt) - All Rights Reserved
+ *
+ * Permission for non-commercial use is hereby granted,
+ * free of charge, without warranty of any kind.
+ */
+```
+
+- Follow the header with one blank line before the first import or
+  declaration. Add the header when creating a new file and keep it when
+  moving, renaming, or splitting files.
+
 ## Braces
 
 - Do not insert a space before an opening brace in declarations, methods, or
-  control-flow bodies. Use `interface OfficeDestructorInterface{`,
+  control-flow bodies. Use `interface PetQueryDestructorInterface{`,
   `if(condition){`, `else{`, `for(...){`, `while(condition){`, and `try{`
   rather than placing a space before `{`.
 - Never omit curly braces around control-flow bodies, including `if`, `else`,
   `for`, `for...in`, `for...of`, `while`, and `do...while`, even for a single
   statement.
   Use explicit blocks for arrow-function bodies as well.
+
+## Files and directory structure
+
+- Put each class, interface, and enum in its own file. Do not declare more
+  than one of them in the same file.
+- Derive the file path under `src/` from the declaration name: split the
+  PascalCase name into words, lowercase them, use every word except the last
+  as a directory, and use the last word as the file name. For example,
+  `PetQueryPlugin` belongs in `src/pet/query/plugin.ts`, and
+  `PetQueryPluginResultEntry` in `src/pet/query/plugin/result/entry.ts`.
+- Import modules under `src/pet/query/` through the `#petquery/` alias, for
+  example `#petquery/plugin/result/entry.js`.
+- A parent class and its children may coexist as a file and a directory with
+  the same name, for example `plugin/result.ts` for `PetQueryPluginResult` and
+  `plugin/result/entry.ts` for `PetQueryPluginResultEntry`.
 
 ## Classes and naming
 
@@ -114,8 +156,8 @@
   Use distinct, specifically typed methods for different value types, for
   example `setUtf8(str:utf8_t)` and `setUint8(num:uint8_t)`.
 - Use UpperCamelCase (PascalCase) for class, interface, and enum names, for
-  example `OfficeAnimation`, `OfficeAnimationOptions`, and
-  `OfficeExceptionCode`.
+  example `PetQueryPlugin`, `PetQueryPluginConfig`, and
+  `PetQueryPluginResultEntry`.
 - Use lowerCamelCase (camelCase) for class fields and methods, for example
   `frameCount` and `getValue()`. Internal members retain their leading
   underscore, for example `_frameCount` and `_onTimeout()`.
@@ -147,14 +189,26 @@
 Example:
 
 ```ts
-class Example{
-	protected readonly _timeout:OfficeTimeout;
+class PetQueryExample{
+	protected _timeout:NodeJS.Timeout|null;
 
 	constructor(){
-		this._timeout = new OfficeTimeout(this._onTimeout.bind(this),1000);
+		this._timeout = setTimeout(this._onTimeout.bind(this),1000);
+	}
+
+	destructor():void{
+		try{
+			if(null !== this._timeout){
+				clearTimeout(this._timeout);
+				this._timeout = null;
+			}
+		}
+		catch(UNUSED_e){
+		}
 	}
 
 	protected _onTimeout():void{
+		this._timeout = null;
 		// Handle the timeout.
 	}
 };

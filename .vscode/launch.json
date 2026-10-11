@@ -23,6 +23,23 @@
             "skipFiles": [
                 "<node_internals>/**"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Generate and Open Docs",
+            "program": "${workspaceFolder}/node_modules/typedoc/bin/typedoc",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "outputCapture": "std",
+            "serverReadyAction": {
+                "pattern": "html generated at",
+                "uriFormat": "file://${workspaceFolder}/doc/index.html",
+                "action": "openExternally"
+            },
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         }
     ]
 }

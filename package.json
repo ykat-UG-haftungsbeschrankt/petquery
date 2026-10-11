@@ -6,7 +6,9 @@
 		"#petquery/*.js": "./dist/src/pet/query/*.js"
 	},
 	"scripts": {
-		"build": "tsc --project tsconfig.json",
+		"build": "eslint . && tsc --project tsconfig.json",
+		"lint": "eslint .",
+		"doc": "typedoc",
 		"start": "npm run build && node dist/index.js"
 	},
 	"dependencies": {
@@ -22,6 +24,9 @@
 		"@types/express": "^5.0.6",
 		"@types/express-fileupload": "^1.5.1",
 		"@types/node": "^22.15.30",
-		"typescript": "^5.9.3"
+		"eslint": "^10.12.0",
+		"typedoc": "^0.28.20",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.71.1"
 	}
 }

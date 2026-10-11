@@ -1,4 +1,7 @@
-import {PetQueryPlugin, PetQueryPluginConfig, PetQueryPluginQuery, PetQueryPluginResult} from '#petquery/plugin.js';
+import {PetQueryPlugin} from '#petquery/plugin.js';
+import {PetQueryPluginConfig} from '#petquery/plugin/config.js';
+import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
+import {PetQueryPluginResult} from '#petquery/plugin/result.js';
 
 export class PetQueryPluginEuropetnetOrgConfig
 	extends PetQueryPluginConfig{

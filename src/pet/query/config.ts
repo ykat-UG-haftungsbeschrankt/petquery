@@ -1,14 +1,24 @@
-import {PetQueryPluginMongodbConfig} from '#petquery/plugin/mongodb/index.js';
-import { PetQueryPluginResultSource } from './plugin.js';
+/*
+ * Copyright (c) 2026 ykat UG (haftungsbeschraenkt) - All Rights Reserved
+ *
+ * Permission for non-commercial use is hereby granted,
+ * free of charge, without warranty of any kind.
+ */
+
+import {PetQueryPluginMongodbConfig} from '#petquery/plugin/mongodb/config.js';
+import {PetQueryPluginResultSource} from '#petquery/plugin/result/source.js';
 //import { PetQueryPluginEuropetnetOrgConfig } from './plugin/europetnet.org/index.js';
 import { PetQueryTypes } from './types.js';
-import { PetQueryPluginConfig } from './plugin.js';
-import type { PetQueryServerRequest, PetQueryServerResponse } from './server/index.js';
-import { PetQueryPluginPetqueryConfig } from './plugin/petquery/index.js';
-import { PetQueryPluginMysqlConfig } from './plugin/mysql/index.js';
-import { PetQueryPluginErrorConfig } from './plugin/error/index.js';
-import { PetQueryPluginTestConfig } from './plugin/test/index.js';
-import { PetQueryPluginAnimalidByConfig } from './plugin/animalid.by/index.js';
+import {PetQueryPluginConfig} from '#petquery/plugin/config.js';
+import type {PetQueryServerRequest} from '#petquery/server.js';
+import type {PetQueryServerResponse} from '#petquery/server.js';
+import {PetQueryPluginPetqueryConfig} from
+	'#petquery/plugin/petquery/config.js';
+import {PetQueryPluginMysqlConfig} from '#petquery/plugin/mysql/config.js';
+import {PetQueryPluginErrorConfig} from '#petquery/plugin/error/config.js';
+import {PetQueryPluginTestConfig} from '#petquery/plugin/test/config.js';
+import {PetQueryPluginAnimalidByConfig} from
+	'#petquery/plugin/animalid/by/config.js';
 import fileUpload from 'express-fileupload';
 import { PetQueryAssert } from './assert.js';
 
