@@ -6,7 +6,7 @@
  */
 
 import type {PetQueryResultDataSource} from
-	'#petquery/plugin/result/source.js';
+	'#petquery/result/data/source.js';
 
 export class PetQueryPluginConfig{
 	private _enabled:boolean;
@@ -29,5 +29,7 @@ export class PetQueryPluginConfig{
 	}
 	getSource():PetQueryResultDataSource{
 		return this._source;
+	}
+	destructor():void{
 	}
 };

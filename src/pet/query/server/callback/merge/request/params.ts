@@ -5,9 +5,8 @@
  * free of charge, without warranty of any kind.
  */
 
-import fileUpload, {UploadedFile} from 'express-fileupload';
+import type {UploadedFile} from 'express-fileupload';
 import {validate as uuidValidate} from 'uuid';
-import {PetQueryAssert} from '#petquery/assert.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
 import {PetQueryPluginQueryFile} from '#petquery/plugin/query/file.js';
 import {PetQueryTypes} from '#petquery/types.js';
@@ -65,13 +64,11 @@ export class PetQueryServerCallbackMergeRequestParams{
 
 		for(const key of Object.keys(uploads ?? {})){
 			const file = uploads?.[key];
-			let fileArray:fileUpload.UploadedFile[];
-			if(PetQueryTypes.isArray(file)){
-				PetQueryAssert.assertArray(file);
-				fileArray = file;
-			}else{
-				fileArray = [file as UploadedFile];
+			if(undefined === file){
+				throw new Error(`Uploaded file "${key}" is undefined`);
 			}
+			const fileArray:Array<UploadedFile> =
+				Array.isArray(file) ? file : [file];
 			for(const value of fileArray){
 				files.push(new PetQueryPluginQueryFile({
 					filename:value.name,
@@ -86,17 +83,20 @@ export class PetQueryServerCallbackMergeRequestParams{
 		return files;
 	}
 
+	destructor():void{
+	}
+
 	protected _parseTracerouteUuid(
 		tracerouteUuid:unknown
 	):Set<uuid_t>{
 		const ret = new Set<uuid_t>();
 		const hops = PetQueryTypes.isArray(tracerouteUuid)
-			? tracerouteUuid as unknown[]
+			? tracerouteUuid
 			: [];
 
 		for(const hop of hops){
-			if(PetQueryTypes.isString(hop) && uuidValidate(hop as string)){
-				ret.add(hop as uuid_t);
+			if(PetQueryTypes.isString(hop) && uuidValidate(hop)){
+				ret.add(hop);
 			}
 		}
 

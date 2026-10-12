@@ -8,16 +8,18 @@
 import type {PetQueryPluginConfig} from '#petquery/plugin/config.js';
 import type {PetQueryPluginQuery} from '#petquery/plugin/query.js';
 import type {PetQueryResultDataSource} from
-	'#petquery/plugin/result/source.js';
-import { PetQueryResult } from './result.js';
+	'#petquery/result/data/source.js';
+import {PetQueryResult} from '#petquery/result.js';
 
 export abstract class PetQueryPlugin{
-	private readonly _name:string;
-	private readonly _baseCfg:PetQueryPluginConfig;
+	protected readonly _name:string;
+	protected readonly _baseCfg:PetQueryPluginConfig;
+	protected _destructorPromise:Promise<void>|null;
 
 	constructor(name:string, cfg:PetQueryPluginConfig){
 		this._name = name;
 		this._baseCfg = cfg;
+		this._destructorPromise = null;
 	}
 	getName():string{
 		return this._name;
@@ -31,6 +33,16 @@ export abstract class PetQueryPlugin{
 	getSource():PetQueryResultDataSource{
 		return this._baseCfg.getSource();
 	}
+	destructor():Promise<void>{
+		if(null === this._destructorPromise){
+			this._destructorPromise = this._destroy();
+		}
+		return this._destructorPromise;
+	}
+
+	protected async _destroy():Promise<void>{
+	}
+
 	/**
 	 * @param {object} query Most likely you want to pass something like https://www.mongodb.com/docs/manual/tutorial/query-documents/
 	 * @return {object} example object in function body

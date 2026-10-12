@@ -7,9 +7,11 @@
 
 import type {default as Express} from 'express';
 import type {PetQueryPluginQuery} from '#petquery/plugin/query.js';
+import type {PetQueryServerAuthUser} from '#petquery/server/auth.js';
 
 export type PetQueryServerRequest = Express.Request & {
 	petQueryPluginQuery?:PetQueryPluginQuery;
+	petQueryUser?:PetQueryServerAuthUser;
 };
 export type PetQueryServerResponse = Express.Response;
 export type PetQueryServerNext = ()=>void;

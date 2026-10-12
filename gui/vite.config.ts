@@ -19,7 +19,9 @@ export default defineConfig({
 	server:{
 		// Forwards API calls to a locally running PetQuery server.
 		proxy:{
-			'/api':'http://127.0.0.1:50000'
+			'/api':'http://127.0.0.1:50000',
+			'/docs':'http://127.0.0.1:50000',
+			'/auth':'http://127.0.0.1:50000'
 		}
 	}
 });

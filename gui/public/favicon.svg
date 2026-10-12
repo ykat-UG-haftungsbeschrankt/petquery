@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"
+	width="64" height="64" role="img" aria-labelledby="title">
+	<title id="title">PetQuery</title>
+	<rect x="2" y="2" width="60" height="60" rx="18" fill="#0f2a43"/>
+	<circle cx="29" cy="29" r="16" fill="none" stroke="#5eead4"
+		stroke-width="6"/>
+	<path d="m42 42 13 13" fill="none" stroke="#fb7185"
+		stroke-linecap="round" stroke-width="7"/>
+	<circle cx="23" cy="23" r="4" fill="#fbbf24"/>
+	<circle cx="33" cy="22" r="4" fill="#fbbf24"/>
+	<circle cx="40" cy="30" r="4" fill="#fbbf24"/>
+	<path
+		d="M23 33c-5 0-8 4-8 8s3 6 7 6c3 0 5-2 7-2s4 2 7 2c4 0 7-2 7-6
+		s-3-8-8-8c-3 0-5 2-6 2s-3-2-6-2Z"
+		fill="#fb7185"/>
+</svg>

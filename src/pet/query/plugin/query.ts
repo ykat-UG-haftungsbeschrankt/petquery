@@ -66,17 +66,15 @@ export class PetQueryPluginQuery{
 	isIframe():boolean{
 		return this._iframe;
 	}
-	toJson(){
+	toJson():json_object_t{
+		const files:json_array_t = [];
+		for(const file of this._files){
+			files.push(file.toJson());
+		}
 		return {
 			query: this._query,
 			bearer: this._bearer,
-			files: this._files.map(file => ({
-				filename: file.getFilename(),
-				mime: file.getMime(),
-				size: file.getSize(),
-				data: file.getData(),
-				md5: file.getMd5()
-			})),
+			files,
 			iframe: this._iframe,
 			serverUuid: this._serverUuid,
 			tracerouteUuid: [...this._tracerouteUuid]
@@ -92,5 +90,7 @@ export class PetQueryPluginQuery{
 			,serverUuid:obj.serverUuid
 			,tracerouteUuid:new Set(obj.tracerouteUuid)
 		});
+	}
+	destructor():void{
 	}
 };

@@ -82,7 +82,8 @@ function formatBytes(bytes:uint_t):utf8_t{
 function getWarnings(values:ConfigValues,token:utf8_t):Array<utf8_t>{
 	const ret:Array<utf8_t> = [];
 
-	if(!values.authenticate.bearer.includes(token)){
+	if('bearer' === values.authenticate.mode
+	&& !values.authenticate.bearer.includes(token)){
 		ret.push(
 			'The token you are using is not in the list. After a restart'
 			+' it no longer gives access to this page.'
@@ -142,6 +143,26 @@ function checkboxField(
 				}}
 			/>
 			{label}
+		</label>
+	);
+}
+
+function textField(
+	label:utf8_t,
+	value:utf8_t,
+	onChange:(value:utf8_t)=>void,
+	type:'text'|'password' = 'text'
+):ReactElement{
+	return (
+		<label className="field">
+			<span>{label}</span>
+			<input
+				type={type}
+				value={value}
+				onChange={(event)=>{
+					onChange(event.target.value);
+				}}
+			/>
 		</label>
 	);
 }
@@ -303,11 +324,214 @@ export function Config(props:{token:utf8_t}):ReactElement{
 
 				<section>
 					<h2>Bearer tokens</h2>
-					<p className="muted">
+					<div className="auth-fields">
 						Clients send one of these as
+						{' '}<code>Authorization: ******;token&gt;</code>.
+						At least 16 printable characters, no spaces.
+					<label className="field">
+							<span>Provider</span>
+							<select
+								value={form.authenticate.mode}
+								onChange={(event)=>{
+									const value = event.target.value;
+									if(value === 'bearer'
+									|| value === 'lmdb'
+									|| value === 'ldap'
+									|| value === 'oidc'){
+										edit((draft)=>{
+											draft.authenticate.mode = value;
+										});
+									}
+								}}
+							>
+								<option value="bearer">Bearer tokens</option>
+								<option value="lmdb">LMDB users</option>
+								<option value="ldap">LDAP</option>
+								<option value="oidc">OpenID Connect</option>
+							</select>
+						</label>
+						{checkboxField(
+							'Secure session cookie',
+							form.authenticate.session.secure,
+							(value)=>{
+								edit((draft)=>{
+									draft.authenticate.session.secure = value;
+								});
+							}
+						)}
+						{textField(
+							'Session cookie name',
+							form.authenticate.session.cookie_name,
+							(value)=>{
+								edit((draft)=>{
+									draft.authenticate.session.cookie_name =
+										value;
+								});
+							}
+						)}
+						{numberField(
+							'Session lifetime (ms)',
+							form.authenticate.session.max_age,
+							60000,
+							2147483647,
+							formatMs(form.authenticate.session.max_age),
+							(value)=>{
+								edit((draft)=>{
+									draft.authenticate.session.max_age =
+										value;
+								});
+							}
+						)}
+						{'lmdb' === form.authenticate.mode && <>
+							{textField(
+								'Users database',
+								form.authenticate.lmdb.users_name,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.lmdb.users_name =
+											value;
+									});
+								}
+							)}
+							{textField(
+								'Sessions database',
+								form.authenticate.lmdb.sessions_name,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.lmdb
+											.sessions_name = value;
+									});
+								}
+							)}
+						</>}
+						{'ldap' === form.authenticate.mode && <>
+							{textField(
+								'LDAP URL',
+								form.authenticate.ldap.url,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.ldap.url = value;
+									});
+								}
+							)}
+							{textField(
+								'Bind DN',
+								form.authenticate.ldap.bind_dn,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.ldap.bind_dn =
+											value;
+									});
+								}
+							)}
+							{textField(
+								'Bind password',
+								form.authenticate.ldap.bind_password,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.ldap
+											.bind_password = value;
+									});
+								},
+								'password'
+							)}
+							{textField(
+								'User base DN',
+								form.authenticate.ldap.base_dn,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.ldap.base_dn =
+											value;
+									});
+								}
+							)}
+							{textField(
+								'User filter',
+								form.authenticate.ldap.user_filter,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.ldap.user_filter =
+											value;
+									});
+								}
+							)}
+							{textField(
+								'Admin group',
+								form.authenticate.ldap.admin_group,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.ldap.admin_group =
+											value;
+									});
+								}
+							)}
+						</>}
+						{'oidc' === form.authenticate.mode && <>
+							{textField(
+								'Issuer',
+								form.authenticate.oidc.issuer,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.oidc.issuer =
+											value;
+									});
+								}
+							)}
+							{textField(
+								'Client ID',
+								form.authenticate.oidc.client_id,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.oidc.client_id =
+											value;
+									});
+								}
+							)}
+							{textField(
+								'Client secret',
+								form.authenticate.oidc.client_secret,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.oidc
+											.client_secret = value;
+									});
+								},
+								'password'
+							)}
+							{textField(
+								'Redirect URI',
+								form.authenticate.oidc.redirect_uri,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.oidc
+											.redirect_uri = value;
+									});
+								}
+							)}
+							{textField(
+								'Scopes',
+								form.authenticate.oidc.scopes,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.oidc.scopes =
+											value;
+									});
+								}
+							)}
+							{textField(
+								'Admin group',
+								form.authenticate.oidc.admin_group,
+								(value)=>{
+									edit((draft)=>{
+										draft.authenticate.oidc.admin_group =
+											value;
+									});
+								}
+							)}
+						</>}
 						{' '}<code>Authorization: Bearer &lt;token&gt;</code>.
 						At least 16 printable characters, no spaces.
-					</p>
+					</div>
 					{form.authenticate.bearer.map((value,index)=>{
 						return (
 							<div className="row" key={index}>
@@ -425,6 +649,19 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						(value)=>{
 							edit((draft)=>{
 								draft.server_index.sync.max_servers = value;
+							});
+						}
+					)}
+				</section>
+
+				<section>
+					<h2>Pets database</h2>
+					{textField(
+						'LMDB database name',
+						form.pet_database.name,
+						(value)=>{
+							edit((draft)=>{
+								draft.pet_database.name = value;
 							});
 						}
 					)}

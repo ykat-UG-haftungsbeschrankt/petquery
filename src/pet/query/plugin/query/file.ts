@@ -59,6 +59,15 @@ export class PetQueryPluginQueryFile{
 	getMd5():md5_hex_string_t{
 		return this._md5;
 	}
+	toJson():json_object_t{
+		return {
+			 filename:this._filename
+			,mime:this._mime
+			,size:this._size
+			,data:this._data
+			,md5:this._md5
+		};
+	}
 	static fromJson(json:unknown):PetQueryPluginQueryFile{
 		return PetQueryPluginQueryFile._parse(json);
 	}
@@ -74,5 +83,7 @@ export class PetQueryPluginQueryFile{
 		return new PetQueryPluginQueryFile(
 			PetQueryPluginQueryFile._parser.randomSample()
 		);
+	}
+	destructor():void{
 	}
 };

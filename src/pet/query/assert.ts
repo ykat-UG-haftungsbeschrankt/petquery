@@ -23,4 +23,6 @@ export class PetQueryAssert{
 			throw new Error(`Value is not an instance of ${ctor.name}`);
 		}
 	}
+	destructor():void{
+	}
 };

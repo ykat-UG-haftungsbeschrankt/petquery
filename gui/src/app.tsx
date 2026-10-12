@@ -6,86 +6,217 @@
  */
 
 import {useEffect, useState} from 'react';
-import type {ChangeEvent, MouseEvent, ReactElement} from 'react';
-import {Config} from './config';
-import {Servers} from './servers';
+import type {MouseEvent, ReactElement} from 'react';
+import {
+	authenticate,
+	getAuthMode,
+	getSession,
+	loginUser,
+	logout
+} from './api';
+import type {AuthMode, AuthUser} from './api';
+import {Admin} from './admin';
+import {Docs} from './docs';
+import {Login} from './login';
+import {Search} from './search';
 
-// The token is kept for the browser tab only.
 const TOKEN_KEY = 'petquery.admin.token';
+const LOGO_URL:utf8_t = `${import.meta.env.BASE_URL}logo.svg`;
 
-type Page = 'servers'|'config';
+type Page = 'search'|'docs'|'admin';
 
 const PAGES:Array<{page:Page;label:utf8_t}> = [
-	{page:'config',label:'Config'},
-	{page:'servers',label:'Servers'}
+	{page:'search',label:'Home'},
+	{page:'docs',label:'Docs'},
+	{page:'admin',label:'Admin'}
 ];
 
-function readToken():utf8_t{
-	return sessionStorage.getItem(TOKEN_KEY) ?? '';
-}
-
-// Pages are addressed as /admin/<page>, which the server answers with
-// index.html. Anything else shows the servers page.
 function readPage():Page{
 	const base = import.meta.env.BASE_URL;
 	const path = window.location.pathname;
-	const name = path.startsWith(base) ? path.slice(base.length) : '';
-
-	return 'config' === name ? 'config' : 'servers';
+	const parts = path.startsWith(base)
+		? path.slice(base.length).split('/')
+		: [];
+	const name = parts[0];
+	if('admin' === name && 'search' === parts[1]){
+		return 'search';
+	}
+	if('docs' === name){
+		return 'docs';
+	}
+	if('admin' === name
+	|| 'config' === name
+	|| 'servers' === name){
+		return 'admin';
+	}
+	if('search' === name){
+		return 'search';
+	}
+	return 'search';
 }
 
-function pageUrl(page:Page):utf8_t{
-	return `${import.meta.env.BASE_URL}${page}`;
+function pageUrl(page:Page,user:AuthUser|null):utf8_t{
+	const base = import.meta.env.BASE_URL;
+	if('search' === page){
+		return `${base}search`;
+	}
+	if('admin' === page){
+		const section = null !== user && 'user' === user.group
+			? 'pets'
+			: 'config';
+		return `${base}admin/${section}`;
+	}
+	return `${base}${page}`;
 }
 
 export function App():ReactElement{
-	const [token,setToken] = useState<utf8_t>(readToken);
 	const [page,setPage] = useState<Page>(readPage);
+	const [mode,setMode] = useState<AuthMode>('bearer');
+	const [token,setToken] = useState<utf8_t>('');
+	const [user,setUser] = useState<AuthUser|null>(null);
+	const [checking,setChecking] = useState<bool_t>(true);
+	const [authError,setAuthError] = useState<utf8_t|null>(null);
 
 	useEffect(()=>{
-		function onPopState():void{
-			setPage(readPage());
+		const stored = sessionStorage.getItem(TOKEN_KEY) ?? '';
+		let active = true;
+		async function restoreSession():Promise<void>{
+			const nextMode = await getAuthMode();
+			if(!active){
+				return;
+			}
+			setMode(nextMode);
+			const session = await getSession();
+			if(null !== session){
+				setUser(session);
+				return;
+			}
+			if('bearer' === nextMode && '' !== stored){
+				await authenticate(stored);
+				setToken(stored);
+				setUser({
+					username:'bearer',
+					displayName:'Bearer token',
+					group:'admin',
+					provider:'bearer'
+				});
+			}
 		}
-
-		window.addEventListener('popstate',onPopState);
+		restoreSession().catch(()=>{
+			if(active){
+				sessionStorage.removeItem(TOKEN_KEY);
+				setAuthError('Your saved session has expired.');
+			}
+		}).finally(()=>{
+			if(active){
+				setChecking(false);
+			}
+		});
 		return ()=>{
-			window.removeEventListener('popstate',onPopState);
+			active = false;
 		};
 	},[]);
 
-	function onNavigate(event:MouseEvent<HTMLAnchorElement>,next:Page):void{
-		// Let the browser handle opening the page in a new tab or window.
+	function onNavigate(
+		event:MouseEvent<HTMLAnchorElement>,
+		next:Page
+	):void{
 		if(event.ctrlKey || event.metaKey || event.shiftKey
 		|| 0 !== event.button){
 			return;
 		}
 		event.preventDefault();
 		if(next !== page){
-			window.history.pushState(null,'',pageUrl(next));
+			window.history.pushState(null,'',pageUrl(next,user));
 			setPage(next);
 		}
 	}
 
-	function onTokenChange(event:ChangeEvent<HTMLInputElement>):void{
-		setToken(event.target.value);
-		sessionStorage.setItem(TOKEN_KEY,event.target.value);
+	async function onLogin(credentials:{
+		username:utf8_t;
+		password:utf8_t;
+		token:utf8_t;
+	}):Promise<void>{
+		if('bearer' === mode){
+			await authenticate(credentials.token);
+			sessionStorage.setItem(TOKEN_KEY,credentials.token);
+			setToken(credentials.token);
+			setUser({
+				username:'bearer',
+				displayName:'Bearer token',
+				group:'admin',
+				provider:'bearer'
+			});
+		}else{
+			setUser(await loginUser(
+				credentials.username,
+				credentials.password
+			));
+		}
+		setAuthError(null);
 	}
 
-	function onForgetToken():void{
-		setToken('');
+	function onLogout():void{
+		logout().then(
+			()=>clearSession(),
+			()=>clearSession()
+		);
+	}
+
+	function clearSession():void{
 		sessionStorage.removeItem(TOKEN_KEY);
+		setToken('');
+		setUser(null);
+		setAuthError(null);
+	}
+
+	function pageUrlWithUser(next:Page):utf8_t{
+		return pageUrl(next,user);
+	}
+
+	let content:ReactElement;
+	if('docs' === page){
+		content = <Docs/>;
+	}else if(checking){
+		content = (
+			<section className="login-card">
+				<p className="muted">Checking your session...</p>
+			</section>
+		);
+	}else if(null === user){
+		content = (
+			<Login
+				mode={mode}
+				error={authError}
+				onLogin={onLogin}
+			/>
+		);
+	}else if('search' === page){
+		content = <Search token={token}/>;
+	}else{
+		content = <Admin token={token} user={user}/>;
 	}
 
 	return (
 		<>
 			<header>
-				<h1>PetQuery Admin</h1>
-				<nav>
+				<h1 className="brand">
+					<a
+						className="brand-link"
+						href={pageUrlWithUser('search')}
+						onClick={(event)=>{
+							onNavigate(event,'search');
+						}}
+					>
+						<img src={LOGO_URL} alt="PetQuery"/>
+					</a>
+				</h1>
+				<nav aria-label="Primary navigation">
 					{PAGES.map((entry)=>{
 						return (
 							<a
 								key={entry.page}
-								href={pageUrl(entry.page)}
+								href={pageUrlWithUser(entry.page)}
 								aria-current={
 									entry.page === page ? 'page' : undefined
 								}
@@ -98,25 +229,25 @@ export function App():ReactElement{
 						);
 					})}
 				</nav>
-				<div className="token-box">
-					<input
-						type="password"
-						autoComplete="off"
-						placeholder="Bearer token"
-						aria-label="Bearer token"
-						value={token}
-						onChange={onTokenChange}
-					/>
-					<button type="button" onClick={onForgetToken}>
-						Forget
-					</button>
+				<div className="auth-controls">
+					{checking
+						? <span className="auth-state">Checking...</span>
+						: null !== user
+							? <>
+								<span className="auth-state">
+									{user.displayName}
+								</span>
+								<button
+									type="button"
+									onClick={onLogout}
+								>
+									Sign out
+								</button>
+							</>
+							: <span className="auth-state">Public</span>}
 				</div>
 			</header>
-			<main>
-				{'config' === page
-					? <Config token={token}/>
-					: <Servers token={token}/>}
-			</main>
+			<main>{content}</main>
 		</>
 	);
 }

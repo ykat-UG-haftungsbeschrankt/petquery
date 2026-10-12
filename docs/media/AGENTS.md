@@ -55,9 +55,31 @@
 - Prefer these specific aliases over primitive `number`, `boolean`, and `string`
   annotations. Reuse the global declarations rather than redeclaring them.
 - These aliases document intent but do not enforce integer ranges, widths,
-  encoding, or floating-point precision at runtime. Validate constraints when
-  needed; in particular, a `uint64_t` or `int64_t` alias does not make
-  JavaScript numbers exact beyond their safe integer range.
+  encoding, or floating-point precision at runtime. Validate constraints
+  where the runtime validation rules below require it; in particular, a
+  `uint64_t` or `int64_t` alias does not make JavaScript numbers exact beyond
+  their safe integer range.
+
+## Runtime validation
+
+- Prefer to perform runtime data validation only at trust boundaries, on
+  user input and external data. This includes:
+  - HTTP request parameters, query strings, bodies, headers, and uploaded
+    files.
+  - HTTP responses from peers, plugins, and other remote services.
+  - Database responses, configuration files, environment variables, and
+    other data read from disk or the network.
+- Validate this data once, where it enters the program, and convert it to
+  typed values (for example with `cast.ts`). Reject or report invalid data
+  through the existing error-handling mechanism.
+- Never use a type assertion such as `obj as Type` (or `<Type>obj`) to
+  convert values typed `unknown` or `any` at compile time. Use a runtime-safe type cast
+  method instead, such as a `cast.ts` parser, which checks the value at
+  runtime and returns the typed result or an error.
+- Do not re-validate data that the type system already guarantees, such as
+  arguments passed between internal functions, values already validated at a
+  boundary, or constants. Do not add defensive `typeof` or range checks for
+  internal calls.
 
 ## Lifecycle and cleanup
 
@@ -143,6 +165,18 @@
 - A parent class and its children may coexist as a file and a directory with
   the same name, for example `plugin/result.ts` for `PetQueryPluginResult` and
   `plugin/result/entry.ts` for `PetQueryPluginResultEntry`.
+
+## Admin GUI
+
+- The admin GUI lives in `gui/`, a separate Vite + React project with its own
+  `package.json` and `tsconfig.json`. `PetQueryServerRouteAdmin` serves its
+  build output at `/admin`. Do not import server code from `gui/`, or GUI
+  code from `src/`; the GUI talks to the server only through `/api/...`
+  routes.
+- The other conventions in this file apply to `gui/`, except the rules for
+  classes: write React function components and hooks rather than classes.
+  Name each component file after its component in lowercase, for example
+  `App` in `gui/src/app.tsx`.
 
 ## Classes and naming
 

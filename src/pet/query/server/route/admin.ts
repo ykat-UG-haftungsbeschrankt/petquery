@@ -10,6 +10,7 @@ import path from 'node:path';
 import type {ServerResponse} from 'node:http';
 import {PetQueryServerRoute} from '#petquery/server/route.js';
 import type {PetQueryServer} from '#petquery/server.js';
+import {_isNodeErrorCode} from '#petquery/server/config.js';
 import type {
 	PetQueryServerRequest,
 	PetQueryServerResponse
@@ -30,6 +31,7 @@ export class PetQueryServerRouteAdmin extends PetQueryServerRoute{
 			return;
 		}
 		app.use('/admin',this._setSecurityHeaders.bind(this));
+		app.use('/admin',this._authorizePage.bind(this));
 		app.use('/admin',Express.static(this._root,{
 			index:false,
 			setHeaders:this._setStaticHeaders.bind(this)
@@ -40,7 +42,7 @@ export class PetQueryServerRouteAdmin extends PetQueryServerRoute{
 		);
 	}
 
-	destructor():void{
+	override destructor():void{
 	}
 
 	protected _setSecurityHeaders(
@@ -71,6 +73,42 @@ export class PetQueryServerRouteAdmin extends PetQueryServerRoute{
 		}
 	}
 
+	protected async _authorizePage(
+		req:PetQueryServerRequest,
+		res:PetQueryServerResponse,
+		next:Express.NextFunction
+	):Promise<void>{
+		if('' !== path.extname(req.path)
+		|| req.path.startsWith('/assets/')
+		|| '/login' === req.path){
+			next();
+			return;
+		}
+		const section = this._getAdminSection(req.path);
+		if(null === section || 'search' === section || 'docs' === section){
+			next();
+			return;
+		}
+		if('pets' === section){
+			await this._server._authenticateUser(req,res,next);
+			return;
+		}
+		await this._server._authenticateAdmin(req,res,next);
+	}
+
+	protected _getAdminSection(urlPath:utf8_t):utf8_t|null{
+		const parts = urlPath.split('/').filter((part)=>{
+			return '' !== part;
+		});
+		if(0 === parts.length){
+			return null;
+		}
+		if('admin' === parts[0] && undefined !== parts[1]){
+			return parts[1];
+		}
+		return parts[0];
+	}
+
 	// Serves index.html for client-side routes. A missing file with an
 	// extension falls through to a 404 instead.
 	protected _handleIndex(
@@ -98,7 +136,7 @@ export class PetQueryServerRouteAdmin extends PetQueryServerRoute{
 			return;
 		}
 		if(!res.headersSent
-		&& 'ENOENT' === (error as NodeJS.ErrnoException).code){
+		&& _isNodeErrorCode(error,'ENOENT')){
 			res.status(503);
 			res.type('text/plain');
 			res.send('Admin GUI is not built; run npm run build:gui');

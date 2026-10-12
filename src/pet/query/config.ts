@@ -5,22 +5,25 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQueryPluginMongodbConfig} from '#petquery/plugin/mongodb/config.js';
-import {PetQueryResultDataSource} from '#petquery/plugin/result/source.js';
+import {PetQuery3pPluginMongodbConfig} from
+	'#petquery/3p/plugin/mongodb/config.js';
+import {PetQueryResultDataSource} from '#petquery/result/data/source.js';
 //import { PetQueryPluginEuropetnetOrgConfig } from './plugin/europetnet.org/index.js';
 import { PetQueryTypes } from './types.js';
 import {PetQueryPluginConfig} from '#petquery/plugin/config.js';
 import type {PetQueryServerRequest} from '#petquery/server.js';
 import type {PetQueryServerResponse} from '#petquery/server.js';
-import {PetQueryPluginPetqueryConfig} from
-	'#petquery/plugin/petquery/config.js';
-import {PetQueryPluginMysqlConfig} from '#petquery/plugin/mysql/config.js';
-import {PetQueryPluginErrorConfig} from '#petquery/plugin/error/config.js';
-import {PetQueryPluginTestConfig} from '#petquery/plugin/test/config.js';
-import {PetQueryPluginAnimalidByConfig} from
-	'#petquery/plugin/animalid/by/config.js';
+import {PetQuery3pPluginPetqueryConfig} from
+	'#petquery/3p/plugin/petquery/config.js';
+import {PetQuery3pPluginMysqlConfig} from
+	'#petquery/3p/plugin/mysql/config.js';
+import {PetQuery3pPluginErrorConfig} from
+	'#petquery/3p/plugin/error/config.js';
+import {PetQuery3pPluginTestConfig} from
+	'#petquery/3p/plugin/test/config.js';
+import {PetQuery3pPluginAnimalidConfig} from
+	'#petquery/3p/plugin/animalid/config.js';
 import fileUpload from 'express-fileupload';
-import { PetQueryAssert } from './assert.js';
 
 //const { authenticate_api } = require('express-oauth2-jwt-bearer');
 //const { authenticate_json } = require('express-oauth2-jwt-bearer');
@@ -56,8 +59,9 @@ const settings = {
 			}
 		}
 		,authenticate:{
-			bearer:new Set<string>([
-				'75258ce9e0a7e751ce4e78cf20dd3f8f'
+			 mode:'bearer' as 'bearer'|'lmdb'|'ldap'|'oidc'
+			,bearer:new Set<string>([
+				 '75258ce9e0a7e751ce4e78cf20dd3f8f'
 				,'c815512c071af26c864e6af29c2e2080'
 				,'7b6795176a5b09bd80c4ec5ea6f7da6e'
 				,'6d2d50aadc7004131b2992c9df88b1cf'
@@ -68,6 +72,31 @@ const settings = {
 				,'99a7f89c23149355077b0e07e6ee4ac8'
 				,'f3dea1c3d8cd3faab10750fc96b2a5da'
 			])
+			,session:{
+				 cookie_name:'petquery_session' as utf8_t
+				,max_age:8 * 60 * 60 * 1000 as milliseconds_t
+				,secure:false
+			}
+			,lmdb:{
+				 users_name:'users' as utf8_t
+				,sessions_name:'sessions' as utf8_t
+			}
+			,ldap:{
+				 url:'' as uri_t
+				,bind_dn:'' as utf8_t
+				,bind_password:'' as utf8_t
+				,base_dn:'' as utf8_t
+				,user_filter:'(uid={{username}})' as utf8_t
+				,admin_group:'admin' as utf8_t
+			}
+			,oidc:{
+				 issuer:'' as uri_t
+				,client_id:'' as utf8_t
+				,client_secret:'' as utf8_t
+				,redirect_uri:'' as uri_t
+				,scopes:'openid profile email groups' as utf8_t
+				,admin_group:'admin' as utf8_t
+			}
 		}
 		,file:{
 			upload:{
@@ -96,6 +125,9 @@ const settings = {
 				,max_servers:1000 as uint_t
 			}
 		}
+		,pet_database:{
+			name:'pets' as utf8_t
+		}
 		,route:{
 			api:{
 				 plugins:new Set<string>(['test'])
@@ -117,7 +149,7 @@ const settings = {
 		}
 	}
 	,plugin:new Map<string,PetQueryPluginConfig>([
-		["animalid.by",new PetQueryPluginAnimalidByConfig(
+		["animalid.by",new PetQuery3pPluginAnimalidConfig(
 			{
 				enabled:false,
 				timeout:5000,
@@ -139,7 +171,7 @@ const settings = {
 				})
 			}
 		)]*/
-		,["test",new PetQueryPluginTestConfig(
+		,["test",new PetQuery3pPluginTestConfig(
 			{
 				enabled:false,
 				timeout:5000,
@@ -153,7 +185,7 @@ const settings = {
 				ain:'1234'
 			}
 		)]
-		,["error",new PetQueryPluginErrorConfig(
+		,["error",new PetQuery3pPluginErrorConfig(
 			{
 				enabled:false,
 				timeout:5000,
@@ -164,7 +196,7 @@ const settings = {
 				})
 			}
 		)]
-		,["mongodb",new PetQueryPluginMongodbConfig(
+		,["mongodb",new PetQuery3pPluginMongodbConfig(
 			{
 				enabled:false,
 				timeout:5000,
@@ -180,7 +212,7 @@ const settings = {
 				collection:'test'
 			}
 		)]
-		,["mysql",new PetQueryPluginMysqlConfig(
+		,["mysql",new PetQuery3pPluginMysqlConfig(
 			{
 				enabled:false,
 				timeout:5000,
@@ -195,7 +227,7 @@ const settings = {
 				 ,query: ''
 			}
 		)]
-		,["petquery",new PetQueryPluginPetqueryConfig(
+		,["petquery",new PetQuery3pPluginPetqueryConfig(
 			{
 				enabled:false,
 				timeout:5000,
@@ -225,14 +257,10 @@ export class PetQueryConfig{
 
 	static getPluginConfig<T extends object>(obj:ConstructorType<T>,name:string):T{
 		const config = settings.plugin.get(name);
-	
 		if(undefined === config
 		|| !PetQueryTypes.isInstanceOf<T>(obj,config)){
 			throw new Error(`Unknown plugin "${name}"`);
 		}
-		
-		PetQueryAssert.assertInstanceOf<T>(obj,config);
-
 		return config;
 	}
 
@@ -243,4 +271,6 @@ export class PetQueryConfig{
 	static getPluginNames():Array<utf8_t>{
 		return Array.from(settings.plugin.keys());
 	}
-}
+	destructor():void{
+	}
+};

@@ -8,7 +8,8 @@
 import type {default as Express} from 'express';
 import util from 'node:util';
 import {PetQueryLib} from '#petquery/lib.js';
-import type {PetQueryResultDataEntry} from '#petquery/plugin/result/entry.js';
+import type {PetQueryResultDataEntry} from
+	'#petquery/result/data/entry.js';
 import {PetQueryTypes} from '#petquery/types.js';
 import {PetQueryServerRoute} from '#petquery/server/route.js';
 import {PetQueryServerCallbackMergeRequestParams} from

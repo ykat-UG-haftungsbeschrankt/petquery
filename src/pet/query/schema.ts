@@ -41,6 +41,15 @@ export class PetQuerySchema{
 	// String format registry (uuid, uri, email, ... are built in).
 	static readonly format = Format;
 
+	static emptyRequest(title:utf8_t){
+		const T = PetQuerySchema.type;
+		return T.Object({
+			params:T.Object({}),
+			query:T.Object({}),
+			body:T.Object({})
+		},{title});
+	}
+
 	// Returns json typed as the validator's schema, or throws an Error
 	// naming each invalid field. Use it instead of `json as Type`.
 	static parse<T>(

@@ -7,7 +7,7 @@
 
 import {PetQueryCast} from '#petquery/cast.js';
 import {PetQueryJson} from '#petquery/json.js';
-import {PetQueryResultData} from '#petquery/plugin/result.js';
+import {PetQueryResultData} from '#petquery/result/data.js';
 
 export class PetQueryResult{
 	static readonly _parser = PetQueryCast.object({
@@ -58,5 +58,7 @@ export class PetQueryResult{
 			obj.error,
 			PetQueryResultData.fromJson(obj.data)
 		);
+	}
+	destructor():void{
 	}
 };

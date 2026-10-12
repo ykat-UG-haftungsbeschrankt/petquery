@@ -1,13 +1,77 @@
 {
 	"$schema": "https://typedoc.org/schema.json",
 	"name": "petquery",
-	"entryPoints": ["src/pet/query", "types/index.d.ts"],
+	"entryPoints": [
+		"src/pet/query", "schema", "gui/src","types/index.d.ts"
+	],
 	"entryPointStrategy": "expand",
 	"exclude": ["**/.trash/**"],
 	"tsconfig": "tsconfig.json",
 	"out": "docs",
 	"readme": "README.md",
 	"cleanOutputDir": true,
+	"plugin": [
+		//"@typhonjs-typedoc/typedoc-theme-dmt",
+		"typedoc-plugin-mermaid",
+		"typedoc-plugin-inline-sources",
+		"typedoc-umlclass"
+	],
+	"theme": "default",
+	"umlClassDiagram": { // <=========== Use this object to configure this plugin
+		"type": "detailed",
+		"location": "local",
+		"format": "svg",
+		"legendType": "only-included",
+		"hideShadow": false,
+		"style": {
+			"box": {
+				"backgroundColor": "fcf2cc",
+				"border": {
+					"width": 2,
+					"color": "5a0000",
+					"radius": 0
+				}
+			},
+			"class": {
+				"name": {
+					"font": {
+						"bold": true
+					}
+				}
+			},
+			"property": {
+				"name": {
+					"font": {
+						"bold": true
+					}
+				},
+				"type": {
+					"font": {
+						"color": "26009966"
+					}
+				}
+			},
+			"method": {
+				"parameter": {
+					"name": {
+						"font": {
+							"color": "780000"
+						}
+					},
+					"type": {
+						"font": {
+							"color": "26009966"
+						}
+					}
+				},
+				"returnType": {
+					"font": {
+						"color": "26009966"
+					}
+				}
+			}
+		}
+    },
 	"highlightLanguages": [
 		"bash", "console", "css", "html", "javascript", "json",
 		"jsonc", "json5", "yaml", "tsx", "typescript", "php",

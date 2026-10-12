@@ -1,4 +1,45 @@
-<!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>petquery</title><meta name="description" content="Documentation for petquery"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script><script async src="assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>petquery</title><meta name="description" content="Documentation for petquery"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script><script async src="assets/hierarchy.js" id="tsd-hierarchy-script"></script>
+<style>
+:root.mermaid-enabled .mermaid-block > pre {
+  display: none;
+}
+:root:not(.mermaid-enabled) .mermaid-block > .mermaid {
+  display: none !important;
+}
+
+.mermaid-block > .mermaid[data-inserted].dark {
+  display: var(--mermaid-dark-display);
+}
+.mermaid-block > .mermaid[data-inserted].light {
+  display: var(--mermaid-light-display);
+}
+
+:root {
+  --mermaid-dark-display: none;
+  --mermaid-light-display: block;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --mermaid-dark-display: none;
+    --mermaid-light-display: block;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --mermaid-dark-display: block;
+    --mermaid-light-display: none;
+  }
+}
+body.light, :root[data-theme="light"] {
+  --mermaid-dark-display: none;
+  --mermaid-light-display: block;
+}
+body.dark, :root[data-theme="dark"] {
+  --mermaid-dark-display: block;
+  --mermaid-light-display: none;
+}
+</style>
+</head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container"><a href="index.html" class="title">petquery</a>
 <div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
 <ul role="listbox" id="tsd-search-results"></ul>
@@ -46,11 +87,32 @@ federated servers can be spotted.</li>
 passed on to the plugins.</li>
 </ul>
 <h2 id="🧭-how-it-works" class="tsd-anchor-link">🧭 How it works<a href="#🧭-how-it-works" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<pre><code class="mermaid"><span class="hl-0">flowchart LR</span><br/><span class="hl-0">    U([🧑 User / Authority]) --&gt;|query| S[🐾 petquery server]</span><br/><span class="hl-0">    S --&gt; A[animalid.by]</span><br/><span class="hl-0">    S --&gt; M[(MySQL)]</span><br/><span class="hl-0">    S --&gt; D[(MongoDB)]</span><br/><span class="hl-0">    S --&gt; P[🐾 another petquery server]</span><br/><span class="hl-0">    A &amp; M &amp; D &amp; P --&gt;|results| S</span><br/><span class="hl-0">    S --&gt;|merged result| U</span>
-</code><button type="button">Copy</button></pre>
-
+<div class="mermaid-block"><div class="mermaid dark">%%{init:{"theme":"dark"}}%%
+flowchart LR
+    U([🧑 User / Authority]) --&gt;|query| S[🐾 petquery server]
+    S --&gt; A[animalid.by]
+    S --&gt; M[(MySQL)]
+    S --&gt; D[(MongoDB)]
+    S --&gt; P[🐾 another petquery server]
+    A &amp; M &amp; D &amp; P --&gt;|results| S
+    S --&gt;|merged result| U</div><div class="mermaid light">%%{init:{"theme":"default"}}%%
+flowchart LR
+    U([🧑 User / Authority]) --&gt;|query| S[🐾 petquery server]
+    S --&gt; A[animalid.by]
+    S --&gt; M[(MySQL)]
+    S --&gt; D[(MongoDB)]
+    S --&gt; P[🐾 another petquery server]
+    A &amp; M &amp; D &amp; P --&gt;|results| S
+    S --&gt;|merged result| U</div><pre><code class="language-mermaid">flowchart LR
+    U([🧑 User / Authority]) --&gt;|query| S[🐾 petquery server]
+    S --&gt; A[animalid.by]
+    S --&gt; M[(MySQL)]
+    S --&gt; D[(MongoDB)]
+    S --&gt; P[🐾 another petquery server]
+    A &amp; M &amp; D &amp; P --&gt;|results| S
+    S --&gt;|merged result| U</code></pre></div>
 <h2 id="🚀-quick-start" class="tsd-anchor-link">🚀 Quick start<a href="#🚀-quick-start" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<pre><code class="bash"><span class="hl-1">git</span><span class="hl-0"> </span><span class="hl-2">clone</span><span class="hl-0"> </span><span class="hl-2">https://github.com/ykat-UG-haftungsbeschrankt/petquery.git</span><br/><span class="hl-1">cd</span><span class="hl-0"> </span><span class="hl-2">petquery</span><br/><span class="hl-1">npm</span><span class="hl-0"> </span><span class="hl-2">install</span><br/><span class="hl-1">npm</span><span class="hl-0"> </span><span class="hl-2">start</span>
+<pre><code class="bash"><span class="hl-0">git</span><span class="hl-1"> </span><span class="hl-2">clone</span><span class="hl-1"> </span><span class="hl-2">https://github.com/ykat-UG-haftungsbeschrankt/petquery.git</span><br/><span class="hl-0">cd</span><span class="hl-1"> </span><span class="hl-2">petquery</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">start</span>
 </code><button type="button">Copy</button></pre>
 
 <p><code>npm start</code> lints and compiles the TypeScript sources to native ES modules in
@@ -79,8 +141,12 @@ project, starts the server and opens it in your browser.</p>
 <td>The bearer tokens accepted by <code>/json</code> and <code>/api</code></td>
 </tr>
 <tr>
+<td><code>server.config_file</code></td>
+<td>Saved admin GUI settings (<code>config/server.json</code>)</td>
+</tr>
+<tr>
 <td><code>server.file.upload</code></td>
-<td>File upload switch and limits (10 MB by default)</td>
+<td>Upload switch and <code>max_file_size</code> (10 MB)</td>
 </tr>
 <tr>
 <td><code>server.max_results_per_module</code></td>
@@ -89,6 +155,10 @@ project, starts the server and opens it in your browser.</p>
 <tr>
 <td><code>server.max_results_total</code></td>
 <td>Maximum number of results in a response</td>
+</tr>
+<tr>
+<td><code>server.server_index</code></td>
+<td>LMDB directory, database names and peer sync of the server index</td>
 </tr>
 <tr>
 <td><code>server.route</code></td>
@@ -100,6 +170,9 @@ project, starts the server and opens it in your browser.</p>
 </tr>
 </tbody>
 </table>
+<p>At startup, values saved by the <a href="#admin-gui">admin GUI</a> in
+<code>config/server.json</code> override these defaults. The file is git-ignored,
+readable only by its owner and holds the bearer tokens.</p>
 <div class="tsd-alert tsd-alert-important"><div class="tsd-alert-title"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><use href="assets/icons.svg#icon-alertImportant"></use></svg><span>Important</span></div><p>
 Replace the example bearer tokens with your own secrets before you deploy.</p>
 </div>
@@ -132,10 +205,28 @@ Replace the example bearer tokens with your own secrets before you deploy.</p>
 <td>Results from <strong>one</strong> plugin only</td>
 <td><code>route.api.enabled</code></td>
 </tr>
+<tr>
+<td><code>/api/server/*</code></td>
+<td style="text-align:center">🔐</td>
+<td>Manage the server index (list and ping are public)</td>
+<td><code>route.api.enabled</code></td>
+</tr>
+<tr>
+<td><code>/api/config/*</code></td>
+<td style="text-align:center">🔐</td>
+<td>Read or save the editable config</td>
+<td><code>route.api.enabled</code></td>
+</tr>
+<tr>
+<td><code>/admin</code></td>
+<td style="text-align:center">—</td>
+<td>Admin GUI (see <a href="#admin-gui">Admin GUI</a>)</td>
+<td><code>route.admin.enabled</code></td>
+</tr>
 </tbody>
 </table>
-<p>Every endpoint accepts <code>GET</code> query strings, JSON or form <code>POST</code> bodies, and
-<code>multipart/form-data</code> file uploads.</p>
+<p>Every search endpoint accepts <code>GET</code> query strings, JSON or form <code>POST</code>
+bodies, and <code>multipart/form-data</code> file uploads.</p>
 <table>
 <thead>
 <tr>
@@ -162,35 +253,91 @@ Replace the example bearer tokens with your own secrets before you deploy.</p>
 application.</p>
 <details open>
 <summary><b>JavaScript</b></summary>
-<pre><code class="js"><span class="hl-3">const</span><span class="hl-0"> </span><span class="hl-4">response</span><span class="hl-0"> = </span><span class="hl-5">await</span><span class="hl-0"> </span><span class="hl-1">fetch</span><span class="hl-0">(</span><span class="hl-2">&#39;https://petquery.org/json&#39;</span><span class="hl-0">, {</span><br/><span class="hl-0">	</span><span class="hl-6">method:</span><span class="hl-0"> </span><span class="hl-2">&#39;POST&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">	</span><span class="hl-6">headers:</span><span class="hl-0"> {</span><br/><span class="hl-0">		</span><span class="hl-2">&#39;accept&#39;</span><span class="hl-6">:</span><span class="hl-0"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">		</span><span class="hl-2">&#39;content-type&#39;</span><span class="hl-6">:</span><span class="hl-0"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">		</span><span class="hl-2">&#39;authorization&#39;</span><span class="hl-6">:</span><span class="hl-0"> </span><span class="hl-2">&#39;Bearer &lt;your-token&gt;&#39;</span><br/><span class="hl-0">	},</span><br/><span class="hl-0">	</span><span class="hl-6">body:</span><span class="hl-0"> </span><span class="hl-4">JSON</span><span class="hl-0">.</span><span class="hl-1">stringify</span><span class="hl-0">({</span><span class="hl-6">query:</span><span class="hl-0"> </span><span class="hl-2">&#39;112093400000465&#39;</span><span class="hl-0">})</span><br/><span class="hl-0">});</span><br/><span class="hl-5">if</span><span class="hl-0">(!</span><span class="hl-6">response</span><span class="hl-0">.</span><span class="hl-6">ok</span><span class="hl-0">){</span><br/><span class="hl-0">	</span><span class="hl-5">throw</span><span class="hl-0"> </span><span class="hl-3">new</span><span class="hl-0"> </span><span class="hl-1">Error</span><span class="hl-0">(</span><span class="hl-6">response</span><span class="hl-0">.</span><span class="hl-6">statusText</span><span class="hl-0">);</span><br/><span class="hl-0">}</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-1">log</span><span class="hl-0">(</span><span class="hl-5">await</span><span class="hl-0"> </span><span class="hl-6">response</span><span class="hl-0">.</span><span class="hl-1">json</span><span class="hl-0">());</span>
+<pre><code class="js"><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">response</span><span class="hl-1"> = </span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-0">fetch</span><span class="hl-1">(</span><span class="hl-2">&#39;https://petquery.org/json&#39;</span><span class="hl-1">, {</span><br/><span class="hl-1">	</span><span class="hl-6">method:</span><span class="hl-1"> </span><span class="hl-2">&#39;POST&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-6">headers:</span><span class="hl-1"> {</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;accept&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;content-type&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;authorization&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;Bearer &lt;your-token&gt;&#39;</span><br/><span class="hl-1">	},</span><br/><span class="hl-1">	</span><span class="hl-6">body:</span><span class="hl-1"> </span><span class="hl-4">JSON</span><span class="hl-1">.</span><span class="hl-0">stringify</span><span class="hl-1">({</span><span class="hl-6">query:</span><span class="hl-1"> </span><span class="hl-2">&#39;112093400000465&#39;</span><span class="hl-1">})</span><br/><span class="hl-1">});</span><br/><span class="hl-5">if</span><span class="hl-1">(!</span><span class="hl-6">response</span><span class="hl-1">.</span><span class="hl-6">ok</span><span class="hl-1">){</span><br/><span class="hl-1">	</span><span class="hl-5">throw</span><span class="hl-1"> </span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">Error</span><span class="hl-1">(</span><span class="hl-6">response</span><span class="hl-1">.</span><span class="hl-6">statusText</span><span class="hl-1">);</span><br/><span class="hl-1">}</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">response</span><span class="hl-1">.</span><span class="hl-0">json</span><span class="hl-1">());</span>
 </code><button type="button">Copy</button></pre>
 
 </details>
 <details>
 <summary><b>PHP</b></summary>
-<pre><code class="php"><span class="hl-7">#!/usr/bin/php</span><br/><span class="hl-0">&lt;?php</span><br/><br/><span class="hl-6">$result</span><span class="hl-0"> = </span><span class="hl-1">file_get_contents</span><span class="hl-0">(</span><br/><span class="hl-0">	</span><span class="hl-2">&#39;https://petquery.org/json&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">	</span><span class="hl-3">false</span><span class="hl-0">,</span><br/><span class="hl-0">	</span><span class="hl-1">stream_context_create</span><span class="hl-0">([</span><br/><span class="hl-0">		</span><span class="hl-2">&#39;http&#39;</span><span class="hl-0"> =&gt; [</span><br/><span class="hl-0">			</span><span class="hl-2">&#39;method&#39;</span><span class="hl-0">  =&gt; </span><span class="hl-2">&#39;POST&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">			</span><span class="hl-2">&#39;header&#39;</span><span class="hl-0">  =&gt; </span><span class="hl-2">&quot;Content-Type: application/json</span><span class="hl-8">\r\n</span><span class="hl-2">&quot;</span><br/><span class="hl-0">				</span><span class="hl-0">.</span><span class="hl-0"> </span><span class="hl-2">&quot;Authorization: Bearer &lt;your-token&gt;&quot;</span><span class="hl-0">,</span><br/><span class="hl-0">			</span><span class="hl-2">&#39;content&#39;</span><span class="hl-0"> =&gt; </span><span class="hl-1">json_encode</span><span class="hl-0">([</span><span class="hl-2">&#39;query&#39;</span><span class="hl-0"> =&gt; </span><span class="hl-2">&#39;112093400000465&#39;</span><span class="hl-0">])</span><br/><span class="hl-0">		]</span><br/><span class="hl-0">	])</span><br/><span class="hl-0">);</span><br/><br/><span class="hl-1">print_r</span><span class="hl-0">(</span><span class="hl-1">json_decode</span><span class="hl-0">(</span><span class="hl-6">$result</span><span class="hl-0">, </span><span class="hl-3">true</span><span class="hl-0">));</span>
+<pre><code class="php"><span class="hl-7">#!/usr/bin/php</span><br/><span class="hl-1">&lt;?php</span><br/><br/><span class="hl-6">$result</span><span class="hl-1"> = </span><span class="hl-0">file_get_contents</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;https://petquery.org/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">false</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-0">stream_context_create</span><span class="hl-1">([</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;http&#39;</span><span class="hl-1"> =&gt; [</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;method&#39;</span><span class="hl-1">  =&gt; </span><span class="hl-2">&#39;POST&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;header&#39;</span><span class="hl-1">  =&gt; </span><span class="hl-2">&quot;Content-Type: application/json</span><span class="hl-8">\r\n</span><span class="hl-2">&quot;</span><br/><span class="hl-1">				</span><span class="hl-1">.</span><span class="hl-1"> </span><span class="hl-2">&quot;Authorization: Bearer &lt;your-token&gt;&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;content&#39;</span><span class="hl-1"> =&gt; </span><span class="hl-0">json_encode</span><span class="hl-1">([</span><span class="hl-2">&#39;query&#39;</span><span class="hl-1"> =&gt; </span><span class="hl-2">&#39;112093400000465&#39;</span><span class="hl-1">])</span><br/><span class="hl-1">		]</span><br/><span class="hl-1">	])</span><br/><span class="hl-1">);</span><br/><br/><span class="hl-0">print_r</span><span class="hl-1">(</span><span class="hl-0">json_decode</span><span class="hl-1">(</span><span class="hl-6">$result</span><span class="hl-1">, </span><span class="hl-3">true</span><span class="hl-1">));</span>
 </code><button type="button">Copy</button></pre>
 
 </details>
 <details>
 <summary><b>curl</b></summary>
-<pre><code class="bash"><span class="hl-1">curl</span><span class="hl-0"> </span><span class="hl-3">-X</span><span class="hl-0"> </span><span class="hl-2">POST</span><span class="hl-0"> </span><span class="hl-2">https://petquery.org/json</span><span class="hl-0"> </span><span class="hl-8">\</span><br/><span class="hl-0">	</span><span class="hl-3">-H</span><span class="hl-0"> </span><span class="hl-2">&#39;content-type: application/json&#39;</span><span class="hl-0"> </span><span class="hl-8">\</span><br/><span class="hl-0">	</span><span class="hl-3">-H</span><span class="hl-0"> </span><span class="hl-2">&#39;authorization: Bearer &lt;your-token&gt;&#39;</span><span class="hl-0"> </span><span class="hl-8">\</span><br/><span class="hl-0">	</span><span class="hl-3">-d</span><span class="hl-0"> </span><span class="hl-2">&#39;{&quot;query&quot;:&quot;112093400000465&quot;}&#39;</span>
+<pre><code class="bash"><span class="hl-0">curl</span><span class="hl-1"> </span><span class="hl-3">-X</span><span class="hl-1"> </span><span class="hl-2">POST</span><span class="hl-1"> </span><span class="hl-2">https://petquery.org/json</span><span class="hl-1"> </span><span class="hl-8">\</span><br/><span class="hl-1">	</span><span class="hl-3">-H</span><span class="hl-1"> </span><span class="hl-2">&#39;content-type: application/json&#39;</span><span class="hl-1"> </span><span class="hl-8">\</span><br/><span class="hl-1">	</span><span class="hl-3">-H</span><span class="hl-1"> </span><span class="hl-2">&#39;authorization: Bearer &lt;your-token&gt;&#39;</span><span class="hl-1"> </span><span class="hl-8">\</span><br/><span class="hl-1">	</span><span class="hl-3">-d</span><span class="hl-1"> </span><span class="hl-2">&#39;{&quot;query&quot;:&quot;112093400000465&quot;}&#39;</span>
 </code><button type="button">Copy</button></pre>
 
 </details>
 <p>Response:</p>
-<pre><code class="json"><span class="hl-0">{</span><br/><span class="hl-0">	</span><span class="hl-9">&quot;success&quot;</span><span class="hl-0">: </span><span class="hl-3">true</span><span class="hl-0">,</span><br/><span class="hl-0">	</span><span class="hl-9">&quot;error&quot;</span><span class="hl-0">: [],</span><br/><span class="hl-0">	</span><span class="hl-9">&quot;data&quot;</span><span class="hl-0">: [</span><br/><span class="hl-0">		{</span><br/><span class="hl-0">			</span><span class="hl-9">&quot;source&quot;</span><span class="hl-0">: {</span><br/><span class="hl-0">				</span><span class="hl-9">&quot;favicon&quot;</span><span class="hl-0">: </span><span class="hl-2">&quot;https://animalid.by/favicon.ico&quot;</span><span class="hl-0">,</span><br/><span class="hl-0">				</span><span class="hl-9">&quot;url&quot;</span><span class="hl-0">: </span><span class="hl-2">&quot;https://animalid.by&quot;</span><span class="hl-0">,</span><br/><span class="hl-0">				</span><span class="hl-9">&quot;name&quot;</span><span class="hl-0">: </span><span class="hl-2">&quot;Animalid&quot;</span><br/><span class="hl-0">			},</span><br/><span class="hl-0">			</span><span class="hl-9">&quot;preview&quot;</span><span class="hl-0">: </span><span class="hl-2">&quot;&quot;</span><span class="hl-0">,</span><br/><span class="hl-0">			</span><span class="hl-9">&quot;files&quot;</span><span class="hl-0">: [],</span><br/><span class="hl-0">			</span><span class="hl-9">&quot;attributes&quot;</span><span class="hl-0">: {</span><span class="hl-9">&quot;name&quot;</span><span class="hl-0">: {</span><span class="hl-9">&quot;first&quot;</span><span class="hl-0">: </span><span class="hl-2">&quot;Bob&quot;</span><span class="hl-0">, </span><span class="hl-9">&quot;last&quot;</span><span class="hl-0">: </span><span class="hl-2">&quot;Smith&quot;</span><span class="hl-0">}}</span><br/><span class="hl-0">		}</span><br/><span class="hl-0">	]</span><br/><span class="hl-0">}</span>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-9">&quot;success&quot;</span><span class="hl-1">: </span><span class="hl-3">true</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-9">&quot;error&quot;</span><span class="hl-1">: [],</span><br/><span class="hl-1">	</span><span class="hl-9">&quot;data&quot;</span><span class="hl-1">: [</span><br/><span class="hl-1">		{</span><br/><span class="hl-1">			</span><span class="hl-9">&quot;source&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">				</span><span class="hl-9">&quot;favicon&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;https://animalid.by/favicon.ico&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">				</span><span class="hl-9">&quot;url&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;https://animalid.by&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">				</span><span class="hl-9">&quot;name&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;Animalid&quot;</span><br/><span class="hl-1">			},</span><br/><span class="hl-1">			</span><span class="hl-9">&quot;preview&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-9">&quot;files&quot;</span><span class="hl-1">: [],</span><br/><span class="hl-1">			</span><span class="hl-9">&quot;attributes&quot;</span><span class="hl-1">: {</span><span class="hl-9">&quot;name&quot;</span><span class="hl-1">: {</span><span class="hl-9">&quot;first&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;Bob&quot;</span><span class="hl-1">, </span><span class="hl-9">&quot;last&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;Smith&quot;</span><span class="hl-1">}}</span><br/><span class="hl-1">		}</span><br/><span class="hl-1">	]</span><br/><span class="hl-1">}</span>
 </code><button type="button">Copy</button></pre>
 
+<p>An invalid request, for example a <code>query</code> that is not a string or a
+<code>tracerouteUuid</code> that is not a UUID, returns <code>400</code> with the messages in
+<code>error</code>. An unexpected server error returns <code>500</code>. A circular query returns
+<code>200</code> with <code>success: false</code>. The request and response are described in
+<a href="media/search"><code>schema/search/</code></a>.</p>
 <h3 id="-share-your-own-registry" class="tsd-anchor-link"><code>/api</code>: share your own registry<a href="#-share-your-own-registry" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
-<p><code>/api</code> returns results from the <strong>single</strong> plugin named in <code>route.api.module</code>,
-as a plain array of result entries.</p>
+<p><code>/api</code> returns results from the plugins listed in <code>route.api.plugins</code>, in the
+same format as <code>/json</code>.</p>
 <p>This is how authorities share their data. Run petquery next to your local
 database, expose it through <code>/api</code>, and give other petquery servers a token.
 They add your server as a <code>petquery</code> plugin, with your URL and token in their
 config, and your registry becomes part of their search. Your database itself
 is never exposed.</p>
-<pre><code class="js"><span class="hl-3">const</span><span class="hl-0"> </span><span class="hl-4">response</span><span class="hl-0"> = </span><span class="hl-5">await</span><span class="hl-0"> </span><span class="hl-1">fetch</span><span class="hl-0">(</span><span class="hl-2">&#39;https://petquery.org/api&#39;</span><span class="hl-0">, {</span><br/><span class="hl-0">	</span><span class="hl-6">method:</span><span class="hl-0"> </span><span class="hl-2">&#39;POST&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">	</span><span class="hl-6">headers:</span><span class="hl-0"> {</span><br/><span class="hl-0">		</span><span class="hl-2">&#39;content-type&#39;</span><span class="hl-6">:</span><span class="hl-0"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">		</span><span class="hl-2">&#39;authorization&#39;</span><span class="hl-6">:</span><span class="hl-0"> </span><span class="hl-2">&#39;Bearer &lt;your-token&gt;&#39;</span><br/><span class="hl-0">	},</span><br/><span class="hl-0">	</span><span class="hl-6">body:</span><span class="hl-0"> </span><span class="hl-4">JSON</span><span class="hl-0">.</span><span class="hl-1">stringify</span><span class="hl-0">({</span><span class="hl-6">query:</span><span class="hl-0"> </span><span class="hl-2">&#39;112093400000465&#39;</span><span class="hl-0">})</span><br/><span class="hl-0">});</span><br/><span class="hl-6">console</span><span class="hl-0">.</span><span class="hl-1">log</span><span class="hl-0">(</span><span class="hl-5">await</span><span class="hl-0"> </span><span class="hl-6">response</span><span class="hl-0">.</span><span class="hl-1">json</span><span class="hl-0">());</span>
+<pre><code class="js"><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">response</span><span class="hl-1"> = </span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-0">fetch</span><span class="hl-1">(</span><span class="hl-2">&#39;https://petquery.org/api&#39;</span><span class="hl-1">, {</span><br/><span class="hl-1">	</span><span class="hl-6">method:</span><span class="hl-1"> </span><span class="hl-2">&#39;POST&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-6">headers:</span><span class="hl-1"> {</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;content-type&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;authorization&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;Bearer &lt;your-token&gt;&#39;</span><br/><span class="hl-1">	},</span><br/><span class="hl-1">	</span><span class="hl-6">body:</span><span class="hl-1"> </span><span class="hl-4">JSON</span><span class="hl-1">.</span><span class="hl-0">stringify</span><span class="hl-1">({</span><span class="hl-6">query:</span><span class="hl-1"> </span><span class="hl-2">&#39;112093400000465&#39;</span><span class="hl-1">})</span><br/><span class="hl-1">});</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">response</span><span class="hl-1">.</span><span class="hl-0">json</span><span class="hl-1">());</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="-manage-the-server-index" class="tsd-anchor-link"><code>/api/server/*</code>: manage the server index<a href="#-manage-the-server-index" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>These routes manage the <a href="#persistent-server-index">persistent server index</a>.
+<code>GET</code> routes are public so that peers can sync; <code>PUT</code> and <code>DELETE</code> use the
+same authentication as <code>/api</code>. Each path names its HTTP method, and the
+request must use that method.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Body</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/ping/get</code></td>
+<td>—</td>
+<td>Return this server's UUID as <code>data.uuid</code></td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/server/get</code></td>
+<td>—</td>
+<td>List all servers</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/server/put/:uuid</code></td>
+<td><code>uri</code> (JSON or form)</td>
+<td>Add or replace a server</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/server/delete/:uuid</code></td>
+<td>—</td>
+<td>Delete a server</td>
+</tr>
+</tbody>
+</table>
+<p>Responses are JSON with <code>success</code> and <code>error</code>; the list also has <code>data</code>, an
+array of <code>{uuid, uri}</code> objects. An invalid UUID or a missing or non-absolute
+URI returns <code>400</code>, and a database error returns <code>500</code>. Deleting a missing
+UUID succeeds.</p>
+<p>The request and response of <code>PUT /api/server/put/:uuid</code> are described as
+JSON Schema in <a href="media/put"><code>schema/api/server/put/</code></a>, see
+<a href="#schemas">Schemas</a>.</p>
+<pre><code class="js"><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-0">fetch</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;https://petquery.org/api/server/put/550e8400-e29b-41d4-a716-446655440000&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	{</span><br/><span class="hl-1">		</span><span class="hl-6">method:</span><span class="hl-1"> </span><span class="hl-2">&#39;PUT&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-6">headers:</span><span class="hl-1"> {</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;content-type&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;authorization&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;******&#39;</span><br/><span class="hl-1">		},</span><br/><span class="hl-1">		</span><span class="hl-6">body:</span><span class="hl-1"> </span><span class="hl-4">JSON</span><span class="hl-1">.</span><span class="hl-0">stringify</span><span class="hl-1">({</span><span class="hl-6">uri:</span><span class="hl-1"> </span><span class="hl-2">&#39;https://registry.example.org/&#39;</span><span class="hl-1">})</span><br/><span class="hl-1">	}</span><br/><span class="hl-1">);</span>
 </code><button type="button">Copy</button></pre>
 
 <h2 id="🔌-plugins" class="tsd-anchor-link">🔌 Plugins<a href="#🔌-plugins" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
@@ -227,14 +374,58 @@ is never exposed.</p>
 <h3 id="writing-your-own-plugin" class="tsd-anchor-link">Writing your own plugin<a href="#writing-your-own-plugin" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>A plugin is a class that extends <code>PetQueryPlugin</code>. It receives the query and
 returns a result:</p>
-<pre><code class="ts"><span class="hl-5">import</span><span class="hl-0"> {</span><span class="hl-6">PetQueryPlugin</span><span class="hl-0">} </span><span class="hl-5">from</span><span class="hl-0"> </span><span class="hl-2">&#39;#petquery/plugin.js&#39;</span><span class="hl-0">;</span><br/><span class="hl-5">import</span><span class="hl-0"> {</span><span class="hl-6">PetQueryPluginQuery</span><span class="hl-0">} </span><span class="hl-5">from</span><span class="hl-0"> </span><span class="hl-2">&#39;#petquery/plugin/query.js&#39;</span><span class="hl-0">;</span><br/><span class="hl-5">import</span><span class="hl-0"> {</span><span class="hl-6">PetQueryPluginResult</span><span class="hl-0">} </span><span class="hl-5">from</span><span class="hl-0"> </span><span class="hl-2">&#39;#petquery/plugin/result.js&#39;</span><span class="hl-0">;</span><br/><span class="hl-5">import</span><span class="hl-0"> {</span><span class="hl-6">PetQueryPluginMyRegistryConfig</span><span class="hl-0">} </span><span class="hl-5">from</span><br/><span class="hl-0">	</span><span class="hl-2">&#39;#petquery/plugin/my/registry/config.js&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-5">export</span><span class="hl-0"> </span><span class="hl-3">class</span><span class="hl-0"> </span><span class="hl-10">PetQueryPluginMyRegistry</span><span class="hl-0"> </span><span class="hl-3">extends</span><span class="hl-0"> </span><span class="hl-10">PetQueryPlugin</span><span class="hl-0">{</span><br/><span class="hl-0">	</span><span class="hl-3">constructor</span><span class="hl-0">(</span><span class="hl-6">cfg</span><span class="hl-0">:</span><span class="hl-10">PetQueryPluginMyRegistryConfig</span><span class="hl-0">){</span><br/><span class="hl-0">		</span><span class="hl-3">super</span><span class="hl-0">(</span><span class="hl-2">&#39;my-registry&#39;</span><span class="hl-0">,</span><span class="hl-6">cfg</span><span class="hl-0">);</span><br/><span class="hl-0">	}</span><br/><br/><span class="hl-0">	</span><span class="hl-3">override</span><span class="hl-0"> </span><span class="hl-3">async</span><span class="hl-0"> </span><span class="hl-1">query</span><span class="hl-0">(</span><br/><span class="hl-0">		</span><span class="hl-6">query</span><span class="hl-0">:</span><span class="hl-10">PetQueryPluginQuery</span><br/><span class="hl-0">	):</span><span class="hl-10">Promise</span><span class="hl-0">&lt;</span><span class="hl-10">PetQueryPluginResult</span><span class="hl-0">&gt;{</span><br/><span class="hl-0">		</span><span class="hl-3">const</span><span class="hl-0"> </span><span class="hl-4">rows</span><span class="hl-0"> = </span><span class="hl-5">await</span><span class="hl-0"> </span><span class="hl-1">lookUp</span><span class="hl-0">(</span><span class="hl-6">query</span><span class="hl-0">.</span><span class="hl-1">getQuery</span><span class="hl-0">());</span><br/><span class="hl-0">		</span><span class="hl-5">return</span><span class="hl-0"> </span><span class="hl-6">PetQueryPluginResult</span><span class="hl-0">.</span><span class="hl-1">fromJson</span><span class="hl-0">(</span><span class="hl-6">rows</span><span class="hl-0">.</span><span class="hl-1">map</span><span class="hl-0">((</span><span class="hl-6">row</span><span class="hl-0">)</span><span class="hl-3">=&gt;</span><span class="hl-0">{</span><br/><span class="hl-0">			</span><span class="hl-5">return</span><span class="hl-0"> {</span><br/><span class="hl-0">				</span><span class="hl-6">source:</span><span class="hl-3">this</span><span class="hl-0">.</span><span class="hl-1">getSource</span><span class="hl-0">().</span><span class="hl-1">toJson</span><span class="hl-0">(),</span><br/><span class="hl-0">				</span><span class="hl-6">preview:</span><span class="hl-2">&#39;&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">				</span><span class="hl-6">files:</span><span class="hl-0">[],</span><br/><span class="hl-0">				</span><span class="hl-6">attributes:row</span><br/><span class="hl-0">			};</span><br/><span class="hl-0">		}));</span><br/><span class="hl-0">	}</span><br/><span class="hl-0">};</span>
+<pre><code class="ts"><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">PetQueryPlugin</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;#petquery/plugin.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">PetQueryPluginQuery</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;#petquery/plugin/query.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">PetQueryPluginResult</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;#petquery/plugin/result.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">PetQueryPluginMyRegistryConfig</span><span class="hl-1">} </span><span class="hl-5">from</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;#petquery/plugin/my/registry/config.js&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">export</span><span class="hl-1"> </span><span class="hl-3">class</span><span class="hl-1"> </span><span class="hl-10">PetQueryPluginMyRegistry</span><span class="hl-1"> </span><span class="hl-3">extends</span><span class="hl-1"> </span><span class="hl-10">PetQueryPlugin</span><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-3">constructor</span><span class="hl-1">(</span><span class="hl-6">cfg</span><span class="hl-1">:</span><span class="hl-10">PetQueryPluginMyRegistryConfig</span><span class="hl-1">){</span><br/><span class="hl-1">		</span><span class="hl-3">super</span><span class="hl-1">(</span><span class="hl-2">&#39;my-registry&#39;</span><span class="hl-1">,</span><span class="hl-6">cfg</span><span class="hl-1">);</span><br/><span class="hl-1">	}</span><br/><br/><span class="hl-1">	</span><span class="hl-3">override</span><span class="hl-1"> </span><span class="hl-3">async</span><span class="hl-1"> </span><span class="hl-0">query</span><span class="hl-1">(</span><br/><span class="hl-1">		</span><span class="hl-6">query</span><span class="hl-1">:</span><span class="hl-10">PetQueryPluginQuery</span><br/><span class="hl-1">	):</span><span class="hl-10">Promise</span><span class="hl-1">&lt;</span><span class="hl-10">PetQueryPluginResult</span><span class="hl-1">&gt;{</span><br/><span class="hl-1">		</span><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">rows</span><span class="hl-1"> = </span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-0">lookUp</span><span class="hl-1">(</span><span class="hl-6">query</span><span class="hl-1">.</span><span class="hl-0">getQuery</span><span class="hl-1">());</span><br/><span class="hl-1">		</span><span class="hl-5">return</span><span class="hl-1"> </span><span class="hl-6">PetQueryPluginResult</span><span class="hl-1">.</span><span class="hl-0">fromJson</span><span class="hl-1">(</span><span class="hl-6">rows</span><span class="hl-1">.</span><span class="hl-0">map</span><span class="hl-1">((</span><span class="hl-6">row</span><span class="hl-1">)</span><span class="hl-3">=&gt;</span><span class="hl-1">{</span><br/><span class="hl-1">			</span><span class="hl-5">return</span><span class="hl-1"> {</span><br/><span class="hl-1">				</span><span class="hl-6">source:</span><span class="hl-3">this</span><span class="hl-1">.</span><span class="hl-0">getSource</span><span class="hl-1">().</span><span class="hl-0">toJson</span><span class="hl-1">(),</span><br/><span class="hl-1">				</span><span class="hl-6">preview:</span><span class="hl-2">&#39;&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">				</span><span class="hl-6">files:</span><span class="hl-1">[],</span><br/><span class="hl-1">				</span><span class="hl-6">attributes:row</span><br/><span class="hl-1">			};</span><br/><span class="hl-1">		}));</span><br/><span class="hl-1">	}</span><br/><span class="hl-1">};</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Then add its config to the <code>plugin</code> map in <code>config.ts</code> and register it in
 <code>index.ts</code>:</p>
-<pre><code class="ts"><span class="hl-6">server</span><span class="hl-0">.</span><span class="hl-1">addPlugin</span><span class="hl-0">(</span><span class="hl-3">new</span><span class="hl-0"> </span><span class="hl-1">PetQueryPluginMyRegistry</span><span class="hl-0">(</span><br/><span class="hl-0">	</span><span class="hl-6">PetQueryConfig</span><span class="hl-0">.</span><span class="hl-1">getPluginConfig</span><span class="hl-0">(</span><br/><span class="hl-0">		</span><span class="hl-6">PetQueryPluginMyRegistryConfig</span><span class="hl-0">,</span><br/><span class="hl-0">		</span><span class="hl-2">&#39;my-registry&#39;</span><br/><span class="hl-0">	)</span><br/><span class="hl-0">));</span>
+<pre><code class="ts"><span class="hl-6">server</span><span class="hl-1">.</span><span class="hl-0">addPlugin</span><span class="hl-1">(</span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">PetQueryPluginMyRegistry</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-6">PetQueryConfig</span><span class="hl-1">.</span><span class="hl-0">getPluginConfig</span><span class="hl-1">(</span><br/><span class="hl-1">		</span><span class="hl-6">PetQueryPluginMyRegistryConfig</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;my-registry&#39;</span><br/><span class="hl-1">	)</span><br/><span class="hl-1">));</span>
 </code><button type="button">Copy</button></pre>
 
+<h2 id="persistent-server-index" class="tsd-anchor-link">Persistent server index<a href="#persistent-server-index" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p><code>PetQueryServerIndex</code> stores UUID-to-URI entries in a
+<code>PetQueryServerDatabase</code>, an asynchronous key-value backend.
+<code>PetQueryServerDatabaseLmdb</code> is the LMDB implementation; pass it a database
+directory and a database name. Reopening that directory restores the entries.
+Other backends can extend <code>PetQueryServerDatabase</code>.</p>
+<p><code>index.ts</code> creates the index from <code>server.server_index</code> (by default
+<code>var/lmdb</code> in the working directory), passes it to <code>PetQueryServer</code>, and
+closes the database on <code>SIGINT</code> or <code>SIGTERM</code>. Routes reach it through
+<code>server._getServerIndex()</code>.</p>
+<p>The server's UUID is generated on first start and stored in the
+<code>settings_name</code> database of the same LMDB directory, so it stays the same
+across restarts. Deleting that directory gives the server a new identity.</p>
+<pre><code class="ts"><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">PetQueryServerDatabaseLmdb</span><span class="hl-1">} </span><span class="hl-5">from</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;#petquery/server/database/lmdb.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">PetQueryServerIndex</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;#petquery/server/index.js&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">db</span><span class="hl-1"> = </span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">PetQueryServerDatabaseLmdb</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;/var/lib/petquery/servers&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;servers&#39;</span><br/><span class="hl-1">);</span><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">serverIndex</span><span class="hl-1"> = </span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">PetQueryServerIndex</span><span class="hl-1">(</span><span class="hl-6">db</span><span class="hl-1">);</span><br/><span class="hl-5">try</span><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">serverIndex</span><span class="hl-1">.</span><span class="hl-0">addServer</span><span class="hl-1">(</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;550e8400-e29b-41d4-a716-446655440000&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;https://registry.example.org/&#39;</span><br/><span class="hl-1">	);</span><br/><span class="hl-1">	</span><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">servers</span><span class="hl-1">:</span><span class="hl-10">Map</span><span class="hl-1">&lt;</span><span class="hl-10">uuid_t</span><span class="hl-1">,</span><span class="hl-10">uri_t</span><span class="hl-1">&gt; = </span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">serverIndex</span><span class="hl-1">.</span><span class="hl-0">getServerList</span><span class="hl-1">();</span><br/><span class="hl-1">	</span><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">servers</span><span class="hl-1">);</span><br/><span class="hl-1">	</span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">serverIndex</span><span class="hl-1">.</span><span class="hl-0">deleteServer</span><span class="hl-1">(</span><span class="hl-2">&#39;550e8400-e29b-41d4-a716-446655440000&#39;</span><span class="hl-1">);</span><br/><span class="hl-1">}</span><br/><span class="hl-5">finally</span><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-6">serverIndex</span><span class="hl-1">.</span><span class="hl-0">destructor</span><span class="hl-1">();</span><br/><span class="hl-1">	</span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">db</span><span class="hl-1">.</span><span class="hl-0">destructor</span><span class="hl-1">();</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>addServer()</code> persists an entry, replacing the URI when its UUID already
+exists. UUIDs must be valid and URIs must be absolute. <code>deleteServer()</code>
+removes an entry; a missing UUID is a no-op. <code>getServerList()</code> returns an
+independent <code>Map</code> snapshot, so modifying it does not modify the database.
+The index borrows the database, so the database's owner must await its
+<code>destructor()</code>. Database errors propagate to the caller, and operations after
+destruction reject. Keep the database directory outside the source tree.</p>
+<h3 id="peer-sync" class="tsd-anchor-link">Peer sync<a href="#peer-sync" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>When <code>server_index.sync.enabled</code> is on, <code>PetQueryServerIndexSync</code> syncs the
+index at startup and then every <code>sync.interval</code> after the previous run ends.
+For each known server, it fetches <code>GET &lt;uri&gt;/api/server/get</code> and merges the
+returned entries:</p>
+<ul>
+<li>Entries with this server's own UUID, and entries already known with the
+same URI, are skipped.</li>
+<li>Other entries must use <code>http</code> or <code>https</code>. Each is added, or replaces the
+known URI, only if <code>GET &lt;uri&gt;/api/ping/get</code> answers with the same UUID.</li>
+<li>Unreachable servers and rejected entries are logged and skipped; nothing
+is deleted.</li>
+</ul>
+<p>The URI of a server is its base URL; <code>api/...</code> is resolved under its path.
+Requests time out after <code>sync.timeout</code>, do not follow redirects, and read at
+most <code>sync.max_servers</code> entries per peer. Peers need <code>route.api.enabled</code>.</p>
+<div class="tsd-alert tsd-alert-warning"><div class="tsd-alert-title"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><use href="assets/icons.svg#icon-alertWarning"></use></svg><span>Warning</span></div><p>
+Sync makes this server send <code>GET</code> requests to URIs announced by peers,
+including private network addresses. Run it only where that is acceptable,
+or disable <code>server_index.sync.enabled</code>.</p>
+</div>
 <h2 id="🛠️-development" class="tsd-anchor-link">🛠️ Development<a href="#🛠️-development" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <table>
 <thead>
@@ -250,7 +441,11 @@ returns a result:</p>
 </tr>
 <tr>
 <td><code>npm run build</code></td>
-<td>Lint, then compile to <code>dist/</code></td>
+<td>Lint, compile, write the schemas, build the admin GUI</td>
+</tr>
+<tr>
+<td><code>npm run build:schema</code></td>
+<td>Write <code>schema/**/*.json</code> from the <code>.ts</code> schemas</td>
 </tr>
 <tr>
 <td><code>npm run lint</code></td>
@@ -258,16 +453,90 @@ returns a result:</p>
 </tr>
 <tr>
 <td><code>npm run doc</code></td>
-<td>Generate the API documentation into <code>docs/</code></td>
+<td>Generate HTML API docs with the DMT theme into <code>docs/</code></td>
+</tr>
+<tr>
+<td><code>npm run doc:uml</code></td>
+<td>Generate HTML API docs with UML diagrams into <code>docs/</code></td>
+</tr>
+<tr>
+<td><code>npm run doc:markdown</code></td>
+<td>Generate Markdown API docs into <code>docs-markdown/</code></td>
+</tr>
+<tr>
+<td><code>npm run install:gui</code></td>
+<td>Install the admin GUI's dependencies</td>
+</tr>
+<tr>
+<td><code>npm run build:gui</code></td>
+<td>Build the admin GUI into <code>dist/gui/</code></td>
+</tr>
+<tr>
+<td><code>npm run dev:gui</code></td>
+<td>Start the admin GUI dev server with hot reload</td>
 </tr>
 </tbody>
 </table>
 <p>Coding conventions, including one class per file, naming and the copyright
 header, are described in <a href="media/AGENTS.md"><code>AGENTS.md</code></a>.</p>
+<h3 id="schemas" class="tsd-anchor-link">Schemas<a href="#schemas" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>Request and response bodies are defined in <a href="media/schema"><code>schema/</code></a> with
+<code>PetQuerySchema</code>, a wrapper around
+<a href="https://github.com/sinclairzx81/typebox">TypeBox</a>.
+The path mirrors the route, for example
+<code>schema/api/server/put/request.ts</code> for <code>PUT /api/server/put/:uuid</code>.</p>
+<ul>
+<li>
+<p>Each <code>.ts</code> file exports a class with a static <code>schema</code>, a <code>fromJson()</code>
+that returns a typed instance or throws, and a <code>...Values</code> type. Import it
+with <code>#schema/...</code>, for example <code>#schema/api/server/put/request.js</code>.</p>
+</li>
+<li>
+<p>Every JSON route validates its request with the request class's static
+<code>_handle()</code>, which calls the route handler with the typed request and sends
+the response it returns:</p>
+<pre><code class="ts"><span class="hl-6">app</span><span class="hl-1">.</span><span class="hl-0">put</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;/api/server/put/:uuid&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-6">authenticate</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-6">PetQuerySchemaApiServerPutRequest</span><span class="hl-1">.</span><span class="hl-6">_handle</span><span class="hl-1">.</span><span class="hl-0">bind</span><span class="hl-1">(</span><br/><span class="hl-1">		</span><span class="hl-3">this</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">this</span><span class="hl-1">.</span><span class="hl-6">_handleAddServer</span><span class="hl-1">.</span><span class="hl-0">bind</span><span class="hl-1">(</span><span class="hl-3">this</span><span class="hl-1">)</span><br/><span class="hl-1">	)</span><br/><span class="hl-1">);</span>
+</code><button type="button">Copy</button></pre>
+
+<p>An invalid request returns <code>400</code> and a handler error <code>500</code>, both with
+<code>success: false</code> and the messages in <code>error</code>
+(<a href="media/error.json"><code>schema/error.json</code></a>).</p>
+</li>
+<li>
+<p>The <code>.json</code> files next to them are JSON Schema for clients in other
+languages. They are generated; edit the <code>.ts</code> file and run
+<code>npm run build:schema</code> (part of <code>npm run build</code>).</p>
+</li>
+</ul>
+<h3 id="admin-gui" class="tsd-anchor-link">Admin GUI<a href="#admin-gui" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>The admin GUI at <code>/admin</code> is a React app in <a href="media/gui"><code>gui/</code></a>, built with Vite.
+It has its own dependencies, so install them once with
+<code>npm run install:gui</code> before building.</p>
+<ul>
+<li><strong>Production:</strong> <code>npm run build</code> writes the GUI to <code>dist/gui/</code>, which
+<code>route.admin.path</code> points to. Without a build, <code>/admin</code> returns <code>503</code>.</li>
+<li><strong>Development:</strong> start the server, then run <code>npm run dev:gui</code> and open
+<code>http://localhost:5173/admin/</code>. The dev server forwards <code>/api</code> to the
+server on port 50000.</li>
+</ul>
+<p>The GUI has two pages, selected from the menu:</p>
+<ul>
+<li><strong>Config</strong> edits the HTTP port, bearer tokens, result limits, file
+upload, peer sync, routes and <code>/api</code> plugins. It calls
+<code>GET /api/config/get</code> and <code>PUT /api/config/put</code>, which save to
+<code>config/server.json</code>. Changes apply when the server restarts; until
+then, the page shows a pending-restart notice.</li>
+<li><strong>Servers</strong> lists, adds, edits and deletes entries in the server index.</li>
+</ul>
+<p>The pages are public; listing servers needs no token. Viewing the config
+and changing servers need one of the <code>server.authenticate.bearer</code> tokens.
+Anyone with a token can also edit the tokens. The GUI keeps
+the token in the browser tab's <code>sessionStorage</code> until you click <strong>Forget</strong>
+or close the tab. Turn the GUI off with <code>route.admin.enabled</code>.</p>
 <h2 id="📚-documentation" class="tsd-anchor-link">📚 Documentation<a href="#📚-documentation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>The API documentation is generated from the source with
 <a href="https://typedoc.org">TypeDoc</a>:</p>
-<pre><code class="bash"><span class="hl-1">npm</span><span class="hl-0"> </span><span class="hl-2">run</span><span class="hl-0"> </span><span class="hl-2">doc</span>
+<pre><code class="bash"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">doc</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Then open <code>docs/index.html</code>, or use the <strong>Generate and Open Docs</strong> debug
@@ -303,12 +572,21 @@ configuration in VS Code.</p>
 <li>
 <ul>
 <li><a href="#-search-everything"><span>: search everything</span></a></li>
-<li><a href="#-share-your-own-registry"><span>: share your own registry</span></a></li></ul></li>
+<li><a href="#-share-your-own-registry"><span>: share your own registry</span></a></li>
+<li><a href="#-manage-the-server-index"><span>: manage the server index</span></a></li></ul></li>
 <li><a href="#🔌-plugins"><span>🔌 <wbr/>Plugins</span></a></li>
 <li>
 <ul>
 <li><a href="#writing-your-own-plugin"><span>Writing your own plugin</span></a></li></ul></li>
+<li><a href="#persistent-server-index"><span>Persistent server index</span></a></li>
+<li>
+<ul>
+<li><a href="#peer-sync"><span>Peer sync</span></a></li></ul></li>
 <li><a href="#🛠️-development"><span>🛠️ <wbr/>Development</span></a></li>
+<li>
+<ul>
+<li><a href="#schemas"><span>Schemas</span></a></li>
+<li><a href="#admin-gui"><span>Admin <wbr/>GUI</span></a></li></ul></li>
 <li><a href="#📚-documentation"><span>📚 <wbr/>Documentation</span></a></li>
 <li><a href="#📄-license"><span>📄 <wbr/>License</span></a></li></ul></div></details></div>
 <div class="site-menu">
@@ -316,4 +594,26 @@ configuration in VS Code.</p>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container">
 <li>Loading...</li></ul></nav></div></div></div><footer>
 <p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer>
-<div class="overlay"></div></body></html>
+<div class="overlay"></div>
+<script type="module">
+import mermaid from "https://unpkg.com/mermaid@latest/dist/mermaid.esm.min.mjs";
+
+document.documentElement.classList.add("mermaid-enabled");
+
+mermaid.initialize({startOnLoad:true});
+
+requestAnimationFrame(function check() {
+  let some = false;
+  document.querySelectorAll("div.mermaid:not([data-inserted])").forEach(div => {
+    some = true;
+    if (div.querySelector("svg")) {
+      div.dataset.inserted = true;
+    }
+  });
+
+  if (some) {
+    requestAnimationFrame(check);
+  }
+});
+</script>
+</body></html>

@@ -6,22 +6,26 @@
  */
 
 export class PetQueryTypes{
-	static isArray(a:unknown):boolean{
-		return (!!a) && (a.constructor === Array);
+	static isArray(value:unknown):value is unknown[]{
+		return Array.isArray(value);
 	}
-	static isObject(a:unknown):boolean{
-		return (!!a) && (a.constructor === Object);
+	static isObject(value:unknown):value is object{
+		return null !== value
+		&& 'object' === typeof value
+		&& Object.prototype === Object.getPrototypeOf(value);
 	}
-	static isString(a:unknown):boolean{
-		return (!!a) && (a.constructor === String);
+	static isString(value:unknown):value is string{
+		return 'string' === typeof value;
 	}
 	static isInstanceOf<T extends object>(
-		constructor:ConstructorType<T>,
-		obj:unknown
-	):boolean{
-		return null !== obj && obj instanceof constructor;
+		ctor:ConstructorType<T>,
+		value:unknown
+	):value is T{
+		return value instanceof ctor;
 	}
-	static isBoolean(a:unknown):boolean{
-		return (typeof a === 'boolean');
+	static isBoolean(value:unknown):value is boolean{
+		return 'boolean' === typeof value;
+	}
+	destructor():void{
 	}
 };

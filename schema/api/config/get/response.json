@@ -35,6 +35,7 @@
 						"max_results_per_module",
 						"max_results_total",
 						"server_index",
+						"pet_database",
 						"route"
 					],
 					"properties": {
@@ -55,9 +56,34 @@
 						"authenticate": {
 							"type": "object",
 							"required": [
-								"bearer"
+								"mode",
+								"bearer",
+								"session",
+								"lmdb",
+								"ldap",
+								"oidc"
 							],
 							"properties": {
+								"mode": {
+									"anyOf": [
+										{
+											"type": "string",
+											"const": "bearer"
+										},
+										{
+											"type": "string",
+											"const": "lmdb"
+										},
+										{
+											"type": "string",
+											"const": "ldap"
+										},
+										{
+											"type": "string",
+											"const": "oidc"
+										}
+									]
+								},
 								"bearer": {
 									"type": "array",
 									"items": {
@@ -66,6 +92,125 @@
 									},
 									"minItems": 1,
 									"maxItems": 100
+								},
+								"session": {
+									"type": "object",
+									"required": [
+										"cookie_name",
+										"max_age",
+										"secure"
+									],
+									"properties": {
+										"cookie_name": {
+											"type": "string",
+											"pattern": "^[A-Za-z0-9._-]{1,64}$"
+										},
+										"max_age": {
+											"type": "integer",
+											"minimum": 60000,
+											"maximum": 2147483647
+										},
+										"secure": {
+											"type": "boolean"
+										}
+									},
+									"additionalProperties": false
+								},
+								"lmdb": {
+									"type": "object",
+									"required": [
+										"users_name",
+										"sessions_name"
+									],
+									"properties": {
+										"users_name": {
+											"type": "string",
+											"minLength": 1,
+											"maxLength": 128
+										},
+										"sessions_name": {
+											"type": "string",
+											"minLength": 1,
+											"maxLength": 128
+										}
+									},
+									"additionalProperties": false
+								},
+								"ldap": {
+									"type": "object",
+									"required": [
+										"url",
+										"bind_dn",
+										"bind_password",
+										"base_dn",
+										"user_filter",
+										"admin_group"
+									],
+									"properties": {
+										"url": {
+											"type": "string",
+											"maxLength": 4096
+										},
+										"bind_dn": {
+											"type": "string",
+											"maxLength": 4096
+										},
+										"bind_password": {
+											"type": "string",
+											"maxLength": 4096
+										},
+										"base_dn": {
+											"type": "string",
+											"maxLength": 4096
+										},
+										"user_filter": {
+											"type": "string",
+											"maxLength": 4096
+										},
+										"admin_group": {
+											"type": "string",
+											"maxLength": 1024
+										}
+									},
+									"additionalProperties": false
+								},
+								"oidc": {
+									"type": "object",
+									"required": [
+										"issuer",
+										"client_id",
+										"client_secret",
+										"redirect_uri",
+										"scopes",
+										"admin_group"
+									],
+									"properties": {
+										"issuer": {
+											"type": "string",
+											"maxLength": 4096
+										},
+										"client_id": {
+											"type": "string",
+											"maxLength": 1024
+										},
+										"client_secret": {
+											"type": "string",
+											"maxLength": 4096
+										},
+										"redirect_uri": {
+											"type": "string",
+											"maxLength": 4096
+										},
+										"scopes": {
+											"type": "string",
+											"maxLength": 1024
+										},
+										"admin_group": {
+											"type": "string",
+											"maxLength": 1024
+										}
+									},
+									"additionalProperties": false
 								}
 							},
 							"additionalProperties": false
@@ -141,6 +286,20 @@
 										}
 									},
 									"additionalProperties": false
+								}
+							},
+							"additionalProperties": false
+						},
+						"pet_database": {
+							"type": "object",
+							"required": [
+								"name"
+							],
+							"properties": {
+								"name": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 128
 								}
 							},
 							"additionalProperties": false
@@ -228,6 +387,7 @@
 								"max_results_per_module",
 								"max_results_total",
 								"server_index",
+								"pet_database",
 								"route"
 							],
 							"properties": {
@@ -248,9 +408,34 @@
 								"authenticate": {
 									"type": "object",
 									"required": [
-										"bearer"
+										"mode",
+										"bearer",
+										"session",
+										"lmdb",
+										"ldap",
+										"oidc"
 									],
 									"properties": {
+										"mode": {
+											"anyOf": [
+												{
+													"type": "string",
+													"const": "bearer"
+												},
+												{
+													"type": "string",
+													"const": "lmdb"
+												},
+												{
+													"type": "string",
+													"const": "ldap"
+												},
+												{
+													"type": "string",
+													"const": "oidc"
+												}
+											]
+										},
 										"bearer": {
 											"type": "array",
 											"items": {
@@ -259,6 +444,125 @@
 											},
 											"minItems": 1,
 											"maxItems": 100
+										},
+										"session": {
+											"type": "object",
+											"required": [
+												"cookie_name",
+												"max_age",
+												"secure"
+											],
+											"properties": {
+												"cookie_name": {
+													"type": "string",
+													"pattern": "^[A-Za-z0-9._-]{1,64}$"
+												},
+												"max_age": {
+													"type": "integer",
+													"minimum": 60000,
+													"maximum": 2147483647
+												},
+												"secure": {
+													"type": "boolean"
+												}
+											},
+											"additionalProperties": false
+										},
+										"lmdb": {
+											"type": "object",
+											"required": [
+												"users_name",
+												"sessions_name"
+											],
+											"properties": {
+												"users_name": {
+													"type": "string",
+													"minLength": 1,
+													"maxLength": 128
+												},
+												"sessions_name": {
+													"type": "string",
+													"minLength": 1,
+													"maxLength": 128
+												}
+											},
+											"additionalProperties": false
+										},
+										"ldap": {
+											"type": "object",
+											"required": [
+												"url",
+												"bind_dn",
+												"bind_password",
+												"base_dn",
+												"user_filter",
+												"admin_group"
+											],
+											"properties": {
+												"url": {
+													"type": "string",
+													"maxLength": 4096
+												},
+												"bind_dn": {
+													"type": "string",
+													"maxLength": 4096
+												},
+												"bind_password": {
+													"type": "string",
+													"maxLength": 4096
+												},
+												"base_dn": {
+													"type": "string",
+													"maxLength": 4096
+												},
+												"user_filter": {
+													"type": "string",
+													"maxLength": 4096
+												},
+												"admin_group": {
+													"type": "string",
+													"maxLength": 1024
+												}
+											},
+											"additionalProperties": false
+										},
+										"oidc": {
+											"type": "object",
+											"required": [
+												"issuer",
+												"client_id",
+												"client_secret",
+												"redirect_uri",
+												"scopes",
+												"admin_group"
+											],
+											"properties": {
+												"issuer": {
+													"type": "string",
+													"maxLength": 4096
+												},
+												"client_id": {
+													"type": "string",
+													"maxLength": 1024
+												},
+												"client_secret": {
+													"type": "string",
+													"maxLength": 4096
+												},
+												"redirect_uri": {
+													"type": "string",
+													"maxLength": 4096
+												},
+												"scopes": {
+													"type": "string",
+													"maxLength": 1024
+												},
+												"admin_group": {
+													"type": "string",
+													"maxLength": 1024
+												}
+											},
+											"additionalProperties": false
 										}
 									},
 									"additionalProperties": false
@@ -334,6 +638,20 @@
 												}
 											},
 											"additionalProperties": false
+										}
+									},
+									"additionalProperties": false
+								},
+								"pet_database": {
+									"type": "object",
+									"required": [
+										"name"
+									],
+									"properties": {
+										"name": {
+											"type": "string",
+											"minLength": 1,
+											"maxLength": 128
 										}
 									},
 									"additionalProperties": false

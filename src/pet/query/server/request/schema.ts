@@ -27,6 +27,11 @@ export type PetQueryServerRequestSchemaInput = {
 	files:PetQueryServerRequest['files'];
 };
 
+export type PetQueryServerRequestSchemaFetchResult = {
+	status:uint16_t;
+	json:unknown;
+};
+
 // Base of all validated requests. Subclasses add a static schema, a
 // static fromJson(), a static _handle() and getters for the values.
 export abstract class PetQueryServerRequestSchema<T>{
@@ -46,6 +51,41 @@ export abstract class PetQueryServerRequestSchema<T>{
 		}
 		catch(UNUSED_e){
 		}
+	}
+
+	static async _fetchJson(
+		uri:uri_t,
+		path:utf8_t,
+		timeout:milliseconds_t,
+		signal:AbortSignal
+	):Promise<PetQueryServerRequestSchemaFetchResult>{
+		const response = await fetch(
+			PetQueryServerRequestSchema._resolve(uri,path),
+			{
+				method:'GET',
+				headers:{accept:'application/json'},
+				redirect:'error',
+				signal:AbortSignal.any([
+					signal,
+					AbortSignal.timeout(timeout)
+				])
+			}
+		);
+		if(!response.ok){
+			throw new Error(`HTTP ${response.status} ${response.statusText}`);
+		}
+		return {
+			status:response.status,
+			json:await response.json()
+		};
+	}
+
+	static isHttpUri(uri:utf8_t):boolean{
+		if(!URL.canParse(uri)){
+			return false;
+		}
+		const protocol = new URL(uri).protocol;
+		return 'http:' === protocol || 'https:' === protocol;
 	}
 
 	// Validates req with parse, passes the typed request to handler and
@@ -107,5 +147,18 @@ export abstract class PetQueryServerRequestSchema<T>{
 			request?.destructor();
 			response?.destructor();
 		}
+	}
+
+	protected static _resolve(uri:uri_t,path:utf8_t):URL{
+		if(!PetQueryServerRequestSchema.isHttpUri(uri)){
+			throw new Error(`Unsupported server URI: ${uri}`);
+		}
+		const base = new URL(uri);
+		if(!base.pathname.endsWith('/')){
+			base.pathname += '/';
+		}
+		base.search = '';
+		base.hash = '';
+		return new URL(path,base);
 	}
 };

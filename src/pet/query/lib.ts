@@ -57,4 +57,6 @@ export class PetQueryLib{
 		}
 		return ret;
 	}
+	destructor():void{
+	}
 };

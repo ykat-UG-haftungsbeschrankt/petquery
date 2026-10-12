@@ -34,4 +34,6 @@ export class PetQueryServerCallbackRedirectPetqueryOrg{
 		}
 		next();
 	}
+	destructor():void{
+	}
 };

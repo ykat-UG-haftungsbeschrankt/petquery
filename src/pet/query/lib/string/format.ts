@@ -17,10 +17,11 @@ export class PetQueryLibStringFormat{
 	}
 
 	protected _getEscapeFunction(fn:string):((val:unknown)=>string){
-		if(!this._escape.has(fn)){
+		const escape = this._escape.get(fn);
+		if(undefined === escape){
 			throw new Error(`Escape function "${fn}" is not registered`);
 		}
-		return this._escape.get(fn)!;
+		return escape;
 	}
 
 	protected _quote(val:unknown):string{
@@ -37,39 +38,47 @@ export class PetQueryLibStringFormat{
 				+'([^'+this._delimiters[1]+']*)'
 				+this._delimiters[1]
 				,'gmi'
-			),(UNUSED_match:string,key:string)=>{
-				var matches;
-				var ret = '';
-
-				if(!key.length){
-					ret = this._delimiters[1];
-				}else if(key.length == 1
-				      && key == this._delimiters[0]
-				){
-					ret = this._delimiters[0];
-				}else if(key.charAt(0) == '@'){
-					ret = String(arr[key.substring(1)]);
-				}else if(key.charAt(0) == '#'){
-					ret = '{'+key.substring(1)+'}';
-				}else if(key.charAt(0) == '|'){
-					var args = key.split('|');
-					args.shift();
-					var fn = args.shift() ?? '';
-					ret = this._getEscapeFunction(fn)(arr[args[0]]);
-				}else if(null !== (matches = key.match(/([^|]+)\|(.*)/))
-				      && matches.length
-				){
-					var str = arr[matches[1].trim()];
-					matches[2].split('|').map((val:string)=>{
-						str = this._getEscapeFunction(val.trim())(str);
-					},this);
-					ret = String(str);
-				}else{
-					ret = this._getEscapeFunction('default')(arr[key]);
-				}
-
-				return ret;
-			}
+			),
+			this._replacePlaceholder.bind(this,arr)
 		);
 	}
-}
+
+	protected _replacePlaceholder(
+		arr:Record<string,unknown>,
+		UNUSED_match:string,
+		key:string
+	):string{
+		const opening = this._delimiters[0];
+		const closing = this._delimiters[1];
+		if(0 === key.length){
+			return closing;
+		}
+		if(1 === key.length && opening === key){
+			return opening;
+		}
+		if('@' === key.charAt(0)){
+			return String(arr[key.substring(1)]);
+		}
+		if('#' === key.charAt(0)){
+			return '{'+key.substring(1)+'}';
+		}
+		if('|' === key.charAt(0)){
+			const args = key.split('|');
+			args.shift();
+			const fn = args.shift() ?? '';
+			return this._getEscapeFunction(fn)(arr[args[0]]);
+		}
+
+		const matches = key.match(/([^|]+)\|(.*)/);
+		if(null !== matches && 0 < matches.length){
+			let value = arr[matches[1].trim()];
+			for(const name of matches[2].split('|')){
+				value = this._getEscapeFunction(name.trim())(value);
+			}
+			return String(value);
+		}
+		return this._getEscapeFunction('default')(arr[key]);
+	}
+	destructor():void{
+	}
+};

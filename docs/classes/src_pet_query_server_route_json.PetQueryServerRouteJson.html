@@ -11,14 +11,14 @@
 <li><a href="../modules/src_pet_query_server_route_json.html">src/pet/query/server/route/json</a></li>
 <li><a href="" aria-current="page">PetQueryServerRouteJson</a></li></ul>
 <h1>Class PetQueryServerRouteJson</h1></div>
-<section class="tsd-panel tsd-hierarchy" data-refl="909">
+<section class="tsd-panel tsd-hierarchy" data-refl="1891">
 <h4>Hierarchy (<a href="../hierarchy.html#src/pet/query/server/route/json.PetQueryServerRouteJson">View Summary</a>)</h4>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><a href="src_pet_query_server_route.PetQueryServerRoute.html" class="tsd-signature-type tsd-kind-class">PetQueryServerRoute</a>
 <ul class="tsd-hierarchy">
 <li class="tsd-hierarchy-item"><span class="tsd-hierarchy-target">PetQueryServerRouteJson</span></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/ykat-UG-haftungsbeschrankt/petquery/blob/dd62bf19986027402a7795911cd2186e8d8c9796/src/pet/query/server/route/json.ts#L20">src/pet/query/server/route/json.ts:20</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/ykat-UG-haftungsbeschrankt/petquery/blob/504ae9c1683d4c463a64991c8b284c5e4bba48b4/src/pet/query/server/route/json.ts#L14">src/pet/query/server/route/json.ts:14</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -34,7 +34,9 @@
 </div></section>
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading tsd-anchor-link" id="methods">Methods<a href="#methods" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
-<div class="tsd-index-list"><a href="#_handle" class="tsd-index-link tsd-is-protected"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>_<wbr/>handle</span></a>
+<div class="tsd-index-list"><a href="#_geterrormessage" class="tsd-index-link tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>_<wbr/>get<wbr/>Error<wbr/>Message</span></a>
+<a href="#_handlesearch" class="tsd-index-link tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>_<wbr/>handle<wbr/>Search</span></a>
+<a href="#_query" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>_<wbr/>query</span></a>
 <a href="#register" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>register</span></a>
 </div></section></div></details></section></section>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Constructors"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -53,7 +55,7 @@
 <h4 class="tsd-returns-title">Returns <a href="" class="tsd-signature-type tsd-kind-class">PetQueryServerRouteJson</a></h4><aside class="tsd-sources">
 <p>Inherited from <a href="src_pet_query_server_route.PetQueryServerRoute.html">PetQueryServerRoute</a>.<a href="src_pet_query_server_route.PetQueryServerRoute.html#constructor">constructor</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ykat-UG-haftungsbeschrankt/petquery/blob/dd62bf19986027402a7795911cd2186e8d8c9796/src/pet/query/server/route.ts#L14">src/pet/query/server/route.ts:14</a></li></ul></aside></div></li></ul></section></section></details>
+<li>Defined in <a href="https://github.com/ykat-UG-haftungsbeschrankt/petquery/blob/504ae9c1683d4c463a64991c8b284c5e4bba48b4/src/pet/query/server/route.ts#L21">src/pet/query/server/route.ts:21</a></li></ul></aside></div></li></ul></section></section></details>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Properties"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
 <h2 class="tsd-anchor-link" id="properties-1">Properties<a href="#properties-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
 <section>
@@ -62,24 +64,54 @@
 <div class="tsd-signature"><span class="tsd-kind-property">_server</span><span class="tsd-signature-symbol">:</span> <a href="src_pet_query_server.PetQueryServer.html" class="tsd-signature-type tsd-kind-class">PetQueryServer</a></div><aside class="tsd-sources">
 <p>Inherited from <a href="src_pet_query_server_route.PetQueryServerRoute.html">PetQueryServerRoute</a>.<a href="src_pet_query_server_route.PetQueryServerRoute.html#_server">_server</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ykat-UG-haftungsbeschrankt/petquery/blob/dd62bf19986027402a7795911cd2186e8d8c9796/src/pet/query/server/route.ts#L12">src/pet/query/server/route.ts:12</a></li></ul></aside></section></section></details>
+<li>Defined in <a href="https://github.com/ykat-UG-haftungsbeschrankt/petquery/blob/504ae9c1683d4c463a64991c8b284c5e4bba48b4/src/pet/query/server/route.ts#L19">src/pet/query/server/route.ts:19</a></li></ul></aside></section></section></details>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
 <h2 class="tsd-anchor-link" id="methods-1">Methods<a href="#methods-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
 <section>
-<section class="tsd-panel tsd-member tsd-is-protected">
-<h3 class="tsd-anchor-link" id="_handle"><code class="tsd-tag">Protected</code><span>_<wbr/>handle</span><a href="#_handle" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
-<ul class="tsd-signatures tsd-is-protected">
-<li class="">
-<div class="tsd-signature tsd-anchor-link" id="_handle-1"><span class="tsd-kind-call-signature">_handle</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">req</span><span class="tsd-signature-symbol">:</span> <a href="../types/src_pet_query_server_types.PetQueryServerRequest.html" class="tsd-signature-type tsd-kind-type-alias">PetQueryServerRequest</a><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">res</span><span class="tsd-signature-symbol">:</span> <a href="../types/src_pet_query_server_types.PetQueryServerResponse.html" class="tsd-signature-type tsd-kind-type-alias">PetQueryServerResponse</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><a href="#_handle-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited">
+<h3 class="tsd-anchor-link" id="_geterrormessage"><code class="tsd-tag">Protected</code><span>_<wbr/>get<wbr/>Error<wbr/>Message</span><a href="#_geterrormessage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-is-protected tsd-is-inherited">
+<li class="tsd-is-inherited">
+<div class="tsd-signature tsd-anchor-link" id="_geterrormessage-1"><span class="tsd-kind-call-signature">_getErrorMessage</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">error</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><a href="#_geterrormessage-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
 <div class="tsd-description">
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
-<li><span><span class="tsd-kind-parameter">req</span>: <a href="../types/src_pet_query_server_types.PetQueryServerRequest.html" class="tsd-signature-type tsd-kind-type-alias">PetQueryServerRequest</a></span></li>
-<li><span><span class="tsd-kind-parameter">res</span>: <a href="../types/src_pet_query_server_types.PetQueryServerResponse.html" class="tsd-signature-type tsd-kind-type-alias">PetQueryServerResponse</a></span></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<li><span><span class="tsd-kind-parameter">error</span>: <span class="tsd-signature-type">unknown</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4><aside class="tsd-sources">
+<p>Inherited from <a href="src_pet_query_server_route.PetQueryServerRoute.html">PetQueryServerRoute</a>.<a href="src_pet_query_server_route.PetQueryServerRoute.html#_geterrormessage">_getErrorMessage</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ykat-UG-haftungsbeschrankt/petquery/blob/dd62bf19986027402a7795911cd2186e8d8c9796/src/pet/query/server/route/json.ts#L37">src/pet/query/server/route/json.ts:37</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/ykat-UG-haftungsbeschrankt/petquery/blob/504ae9c1683d4c463a64991c8b284c5e4bba48b4/src/pet/query/server/route.ts#L27">src/pet/query/server/route.ts:27</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member tsd-is-protected tsd-is-inherited">
+<h3 class="tsd-anchor-link" id="_handlesearch"><code class="tsd-tag">Protected</code><span>_<wbr/>handle<wbr/>Search</span><a href="#_handlesearch" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-is-protected tsd-is-inherited">
+<li class="tsd-is-inherited">
+<div class="tsd-signature tsd-anchor-link" id="_handlesearch-1"><span class="tsd-kind-call-signature">_handleSearch</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">pluginFilter</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">request</span><span class="tsd-signature-symbol">:</span> <a href="schema_search_request.PetQuerySchemaSearchRequest.html" class="tsd-signature-type tsd-kind-class">PetQuerySchemaSearchRequest</a><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="schema_search_response.PetQuerySchemaSearchResponse.html" class="tsd-signature-type tsd-kind-class">PetQuerySchemaSearchResponse</a><span class="tsd-signature-symbol">&gt;</span><a href="#_handlesearch-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">pluginFilter</span>: <span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span></span></li>
+<li><span><span class="tsd-kind-parameter">request</span>: <a href="schema_search_request.PetQuerySchemaSearchRequest.html" class="tsd-signature-type tsd-kind-class">PetQuerySchemaSearchRequest</a></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="schema_search_response.PetQuerySchemaSearchResponse.html" class="tsd-signature-type tsd-kind-class">PetQuerySchemaSearchResponse</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<p>Inherited from <a href="src_pet_query_server_route.PetQueryServerRoute.html">PetQueryServerRoute</a>.<a href="src_pet_query_server_route.PetQueryServerRoute.html#_handlesearch">_handleSearch</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/ykat-UG-haftungsbeschrankt/petquery/blob/504ae9c1683d4c463a64991c8b284c5e4bba48b4/src/pet/query/server/route.ts#L33">src/pet/query/server/route.ts:33</a></li></ul></aside></div></li></ul></section>
+<section class="tsd-panel tsd-member tsd-is-inherited">
+<h3 class="tsd-anchor-link" id="_query"><span>_<wbr/>query</span><a href="#_query" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-is-inherited">
+<li class="tsd-is-inherited">
+<div class="tsd-signature tsd-anchor-link" id="_query-1"><span class="tsd-kind-call-signature">_query</span><span class="tsd-signature-symbol">(</span><br/>    <span class="tsd-kind-parameter">query</span><span class="tsd-signature-symbol">:</span> <a href="src_pet_query_plugin_query.PetQueryPluginQuery.html" class="tsd-signature-type tsd-kind-class">PetQueryPluginQuery</a><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-kind-parameter">pluginFilter</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol">,</span><br/><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="src_pet_query_result.PetQueryResult.html" class="tsd-signature-type tsd-kind-class">PetQueryResult</a><span class="tsd-signature-symbol">&gt;</span><a href="#_query-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
+<div class="tsd-description">
+<div class="tsd-parameters">
+<h4 class="tsd-parameters-title">Parameters</h4>
+<ul class="tsd-parameter-list">
+<li><span><span class="tsd-kind-parameter">query</span>: <a href="src_pet_query_plugin_query.PetQueryPluginQuery.html" class="tsd-signature-type tsd-kind-class">PetQueryPluginQuery</a></span></li>
+<li><span><span class="tsd-kind-parameter">pluginFilter</span>: <span class="tsd-signature-type">Set</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">null</span></span></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="src_pet_query_result.PetQueryResult.html" class="tsd-signature-type tsd-kind-class">PetQueryResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<p>Inherited from <a href="src_pet_query_server_route.PetQueryServerRoute.html">PetQueryServerRoute</a>.<a href="src_pet_query_server_route.PetQueryServerRoute.html#_query">_query</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/ykat-UG-haftungsbeschrankt/petquery/blob/504ae9c1683d4c463a64991c8b284c5e4bba48b4/src/pet/query/server/route.ts#L55">src/pet/query/server/route.ts:55</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="register"><span>register</span><a href="#register" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -93,7 +125,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <p>Overrides <a href="src_pet_query_server_route.PetQueryServerRoute.html">PetQueryServerRoute</a>.<a href="src_pet_query_server_route.PetQueryServerRoute.html#register">register</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/ykat-UG-haftungsbeschrankt/petquery/blob/dd62bf19986027402a7795911cd2186e8d8c9796/src/pet/query/server/route/json.ts#L21">src/pet/query/server/route/json.ts:21</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/ykat-UG-haftungsbeschrankt/petquery/blob/504ae9c1683d4c463a64991c8b284c5e4bba48b4/src/pet/query/server/route/json.ts#L15">src/pet/query/server/route/json.ts:15</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -114,7 +146,7 @@
 <details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Properties"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Properties</summary>
 <div><a href="#_server" class="tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Property"><use href="../assets/icons.svg#icon-1024"></use></svg><span>_<wbr/>server</span></a></div></details>
 <details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Methods</summary>
-<div><a href="#_handle" class="tsd-is-protected"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>_<wbr/>handle</span></a><a href="#register"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>register</span></a></div></details></div></details></div>
+<div><a href="#_geterrormessage" class="tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>_<wbr/>get<wbr/>Error<wbr/>Message</span></a><a href="#_handlesearch" class="tsd-is-protected tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>_<wbr/>handle<wbr/>Search</span></a><a href="#_query" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>_<wbr/>query</span></a><a href="#register"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Method"><use href="../assets/icons.svg#icon-2048"></use></svg><span>register</span></a></div></details></div></details></div>
 <div class="site-menu">
 <nav class="tsd-navigation"><a href="../modules.html">petquery</a>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container">

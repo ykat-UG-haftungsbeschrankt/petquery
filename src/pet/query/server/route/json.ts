@@ -7,8 +7,6 @@
 
 import type {default as Express} from 'express';
 import {PetQueryServerRoute} from '#petquery/server/route.js';
-import {PetQueryServerCallbackNext} from
-	'#petquery/server/callback/next.js';
 import {PetQuerySchemaSearchRequest} from '#schema/search/request.js';
 
 export class PetQueryServerRouteJson extends PetQueryServerRoute{
@@ -20,7 +18,7 @@ export class PetQueryServerRouteJson extends PetQueryServerRoute{
 
 		app.all(
 			'/json',
-			config.authenticate ?? PetQueryServerCallbackNext.handle,
+			this._server._authenticateUser.bind(this._server),
 			PetQuerySchemaSearchRequest._handle.bind(
 				this,
 				this._handleSearch.bind(this,null)

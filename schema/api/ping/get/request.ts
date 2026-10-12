@@ -17,17 +17,12 @@ import type {
 	PetQueryServerRequest,
 	PetQueryServerResponse
 } from '#petquery/server/types.js';
-import type {PetQuerySchemaApiPingGetResponse} from
+import {PetQuerySchemaApiPingGetResponse} from
 	'#schema/api/ping/get/response.js';
 
-const T = PetQuerySchema.type;
-
-// Unknown query parameters are ignored.
-const schema = T.Object({
-	params:T.Object({}),
-	query:T.Object({}),
-	body:T.Object({})
-},{title:'GET /api/ping/get request'});
+const schema = PetQuerySchema.emptyRequest(
+	'GET /api/ping/get request'
+);
 
 export type PetQuerySchemaApiPingGetRequestValues =
 	PetQuerySchemaStatic<typeof schema>;
@@ -37,6 +32,23 @@ export class PetQuerySchemaApiPingGetRequest
 	extends PetQueryServerRequestSchema<PetQuerySchemaApiPingGetRequestValues>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);
+
+	static async fetch(
+		uri:uri_t,
+		timeout:milliseconds_t,
+		signal:AbortSignal
+	):Promise<PetQuerySchemaApiPingGetResponse>{
+		const result = await PetQueryServerRequestSchema._fetchJson(
+			uri,
+			'api/ping/get',
+			timeout,
+			signal
+		);
+		return PetQuerySchemaApiPingGetResponse.fromJson(
+			result.status,
+			result.json
+		);
+	}
 
 	// Throws an Error naming each invalid field.
 	static fromJson(

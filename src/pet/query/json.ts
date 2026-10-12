@@ -54,4 +54,6 @@ export class PetQueryJson{
 			throw new Error('Value is not a string');
 		}
 	}
+	destructor():void{
+	}
 };

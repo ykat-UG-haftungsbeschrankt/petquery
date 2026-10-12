@@ -9,9 +9,9 @@ import type {default as Express} from 'express';
 import type {PetQueryServer} from '#petquery/server.js';
 import { PetQueryPluginQuery } from '#petquery/plugin/query.js';
 import { PetQueryResult } from '#petquery/result.js';
-import { PetQueryResultDataEntry } from '#petquery/plugin/result/entry.js';
+import {PetQueryResultDataEntry} from '#petquery/result/data/entry.js';
 import util from 'node:util';
-import { PetQueryResultData } from '#petquery/plugin/result.js';
+import {PetQueryResultData} from '#petquery/result/data.js';
 import {PetQuerySchemaSearchRequest} from '#schema/search/request.js';
 import {PetQuerySchemaSearchResponse} from '#schema/search/response.js';
 
@@ -46,10 +46,13 @@ export abstract class PetQueryServerRoute{
 				)
 			);
 		}
-		return PetQuerySchemaSearchResponse.fromResult(
-			200,
-			await this._query(query,pluginFilter)
+		const result = await this._query(query,pluginFilter);
+		result.getData().append(
+			new PetQueryResultData(
+				await this._server._getPetStore().search(request.getQuery())
+			)
 		);
+		return PetQuerySchemaSearchResponse.fromResult(200,result);
 	}
 
 	async _query(
@@ -84,5 +87,7 @@ export abstract class PetQueryServerRoute{
 			error,
 			new PetQueryResultData(data.slice(0,config.max_results_total))
 		);
+	}
+	destructor():void{
 	}
 };

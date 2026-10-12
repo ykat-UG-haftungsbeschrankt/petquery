@@ -103,11 +103,14 @@ readable only by its owner and holds the bearer tokens.
 | Endpoint | Auth | Returns | Turned on by |
 |---|:---:|---|---|
 | `/` | — | HTML search page | `route["/"].enabled` |
-| `/json` | 🔐 | Merged results from **all** plugins | `route.json.enabled` |
-| `/api` | 🔐 | Results from **one** plugin only | `route.api.enabled` |
-| `/api/server/*` | 🔐 | Manage the server index (list and ping are public) | `route.api.enabled` |
-| `/api/config/*` | 🔐 | Read or save the editable config | `route.api.enabled` |
+| `/json` | 🔐 user/admin | Merged results from all plugins and local pets | `route.json.enabled` |
+| `/api` | 🔐 user/admin | Results from the configured API plugins | `route.api.enabled` |
+| `/api/server/*` | varies | Read or manage the server index | `route.api.enabled` |
+| `/api/config/*` | 🔐 admin | Read or save the editable config | `route.api.enabled` |
+| `/api/pets` | 🔐 user/admin | Manage local pet JSON records | `route.api.enabled` |
+| `/auth/*` | varies | Login, sessions and user management | — |
 | `/admin` | — | Admin GUI (see [Admin GUI](#admin-gui)) | `route.admin.enabled` |
+| `/docs/` | — | Generated API documentation | — |
 
 Every search endpoint accepts `GET` query strings, JSON or form `POST`
 bodies, and `multipart/form-data` file uploads.
@@ -116,6 +119,50 @@ bodies, and `multipart/form-data` file uploads.
 |---|---|---|
 | `query` | `string` | The pet ID to look up, e.g. a microchip number |
 | `tracerouteUuid` | `uuid[]` | Servers the query has passed through (federation) |
+
+### API schemas
+
+Successful API responses use this envelope:
+
+```json
+{
+	"success": true,
+	"error": [],
+	"data": {}
+}
+```
+
+Validated request and response schemas are generated from the TypeScript
+definitions. The complete schema index is:
+
+| Endpoint | Request schema | Response schema |
+|---|---|---|
+| `GET /api/ping/get` | [`request.json`](schema/api/ping/get/request.json) | [`response.json`](schema/api/ping/get/response.json) |
+| `GET /api/server/get` | [`request.json`](schema/api/server/get/request.json) | [`response.json`](schema/api/server/get/response.json) |
+| `PUT /api/server/put/:uuid` | [`request.json`](schema/api/server/put/request.json) | [`response.json`](schema/api/server/put/response.json) |
+| `DELETE /api/server/delete/:uuid` | [`request.json`](schema/api/server/delete/request.json) | [`response.json`](schema/api/server/delete/response.json) |
+| `GET /api/config/get` | [`request.json`](schema/api/config/get/request.json) | [`response.json`](schema/api/config/get/response.json) |
+| `PUT /api/config/put` | [`request.json`](schema/api/config/put/request.json) | [`response.json`](schema/api/config/put/response.json) |
+| `POST /json` | [`request.json`](schema/search/request.json) | [`response.json`](schema/search/response.json) |
+| `POST /api` | [`request.json`](schema/search/request.json) | [`response.json`](schema/search/response.json) |
+
+The request-schema envelope mirrors the Express request parts:
+
+```json
+{
+	"params": {},
+	"query": {},
+	"body": {}
+}
+```
+
+For `POST /json` and `POST /api`, `body.query` is the search string.
+`body.tracerouteUuid` is an optional UUID array with at most 1000 entries.
+Query-string values are strings, so `query.iframe` accepts `"true"` or
+`"false"`, while JSON and form bodies accept a boolean.
+
+All generated schemas are also available as TypeScript sources under
+[`schema/`](schema) and can be regenerated with `npm run build:schema`.
 
 ### `/json`: search everything
 
@@ -233,9 +280,9 @@ console.log(await response.json());
 ### `/api/server/*`: manage the server index
 
 These routes manage the [persistent server index](#persistent-server-index).
-`GET` routes are public so that peers can sync; `PUT` and `DELETE` use the
-same authentication as `/api`. Each path names its HTTP method, and the
-request must use that method.
+`GET` routes are public so that peers can sync; `PUT` and `DELETE` require the
+`admin` group. Each path names its HTTP method, and the request must use that
+method.
 
 | Method | Path | Body | Action |
 |---|---|---|---|
@@ -266,6 +313,158 @@ await fetch(
 	}
 );
 ```
+
+### `/api/config/*`: read and save configuration
+
+These routes require the `admin` group. `GET /api/config/get` returns:
+
+```json
+{
+	"success": true,
+	"error": [],
+	"data": {
+		"active": {},
+		"saved": null,
+		"saved_error": null,
+		"plugins": ["test"]
+	}
+}
+```
+
+`active` is the running configuration. `saved` is the configuration file
+that will be applied after restart, or `null` if it has not been saved.
+`PUT /api/config/put` accepts the same configuration shape as `data.saved`.
+The complete request and response definitions are in
+[`schema/api/config/`](schema/api/config).
+
+The `authenticate` configuration contains:
+
+```json
+{
+	"mode": "bearer",
+	"bearer": ["token"],
+	"session": {
+		"cookie_name": "petquery_session",
+		"max_age": 28800000,
+		"secure": false
+	},
+	"lmdb": {
+		"users_name": "users",
+		"sessions_name": "sessions"
+	},
+	"ldap": {
+		"url": "ldaps://ldap.example.org",
+		"bind_dn": "",
+		"bind_password": "",
+		"base_dn": "ou=people,dc=example,dc=org",
+		"user_filter": "(uid={{username}})",
+		"admin_group": "petquery-admin"
+	},
+	"oidc": {
+		"issuer": "https://login.example.org",
+		"client_id": "",
+		"client_secret": "",
+		"redirect_uri": "https://petquery.example.org/auth/oidc/callback",
+		"scopes": "openid profile email groups",
+		"admin_group": "petquery-admin"
+	}
+}
+```
+
+The provider `mode` is one of `bearer`, `lmdb`, `ldap` or `oidc`.
+Secrets should be supplied through a protected configuration file and
+the server should use HTTPS when credentials are sent over the network.
+
+### `/api/pets`: manage local pet records
+
+Authenticated `admin` and `user` accounts can manage the local pet database.
+The pet database is LMDB-backed and each record has this shape:
+
+```json
+{
+	"pet_id": "112093400000465",
+	"name": "Bob",
+	"species": "dog",
+	"owner_contact": "owner@example.org",
+	"notes": "Friendly and chipped.",
+	"files": [
+		"https://files.example.org/bob-photo.jpg"
+	]
+}
+```
+
+All six fields are required. `files` may be an empty array.
+
+| Method | Path | Request body | Result |
+|---|---|---|---|
+| `GET` | `/api/pets` | — | All pet records |
+| `POST` | `/api/pets` | Pet record | Create a record |
+| `GET` | `/api/pets/:pet_id` | — | One pet record |
+| `PUT` | `/api/pets/:pet_id` | Pet record | Replace a record |
+| `DELETE` | `/api/pets/:pet_id` | — | Delete a record |
+
+Successful responses use the common envelope. Invalid fields return `400`,
+missing records return `404`, and authorization failures return `401` or
+`403`.
+
+### `/auth/*`: sessions and user management
+
+`GET /auth/mode` is public and returns the selected provider:
+
+```json
+{
+	"success": true,
+	"error": [],
+	"data": {"mode": "lmdb"}
+}
+```
+
+`POST /auth/login` accepts a username and password for LMDB or LDAP:
+
+```json
+{
+	"username": "alice",
+	"password": "correct horse battery staple"
+}
+```
+
+The server sets an HttpOnly session cookie and returns:
+
+```json
+{
+	"success": true,
+	"error": [],
+	"data": {
+		"user": {
+			"username": "alice",
+			"displayName": "Alice",
+			"group": "admin",
+			"provider": "lmdb"
+		}
+	}
+}
+```
+
+For bearer mode, send the bearer token in the `Authorization` header.
+For OIDC mode, open `GET /auth/oidc/login`; the callback creates the same
+session and redirects to the appropriate Admin page.
+
+| Method | Path | Auth | Action |
+|---|---|---|---|
+| `GET` | `/auth/mode` | — | Read the selected provider |
+| `GET` | `/auth/session` | Session | Read the current user |
+| `POST` | `/auth/login` | Provider-specific | Create a session |
+| `POST` | `/auth/logout` | Session | Revoke the session |
+| `GET` | `/auth/oidc/login` | — | Start OIDC login |
+| `GET` | `/auth/oidc/callback` | OIDC | Finish OIDC login |
+| `GET` | `/auth/users` | Admin | List users or active external sessions |
+| `POST` | `/auth/users` | Admin | Create an LMDB user |
+| `PUT` | `/auth/users/:username` | Admin | Update an LMDB user |
+| `DELETE` | `/auth/users/:username` | Admin | Delete an LMDB user |
+
+Local users have `admin` or `user` groups. LDAP and OIDC users are
+read-only in the Users tab; their group is determined by the configured
+provider group mapping.
 
 ## 🔌 Plugins
 
@@ -403,7 +602,9 @@ most `sync.max_servers` entries per peer. Peers need `route.api.enabled`.
 | `npm run build` | Lint, compile, write the schemas, build the admin GUI |
 | `npm run build:schema` | Write `schema/**/*.json` from the `.ts` schemas |
 | `npm run lint` | ESLint: unused code and copyright headers |
-| `npm run doc` | Generate the API documentation into `docs/` |
+| `npm run doc` | Generate HTML API docs with the DMT theme into `docs/` |
+| `npm run doc:uml` | Generate HTML API docs with UML diagrams into `docs/` |
+| `npm run doc:markdown` | Generate Markdown API docs into `docs-markdown/` |
 | `npm run install:gui` | Install the admin GUI's dependencies |
 | `npm run build:gui` | Build the admin GUI into `dist/gui/` |
 | `npm run dev:gui` | Start the admin GUI dev server with hot reload |
@@ -453,23 +654,36 @@ It has its own dependencies, so install them once with
 - **Production:** `npm run build` writes the GUI to `dist/gui/`, which
   `route.admin.path` points to. Without a build, `/admin` returns `503`.
 - **Development:** start the server, then run `npm run dev:gui` and open
-  `http://localhost:5173/admin/`. The dev server forwards `/api` to the
-  server on port 50000.
+  `http://localhost:5173/admin/`. The dev server forwards `/api`, `/auth`
+  and `/docs` to the server on port 50000.
+- **Documentation:** generated TypeDoc files are served at `/docs/` and are
+  browsable from the GUI's Docs page.
 
-The GUI has two pages, selected from the menu:
+The GUI has Home, Docs and Admin sections:
 
-- **Config** edits the HTTP port, bearer tokens, result limits, file
-  upload, peer sync, routes and `/api` plugins. It calls
+- **Home** and the PetQuery logo open `/admin/search`, which queries the
+  `/json` endpoint with a bearer token and can upload supporting files.
+- **Docs** embeds the generated API documentation served at `/docs/`.
+- **Admin** opens `/admin/admin/config` and contains Config, Servers, Users
+  and Pets. Config selects bearer, LMDB, LDAP or OpenID Connect
+  authentication and edits the HTTP port, session settings, provider
+  settings, bearer tokens, result limits, file upload, peer sync, routes and
+  `/api` plugins. It calls
   `GET /api/config/get` and `PUT /api/config/put`, which save to
   `config/server.json`. Changes apply when the server restarts; until
   then, the page shows a pending-restart notice.
 - **Servers** lists, adds, edits and deletes entries in the server index.
+- **Users** manages local LMDB users with `admin` and `user` groups. LDAP and
+  OpenID Connect users are displayed read-only from active sessions.
+- **Pets** manages JSON records with required `pet_id`, `name`, `species`,
+  `owner_contact`, `notes` and `files` fields.
 
-The pages are public; listing servers needs no token. Viewing the config
-and changing servers need one of the `server.authenticate.bearer` tokens.
-Anyone with a token can also edit the tokens. The GUI keeps
-the token in the browser tab's `sessionStorage` until you click **Forget**
-or close the tab. Turn the GUI off with `route.admin.enabled`.
+Docs are public. Search and Admin require authentication. The `admin` group
+has full access; the `user` group can search and manage only Pets. Bearer
+tokens remain supported for machine clients. GUI sessions use HttpOnly
+cookies and are kept in LMDB.
+Only the `admin` group can edit authentication settings. Turn the GUI off with
+`route.admin.enabled`.
 
 ## 📚 Documentation
 

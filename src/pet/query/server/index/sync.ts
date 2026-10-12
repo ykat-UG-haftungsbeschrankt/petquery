@@ -6,9 +6,13 @@
  */
 
 import util from 'node:util';
-import {validate as uuidValidate} from 'uuid';
-import {PetQueryTypes} from '#petquery/types.js';
 import type {PetQueryServerIndex} from '#petquery/server/index.js';
+import {PetQuerySchemaApiPingGetRequest} from
+	'#schema/api/ping/get/request.js';
+import {PetQuerySchemaApiServerGetRequest} from
+	'#schema/api/server/get/request.js';
+import {PetQueryServerRequestSchema} from
+	'#petquery/server/request/schema.js';
 
 // Periodically fetches the server list of every known server and merges it
 // into the index. A remote entry is added, or replaces a known URI, only
@@ -154,83 +158,38 @@ export class PetQueryServerIndexSync{
 	}
 
 	protected async _fetchServerList(uri:uri_t):Promise<Map<uuid_t,uri_t>>{
-		const json = await this._fetchJson(uri,'api/server/get');
+		const parsed = await PetQuerySchemaApiServerGetRequest.fetch(
+			uri,
+			this._timeout,
+			this._abortController.signal
+		);
 		const ret = new Map<uuid_t,uri_t>();
-		if(!PetQueryTypes.isObject(json)){
-			throw new Error('Invalid server list response');
-		}
-		const data:unknown = (json as {data?:unknown}).data;
-		if(!PetQueryTypes.isArray(data)){
-			throw new Error('Invalid server list response');
-		}
-		for(const entry of (data as unknown[]).slice(0,this._maxServers)){
-			if(!PetQueryTypes.isObject(entry)){
-				continue;
+		try{
+			const data = parsed.getValues().data;
+			for(const entry of data.slice(0,this._maxServers)){
+				if(PetQueryServerRequestSchema.isHttpUri(entry.uri)){
+					ret.set(entry.uuid,entry.uri);
+				}
 			}
-			const {uuid,uri:entryUri} =
-				entry as {uuid?:unknown,uri?:unknown};
-			if(!PetQueryTypes.isString(uuid)
-			|| !uuidValidate(uuid as string)
-			|| !PetQueryTypes.isString(entryUri)
-			|| !this._isHttpUri(entryUri as string)){
-				continue;
-			}
-			ret.set(uuid as uuid_t,entryUri as uri_t);
+		}
+		finally{
+			parsed.destructor();
 		}
 		return ret;
 	}
 
 	protected async _ping(uri:uri_t):Promise<uuid_t>{
-		const json = await this._fetchJson(uri,'api/ping/get');
-		const data:unknown = PetQueryTypes.isObject(json)
-			? (json as {data?:unknown}).data
-			: undefined;
-		const uuid:unknown = PetQueryTypes.isObject(data)
-			? (data as {uuid?:unknown}).uuid
-			: undefined;
-		if(!PetQueryTypes.isString(uuid) || !uuidValidate(uuid as string)){
-			throw new Error('Invalid ping response');
+		const parsed = await PetQuerySchemaApiPingGetRequest.fetch(
+			uri,
+			this._timeout,
+			this._abortController.signal
+		);
+		try{
+			return parsed.getValues().data.uuid;
 		}
-		return uuid as uuid_t;
-	}
-
-	protected async _fetchJson(uri:uri_t,path:utf8_t):Promise<unknown>{
-		const response = await fetch(this._resolve(uri,path),{
-			method:'GET',
-			headers:{accept:'application/json'},
-			// Redirects could point the request at an unrelated host.
-			redirect:'error',
-			signal:AbortSignal.any([
-				this._abortController.signal,
-				AbortSignal.timeout(this._timeout)
-			])
-		});
-		if(!response.ok){
-			throw new Error(`HTTP ${response.status} ${response.statusText}`);
+		finally{
+			parsed.destructor();
 		}
-		return response.json();
-	}
-
-	// Resolves path against the server's base URI, keeping its own path.
-	protected _resolve(uri:uri_t,path:utf8_t):URL{
-		if(!this._isHttpUri(uri)){
-			throw new Error(`Unsupported server URI: ${uri}`);
-		}
-		const base = new URL(uri);
-		if(!base.pathname.endsWith('/')){
-			base.pathname += '/';
-		}
-		base.search = '';
-		base.hash = '';
-		return new URL(path,base);
-	}
-
-	protected _isHttpUri(uri:utf8_t):boolean{
-		if(!URL.canParse(uri)){
-			return false;
-		}
-		const protocol = new URL(uri).protocol;
-		return 'http:' === protocol || 'https:' === protocol;
 	}
 
 	protected _report(message:utf8_t,error:unknown):void{

@@ -7,8 +7,6 @@
 
 import type {default as Express} from 'express';
 import {PetQueryServerRoute} from '#petquery/server/route.js';
-import {PetQueryServerCallbackNext} from
-	'#petquery/server/callback/next.js';
 import {PetQueryServerConfig} from '#petquery/server/config.js';
 import type {PetQueryServerConfigValues} from
 	'#petquery/server/config.js';
@@ -47,11 +45,9 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 			return;
 		}
 
-		const authenticate =
-			config.authenticate ?? PetQueryServerCallbackNext.handle;
 		app.all(
 			'/api',
-			authenticate,
+			this._server._authenticateUser.bind(this._server),
 			PetQuerySchemaSearchRequest._handle.bind(
 				this,
 				this._handleSearch.bind(this,config.plugins)
@@ -74,7 +70,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		);
 		app.put(
 			'/api/server/put/:uuid',
-			authenticate,
+			this._server._authenticateAdmin.bind(this._server),
 			PetQuerySchemaApiServerPutRequest._handle.bind(
 				this,
 				this._handleAddServer.bind(this)
@@ -82,7 +78,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		);
 		app.delete(
 			'/api/server/delete/:uuid',
-			authenticate,
+			this._server._authenticateAdmin.bind(this._server),
 			PetQuerySchemaApiServerDeleteRequest._handle.bind(
 				this,
 				this._handleDeleteServer.bind(this)
@@ -90,7 +86,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		);
 		app.get(
 			'/api/config/get',
-			authenticate,
+			this._server._authenticateAdmin.bind(this._server),
 			PetQuerySchemaApiConfigGetRequest._handle.bind(
 				this,
 				this._handleGetConfig.bind(this)
@@ -98,7 +94,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		);
 		app.put(
 			'/api/config/put',
-			authenticate,
+			this._server._authenticateAdmin.bind(this._server),
 			PetQuerySchemaApiConfigPutRequest._handle.bind(
 				this,
 				this._handlePutConfig.bind(this)

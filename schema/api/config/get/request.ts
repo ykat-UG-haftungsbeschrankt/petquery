@@ -20,14 +20,9 @@ import type {
 import type {PetQuerySchemaApiConfigGetResponse} from
 	'#schema/api/config/get/response.js';
 
-const T = PetQuerySchema.type;
-
-// Unknown query parameters are ignored.
-const schema = T.Object({
-	params:T.Object({}),
-	query:T.Object({}),
-	body:T.Object({})
-},{title:'GET /api/config/get request'});
+const schema = PetQuerySchema.emptyRequest(
+	'GET /api/config/get request'
+);
 
 export type PetQuerySchemaApiConfigGetRequestValues =
 	PetQuerySchemaStatic<typeof schema>;
