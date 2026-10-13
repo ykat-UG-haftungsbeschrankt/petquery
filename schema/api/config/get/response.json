@@ -8,8 +8,7 @@
 	],
 	"properties": {
 		"success": {
-			"type": "boolean",
-			"const": true
+			"type": "boolean"
 		},
 		"error": {
 			"type": "array",
@@ -34,8 +33,7 @@
 						"file",
 						"max_results_per_module",
 						"max_results_total",
-						"server_index",
-						"pet_database",
+						"index",
 						"route"
 					],
 					"properties": {
@@ -251,7 +249,7 @@
 							"minimum": 1,
 							"maximum": 1000000
 						},
-						"server_index": {
+						"index": {
 							"type": "object",
 							"required": [
 								"sync"
@@ -290,27 +288,13 @@
 							},
 							"additionalProperties": false
 						},
-						"pet_database": {
-							"type": "object",
-							"required": [
-								"name"
-							],
-							"properties": {
-								"name": {
-									"type": "string",
-									"minLength": 1,
-									"maxLength": 128
-								}
-							},
-							"additionalProperties": false
-						},
 						"route": {
 							"type": "object",
 							"required": [
 								"api",
 								"json",
 								"/",
-								"admin"
+								"gui"
 							],
 							"properties": {
 								"api": {
@@ -358,7 +342,7 @@
 									},
 									"additionalProperties": false
 								},
-								"admin": {
+								"gui": {
 									"type": "object",
 									"required": [
 										"enabled"
@@ -386,8 +370,7 @@
 								"file",
 								"max_results_per_module",
 								"max_results_total",
-								"server_index",
-								"pet_database",
+								"index",
 								"route"
 							],
 							"properties": {
@@ -603,7 +586,7 @@
 									"minimum": 1,
 									"maximum": 1000000
 								},
-								"server_index": {
+								"index": {
 									"type": "object",
 									"required": [
 										"sync"
@@ -642,27 +625,13 @@
 									},
 									"additionalProperties": false
 								},
-								"pet_database": {
-									"type": "object",
-									"required": [
-										"name"
-									],
-									"properties": {
-										"name": {
-											"type": "string",
-											"minLength": 1,
-											"maxLength": 128
-										}
-									},
-									"additionalProperties": false
-								},
 								"route": {
 									"type": "object",
 									"required": [
 										"api",
 										"json",
 										"/",
-										"admin"
+										"gui"
 									],
 									"properties": {
 										"api": {
@@ -710,7 +679,7 @@
 											},
 											"additionalProperties": false
 										},
-										"admin": {
+										"gui": {
 											"type": "object",
 											"required": [
 												"enabled"

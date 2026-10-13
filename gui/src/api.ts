@@ -301,7 +301,7 @@ export type ConfigValues = {
 	file:{upload:{enabled:bool_t;max_file_size:uint_t}};
 	max_results_per_module:uint_t;
 	max_results_total:uint_t;
-	server_index:{
+	index:{
 		sync:{
 			enabled:bool_t;
 			interval:uint_t;
@@ -309,12 +309,11 @@ export type ConfigValues = {
 			max_servers:uint_t;
 		};
 	};
-	pet_database:{name:utf8_t};
 	route:{
 		api:{enabled:bool_t;plugins:Array<utf8_t>};
 		json:{enabled:bool_t};
 		'/':{enabled:bool_t};
-		admin:{enabled:bool_t};
+		gui:{enabled:bool_t};
 	};
 };
 
@@ -591,14 +590,13 @@ function isConfigValues(value:unknown):value is ConfigValues{
 	|| !isRecord(value.authenticate.oidc)
 	|| !isRecord(value.file)
 	|| !isRecord(value.file.upload)
-	|| !isRecord(value.server_index)
-	|| !isRecord(value.server_index.sync)
-	|| !isRecord(value.pet_database)
+	|| !isRecord(value.index)
+	|| !isRecord(value.index.sync)
 	|| !isRecord(value.route)
 	|| !isRecord(value.route.api)
 	|| !isRecord(value.route.json)
 	|| !isRecord(value.route['/'])
-	|| !isRecord(value.route.admin)){
+	|| !isRecord(value.route.gui)){
 		return false;
 	}
 	return isInteger(value.http.port)
@@ -625,16 +623,15 @@ function isConfigValues(value:unknown):value is ConfigValues{
 		&& isInteger(value.file.upload.max_file_size)
 		&& isInteger(value.max_results_per_module)
 		&& isInteger(value.max_results_total)
-		&& 'boolean' === typeof value.server_index.sync.enabled
-		&& isInteger(value.server_index.sync.interval)
-		&& isInteger(value.server_index.sync.timeout)
-		&& isInteger(value.server_index.sync.max_servers)
-		&& 'string' === typeof value.pet_database.name
+		&& 'boolean' === typeof value.index.sync.enabled
+		&& isInteger(value.index.sync.interval)
+		&& isInteger(value.index.sync.timeout)
+		&& isInteger(value.index.sync.max_servers)
 		&& 'boolean' === typeof value.route.api.enabled
 		&& Array.isArray(value.route.api.plugins)
 		&& 'boolean' === typeof value.route.json.enabled
 		&& 'boolean' === typeof value.route['/'].enabled
-		&& 'boolean' === typeof value.route.admin.enabled
+		&& 'boolean' === typeof value.route.gui.enabled
 		&& value.authenticate.bearer.every(isString)
 		&& value.route.api.plugins.every(isString);
 }

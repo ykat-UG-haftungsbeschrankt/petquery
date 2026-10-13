@@ -5,15 +5,14 @@
  * free of charge, without warranty of any kind.
  */
 
-import {randomUUID} from 'node:crypto';
-import {mkdir, readFile, rename, rm, writeFile} from 'node:fs/promises';
-import path from 'node:path';
 import {PetQuerySchema} from '#petquery/schema.js';
 import type {
 	PetQuerySchemaProperties,
 	PetQuerySchemaStatic
 } from '#petquery/schema.js';
 import type {PetQueryConfigServerType} from '#petquery/config.js';
+import type {PetQueryServerDatabaseConfig} from
+	'#petquery/server/database/config.js';
 
 const T = PetQuerySchema.type;
 const flag = T.Boolean();
@@ -85,16 +84,13 @@ const schema = strict({
 	})
 	,max_results_per_module:T.Integer({minimum:1,maximum:1000000})
 	,max_results_total:T.Integer({minimum:1,maximum:1000000})
-	,server_index:strict({
+	,index:strict({
 		sync:strict({
 			 enabled:flag
 			,interval:T.Integer({minimum:1000,maximum:MAX_TIMER_MS})
 			,timeout:T.Integer({minimum:100,maximum:MAX_TIMER_MS})
 			,max_servers:T.Integer({minimum:1,maximum:1000000})
 		})
-	})
-	,pet_database:strict({
-		name:T.String({minLength:1,maxLength:128})
 	})
 	,route:strict({
 		 api:strict({
@@ -103,7 +99,7 @@ const schema = strict({
 		})
 		,json:strict({enabled:flag})
 		,'/':strict({enabled:flag})
-		,admin:strict({enabled:flag})
+		,gui:strict({enabled:flag})
 	})
 });
 
@@ -116,30 +112,26 @@ export class PetQueryServerConfig{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);
 
-	protected readonly _path:filename_t;
+	protected readonly _database:PetQueryServerDatabaseConfig;
 	protected readonly _pluginNames:Set<utf8_t>;
-	protected readonly _pending:Set<Promise<void>>;
 
 	// pluginNames lists the plugins that route.api.plugins may contain.
-	constructor(file:filename_t,pluginNames:Iterable<utf8_t>){
-		this._path = path.resolve(file);
+	constructor(
+		database:PetQueryServerDatabaseConfig,
+		pluginNames:Iterable<utf8_t>
+	){
+		this._database = database;
 		this._pluginNames = new Set(pluginNames);
-		this._pending = new Set();
 	}
 
 	async destructor():Promise<void>{
-		try{
-			await Promise.allSettled(Array.from(this._pending));
-		}
-		catch(UNUSED_e){
-		}
 	}
 
 	// Extracts the editable values from server settings.
 	static fromServerConfig(
 		config:PetQueryConfigServerType
 	):PetQueryServerConfigValues{
-		const sync = config.server_index.sync;
+		const sync = config.index.sync;
 
 		return {
 			 http:{port:config.http.port}
@@ -180,7 +172,7 @@ export class PetQueryServerConfig{
 			}
 			,max_results_per_module:config.max_results_per_module
 			,max_results_total:config.max_results_total
-			,server_index:{
+			,index:{
 				sync:{
 					 enabled:sync.enabled
 					,interval:sync.interval
@@ -188,7 +180,6 @@ export class PetQueryServerConfig{
 					,max_servers:sync.max_servers
 				}
 			}
-			,pet_database:{name:config.pet_database.name}
 			,route:{
 				 api:{
 					 enabled:config.route.api.enabled
@@ -196,7 +187,7 @@ export class PetQueryServerConfig{
 				}
 				,json:{enabled:config.route.json.enabled}
 				,'/':{enabled:config.route['/'].enabled}
-				,admin:{enabled:config.route.admin.enabled}
+				,gui:{enabled:config.route.gui.enabled}
 			}
 		};
 	}
@@ -207,7 +198,7 @@ export class PetQueryServerConfig{
 		config:PetQueryConfigServerType,
 		values:PetQueryServerConfigValues
 	):void{
-		const sync = config.server_index.sync;
+		const sync = config.index.sync;
 
 		config.http.port = values.http.port;
 		config.authenticate.mode = values.authenticate.mode;
@@ -246,20 +237,15 @@ export class PetQueryServerConfig{
 		config.file.upload.max_file_size = values.file.upload.max_file_size;
 		config.max_results_per_module = values.max_results_per_module;
 		config.max_results_total = values.max_results_total;
-		sync.enabled = values.server_index.sync.enabled;
-		sync.interval = values.server_index.sync.interval;
-		sync.timeout = values.server_index.sync.timeout;
-		sync.max_servers = values.server_index.sync.max_servers;
-		config.pet_database.name = values.pet_database.name;
+		sync.enabled = values.index.sync.enabled;
+		sync.interval = values.index.sync.interval;
+		sync.timeout = values.index.sync.timeout;
+		sync.max_servers = values.index.sync.max_servers;
 		config.route.api.enabled = values.route.api.enabled;
 		config.route.api.plugins = new Set(values.route.api.plugins);
 		config.route.json.enabled = values.route.json.enabled;
 		config.route['/'].enabled = values.route['/'].enabled;
-		config.route.admin.enabled = values.route.admin.enabled;
-	}
-
-	getPath():filename_t{
-		return this._path;
+		config.route.gui.enabled = values.route.gui.enabled;
 	}
 
 	getPluginNames():Array<utf8_t>{
@@ -268,7 +254,7 @@ export class PetQueryServerConfig{
 
 	// Validates untrusted JSON, then normalize()s it. Throws an Error
 	// naming the invalid field.
-	parse(json:unknown):PetQueryServerConfigValues{
+	parse(json:json_t):PetQueryServerConfigValues{
 		return this.normalize(
 			PetQuerySchema.parse(PetQueryServerConfig._validator,json)
 		);
@@ -298,60 +284,14 @@ export class PetQueryServerConfig{
 
 	// Returns the saved values, or null if nothing has been saved yet.
 	async load():Promise<PetQueryServerConfigValues|null>{
-		let text:utf8_t;
-
-		try{
-			text = await readFile(this._path,'utf8');
-		}
-		catch(error){
-			if(_isNodeErrorCode(error,'ENOENT')){
-				return null;
-			}
-			throw error;
-		}
-
-		try{
-			return this.parse(JSON.parse(text));
-		}
-		catch(error){
-			throw new Error(
-				`Invalid config file "${this._path}": `
-				+(error instanceof Error ? error.message : String(error)),
-				{cause:error}
-			);
-		}
+		const saved = await this._database.serverConfigLoad();
+		return null === saved ? null : this.parse(saved);
 	}
 
-	// Saves values returned by normalize(), replacing the file atomically.
+	// Saves values returned by normalize() through the database backend.
 	async save(values:PetQueryServerConfigValues):Promise<void>{
-		const write = this._write(values);
-
-		this._pending.add(write);
-		try{
-			await write;
-		}
-		finally{
-			this._pending.delete(write);
-		}
-	}
-
-	protected async _write(values:PetQueryServerConfigValues):Promise<void>{
-		// A unique temp file per write keeps concurrent saves independent;
-		// the last rename wins and readers never see a partial file.
-		const temp = `${this._path}.${randomUUID()}.tmp`;
-
-		await mkdir(path.dirname(this._path),{recursive:true});
-		try{
-			await writeFile(
-				temp,
-				JSON.stringify(values,null,'\t')+'\n',
-				{encoding:'utf8',mode:0o600,flag:'wx'}
-			);
-			await rename(temp,this._path);
-		}
-		catch(error){
-			await rm(temp,{force:true});
-			throw error;
-		}
+		return this._database.serverConfigSave(
+			values
+		);
 	}
 };

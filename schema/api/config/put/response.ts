@@ -14,7 +14,7 @@ import {PetQueryServerConfig} from '#petquery/server/config.js';
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	success:T.Literal(true),
+	success:T.Boolean(),
 	error:T.Array(T.String()),
 	data:T.Object({
 		// The values as saved, applied on restart.
@@ -31,7 +31,9 @@ export type PetQuerySchemaApiConfigPutResponseValues =
 // Successful response of PUT /api/config/put. Errors are sent as
 // PetQueryServerResponseSchemaError.
 export class PetQuerySchemaApiConfigPutResponse
-	extends PetQueryServerResponseSchema<PetQuerySchemaApiConfigPutResponseValues>{
+	extends PetQueryServerResponseSchema<
+		PetQuerySchemaApiConfigPutResponseValues
+	>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);
 

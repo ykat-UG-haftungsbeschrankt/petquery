@@ -12,20 +12,15 @@ import type {Server as HttpServer} from 'node:http';
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import type {PetQueryConfigServerType} from '#petquery/config.js';
 import type {PetQueryServerRoute} from '#petquery/server/route.js';
-import type {PetQueryServerIndex} from '#petquery/server/index.js';
+import type {PetQueryServerHandler} from
+	'#petquery/server/route.js';
 import type {PetQueryServerConfig} from '#petquery/server/config.js';
 import type {PetQueryServerAuth} from '#petquery/server/auth.js';
-import type {PetQueryServerPetStore} from
-	'#petquery/server/pet/store.js';
-import type {
-	PetQueryServerRequest,
-	PetQueryServerResponse
-} from '#petquery/server/types.js';
-
-export type {
-	PetQueryServerRequest,
-	PetQueryServerResponse
-} from '#petquery/server/types.js';
+import type {PetQueryDatabase} from '#petquery/database.js';
+import {PetQueryServerRequest} from
+	'#petquery/server/request.js';
+import {PetQueryServerResponse} from
+	'#petquery/server/response.js';
 
 export class PetQueryServer{
 	protected readonly _config:PetQueryConfigServerType;
@@ -33,13 +28,13 @@ export class PetQueryServer{
 	protected readonly _plugins:Map<string,PetQueryPlugin>;
 	protected readonly _uuid:uuid_t;
 	// Borrowed; its owner must call its destructor.
-	protected readonly _serverIndex:PetQueryServerIndex;
+	protected readonly _indexDatabase:PetQueryDatabase;
 	// Borrowed; its owner must call its destructor.
 	protected readonly _configFile:PetQueryServerConfig;
 	// Borrowed; its owner must call its destructor.
 	protected readonly _auth:PetQueryServerAuth;
 	// Borrowed; its owner must call its destructor.
-	protected readonly _petStore:PetQueryServerPetStore;
+	protected readonly _petStore:PetQueryDatabase;
 	protected _destructorPromise:Promise<void>|null;
 	protected _httpServer:HttpServer|null;
 	protected _httpsServer:HttpServer|null;
@@ -48,16 +43,16 @@ export class PetQueryServer{
 	// configFile stores the values editable in the admin GUI.
 	constructor(
 		config:PetQueryConfigServerType,
-		serverIndex:PetQueryServerIndex,
+		indexDatabase:PetQueryDatabase,
 		uuid:uuid_t,
 		configFile:PetQueryServerConfig,
 		auth:PetQueryServerAuth,
-		petStore:PetQueryServerPetStore
+		petStore:PetQueryDatabase
 	){
 		const upload = config.file.upload;
 
 		this._config = config;
-		this._serverIndex = serverIndex;
+		this._indexDatabase = indexDatabase;
 		this._configFile = configFile;
 		this._auth = auth;
 		this._petStore = petStore;
@@ -154,8 +149,8 @@ export class PetQueryServer{
 		return this._uuid;
 	}
 
-	_getServerIndex():PetQueryServerIndex{
-		return this._serverIndex;
+	_getIndexDatabase():PetQueryDatabase{
+		return this._indexDatabase;
 	}
 
 	_getConfigFile():PetQueryServerConfig{
@@ -166,44 +161,12 @@ export class PetQueryServer{
 		return this._auth;
 	}
 
-	_getPetStore():PetQueryServerPetStore{
+	_getPetStore():PetQueryDatabase{
 		return this._petStore;
 	}
 
 	_getPlugin(name:string):PetQueryPlugin|undefined{
 		return this._plugins.get(name);
-	}
-
-	async _authenticateUser(
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse,
-		next:Express.NextFunction
-	):Promise<void>{
-		const user = await this._auth.authenticate(req);
-		if(null === user){
-			this._sendAuthError(res,401,'Authentication required');
-			return;
-		}
-		req.petQueryUser = user;
-		next();
-	}
-
-	async _authenticateAdmin(
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse,
-		next:Express.NextFunction
-	):Promise<void>{
-		const user = await this._auth.authenticate(req);
-		if(null === user){
-			this._sendAuthError(res,401,'Authentication required');
-			return;
-		}
-		if('admin' !== user.group){
-			this._sendAuthError(res,403,'Admin access required');
-			return;
-		}
-		req.petQueryUser = user;
-		next();
 	}
 
 	protected async _destroy():Promise<void>{
@@ -237,22 +200,76 @@ export class PetQueryServer{
 		});
 	}
 
-	protected _sendAuthError(
-		res:PetQueryServerResponse,
-		status:uint16_t,
-		message:utf8_t
+	all(
+		path:string|string[],
+		...handlers:PetQueryServerHandler[]
 	):void{
-		res.set('Cache-Control','no-store');
-		res.status(status).json({
-			success:false,
-			error:[message],
-			data:null
+		this._app.all(path,...this._wrapHandlers(handlers));
+	}
+
+	delete(
+		path:string|string[],
+		...handlers:PetQueryServerHandler[]
+	):void{
+		this._app.delete(path,...this._wrapHandlers(handlers));
+	}
+
+	get(
+		path:string|string[],
+		...handlers:PetQueryServerHandler[]
+	):void{
+		this._app.get(path,...this._wrapHandlers(handlers));
+	}
+
+	post(
+		path:string|string[],
+		...handlers:PetQueryServerHandler[]
+	):void{
+		this._app.post(path,...this._wrapHandlers(handlers));
+	}
+
+	put(
+		path:string|string[],
+		...handlers:PetQueryServerHandler[]
+	):void{
+		this._app.put(path,...this._wrapHandlers(handlers));
+	}
+
+	use(
+		path:string,
+		...handlers:PetQueryServerHandler[]
+	):void{
+		this._app.use(path,...this._wrapHandlers(handlers));
+	}
+
+	useExpress(
+		path:string,
+		...handlers:Express.RequestHandler[]
+	):void{
+		this._app.use(path,...handlers);
+	}
+
+	protected _wrapHandlers(
+		handlers:Array<PetQueryServerHandler>
+	):Array<Express.RequestHandler>{
+		return handlers.map((handler)=>{
+			return (
+				request:Express.Request,
+				response:Express.Response,
+				next:Express.NextFunction
+			)=>{
+				return handler(
+					new PetQueryServerRequest(request),
+					new PetQueryServerResponse(response),
+					next
+				);
+			};
 		});
 	}
 
 	registerRoutes(routes:PetQueryServerRoute[]):void{
 		for(const route of routes){
-			route.register(this._app);
+			route.register();
 		}
 	}
 

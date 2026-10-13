@@ -8,8 +8,7 @@
 	],
 	"properties": {
 		"success": {
-			"type": "boolean",
-			"const": true
+			"type": "boolean"
 		},
 		"error": {
 			"type": "array",

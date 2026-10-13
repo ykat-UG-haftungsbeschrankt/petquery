@@ -95,7 +95,7 @@ function getWarnings(values:ConfigValues,token:utf8_t):Array<utf8_t>{
 			+' /api/server/*. This page will stop working after a restart.'
 		);
 	}
-	if(!values.route.admin.enabled){
+	if(!values.route.gui.enabled){
 		ret.push('Disabling the admin route turns off this GUI.');
 	}
 	return ret;
@@ -230,7 +230,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 	const pending = null === state.saved
 		? []
 		: diffPaths(state.active,state.saved);
-	const sync = form.server_index.sync;
+	const sync = form.index.sync;
 	const upload = form.file.upload;
 
 	function setTokenAt(index:size_t,value:utf8_t):void{
@@ -622,7 +622,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 					<h2>Peer sync</h2>
 					{checkboxField('Enabled',sync.enabled,(value)=>{
 						edit((draft)=>{
-							draft.server_index.sync.enabled = value;
+							draft.index.sync.enabled = value;
 						});
 					})}
 					{numberField(
@@ -630,7 +630,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						formatMs(sync.interval),
 						(value)=>{
 							edit((draft)=>{
-								draft.server_index.sync.interval = value;
+								draft.index.sync.interval = value;
 							});
 						}
 					)}
@@ -639,7 +639,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						formatMs(sync.timeout),
 						(value)=>{
 							edit((draft)=>{
-								draft.server_index.sync.timeout = value;
+								draft.index.sync.timeout = value;
 							});
 						}
 					)}
@@ -648,20 +648,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						sync.max_servers,1,1000000,'',
 						(value)=>{
 							edit((draft)=>{
-								draft.server_index.sync.max_servers = value;
-							});
-						}
-					)}
-				</section>
-
-				<section>
-					<h2>Pets database</h2>
-					{textField(
-						'LMDB database name',
-						form.pet_database.name,
-						(value)=>{
-							edit((draft)=>{
-								draft.pet_database.name = value;
+								draft.index.sync.max_servers = value;
 							});
 						}
 					)}
@@ -688,20 +675,11 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						}
 					)}
 					{checkboxField(
-						'/ (HTML search page)',
-						form.route['/'].enabled,
+						'/ (this GUI)',
+						form.route.gui.enabled,
 						(value)=>{
 							edit((draft)=>{
-								draft.route['/'].enabled = value;
-							});
-						}
-					)}
-					{checkboxField(
-						'/admin (this GUI)',
-						form.route.admin.enabled,
-						(value)=>{
-							edit((draft)=>{
-								draft.route.admin.enabled = value;
+								draft.route.gui.enabled = value;
 							});
 						}
 					)}

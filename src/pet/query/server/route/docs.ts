@@ -19,8 +19,8 @@ export class PetQueryServerRouteDocs extends PetQueryServerRoute{
 		this._root = path.resolve('docs');
 	}
 
-	register(app:Express.Express):void{
-		app.use('/docs',Express.static(this._root,{
+	register():void{
+		this.getServer().useExpress('/docs',Express.static(this._root,{
 			index:'index.html'
 		}));
 	}

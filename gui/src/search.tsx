@@ -11,6 +11,44 @@ import {searchPets} from './api';
 import type {SearchResponse, SearchResult} from './api';
 import {useAction} from './action';
 
+type SearchFeature = {
+	title:utf8_t;
+	image:utf8_t;
+	alt:utf8_t;
+	text:utf8_t;
+};
+
+const SEARCH_FEATURES:Array<SearchFeature> = [
+	{
+		title:'Search connected registries',
+		image:'feature-registries.svg',
+		alt:'Magnifying glass connected to three pet registries',
+		text:'One microchip ID can be checked across every enabled registry at'
+			+' once. PetQuery gathers the answers and brings them together.'
+	},
+	{
+		title:'Share helpful files',
+		image:'feature-files.svg',
+		alt:'A document with a paw print and upload arrow',
+		text:'Add a photo or document to give registries more context when a'
+			+' text-only search is not enough.'
+	},
+	{
+		title:'Reunite pets and people',
+		image:'feature-reunite.svg',
+		alt:'Two paws connected by a heart',
+		text:'Local records and trusted connected servers can help turn a'
+			+' promising match into a happy reunion.'
+	},
+	{
+		title:'Build with the API',
+		image:'feature-api.svg',
+		alt:'API code brackets surrounding a paw print',
+		text:'Use the JSON endpoints to add PetQuery searches to your own'
+			+' website, shelter workflow, or rescue tool.'
+	}
+];
+
 export function Search(props:{token:utf8_t}):ReactElement{
 	const {busy,error,run} = useAction();
 	const [query,setQuery] = useState<utf8_t>('');
@@ -58,12 +96,6 @@ export function Search(props:{token:utf8_t}):ReactElement{
 								setQuery(event.target.value);
 							}}
 						/>
-						<button
-							type="submit"
-							disabled={busy || '' === query.trim()}
-						>
-							{busy ? 'Searching...' : 'Search'}
-						</button>
 					</div>
 					<label className="file-field" htmlFor="pet-files">
 						Supporting files
@@ -86,8 +118,57 @@ export function Search(props:{token:utf8_t}):ReactElement{
 							})}
 						</ul>
 					)}
+					<button
+						className="search-submit"
+						type="submit"
+						aria-busy={busy}
+						disabled={busy || '' === query.trim()}
+					>
+						<span className="search-submit-icon" aria-hidden="true">
+							<svg viewBox="0 0 24 24">
+								<circle cx="10.5" cy="10.5" r="6.5"/>
+								<path d="m16 16 5 5"/>
+							</svg>
+						</span>
+						<span>
+							{busy ? 'Searching...' : 'Search for a pet'}
+						</span>
+					</button>
 				</form>
 			</section>
+			{null === response && <section className="search-description">
+				<div className="eyebrow">
+					One tiny chip. A whole lot of hope.
+				</div>
+				<p>
+					PetQuery is a friendly, federated pet search. Enter a
+					microchip ID to query connected registries at once, add a
+					photo or document, and help lost pets find their people.
+				</p>
+				<div className="description-points">
+					<span>Search connected registries</span>
+					<span>Share helpful files</span>
+					<span>Reunite pets and people</span>
+					<span>Build with the API</span>
+				</div>
+				<div className="feature-grid">
+					{SEARCH_FEATURES.map((feature)=>{
+						return (
+							<article className="feature-card" key={feature.title}>
+								<img
+									src={`${import.meta.env.BASE_URL}`
+										+feature.image}
+									alt={feature.alt}
+								/>
+								<div>
+									<h3>{feature.title}</h3>
+									<p>{feature.text}</p>
+								</div>
+							</article>
+						);
+					})}
+				</div>
+			</section>}
 
 			{null !== error && <pre className="error">{error}</pre>}
 			{null !== response && <SearchResults response={response}/>}

@@ -169,8 +169,8 @@
 ## Admin GUI
 
 - The admin GUI lives in `gui/`, a separate Vite + React project with its own
-  `package.json` and `tsconfig.json`. `PetQueryServerRouteAdmin` serves its
-  build output at `/admin`. Do not import server code from `gui/`, or GUI
+  `package.json` and `tsconfig.json`. `PetQueryServerRouteGui` serves its
+  build output at `/`. Do not import server code from `gui/`, or GUI
   code from `src/`; the GUI talks to the server only through `/api/...`
   routes.
 - The other conventions in this file apply to `gui/`, except the rules for

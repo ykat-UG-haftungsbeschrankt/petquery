@@ -3,18 +3,22 @@
 	"type": "object",
 	"required": [
 		"success",
-		"error"
+		"error",
+		"data"
 	],
 	"properties": {
 		"success": {
-			"type": "boolean",
-			"const": true
+			"type": "boolean"
 		},
 		"error": {
 			"type": "array",
 			"items": {
 				"type": "string"
 			}
+		},
+		"data": {
+			"type": "array",
+			"items": {}
 		}
 	},
 	"title": "PUT /api/server/put/:uuid response",

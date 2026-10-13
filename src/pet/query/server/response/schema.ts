@@ -5,10 +5,15 @@
  * free of charge, without warranty of any kind.
  */
 
+import {PetQuerySchema} from '#petquery/schema.js';
+
+const T = PetQuerySchema.type;
+
 // Fields every API response has.
 export type PetQueryServerResponseSchemaValues = {
 	success:boolean;
 	error:Array<utf8_t>;
+	data:unknown;
 };
 
 // Base of all API responses: the HTTP status and the JSON values.
@@ -42,5 +47,24 @@ export abstract class PetQueryServerResponseSchema<
 		}
 		catch(UNUSED_e){
 		}
+	}
+};
+
+// {success:false,error,data} response for invalid requests and handlers.
+export class PetQueryServerResponseSchemaError
+	extends PetQueryServerResponseSchema<
+		PetQueryServerResponseSchemaValues
+	>{
+	static readonly schema = T.Object({
+		success:T.Literal(false),
+		error:T.Array(T.String()),
+		data:T.Array(T.Unknown())
+	},{
+		title:'Error response of every route',
+		additionalProperties:false
+	});
+
+	constructor(status:uint16_t,error:Array<utf8_t>){
+		super(status,{success:false,error,data:[]});
 	}
 };

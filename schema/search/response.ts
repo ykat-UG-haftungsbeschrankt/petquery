@@ -38,7 +38,9 @@ export type PetQuerySchemaSearchResponseValues =
 // Results of a search. Invalid requests and failed handlers are sent as
 // PetQueryServerResponseSchemaError.
 export class PetQuerySchemaSearchResponse
-	extends PetQueryServerResponseSchema<PetQuerySchemaSearchResponseValues>{
+	extends PetQueryServerResponseSchema<
+		PetQuerySchemaSearchResponseValues
+	>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);
 

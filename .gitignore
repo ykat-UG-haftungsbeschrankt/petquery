@@ -1,6 +1,5 @@
 /dist/
 /node_modules/
 /gui/node_modules/
-/docs-markdown/
-/docs-toolchain/node_modules/
+/docs/
 /var/

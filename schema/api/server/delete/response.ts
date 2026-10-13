@@ -13,8 +13,9 @@ import {PetQueryServerResponseSchema} from
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	success:T.Literal(true),
-	error:T.Array(T.String())
+	success:T.Boolean(),
+	error:T.Array(T.String()),
+	data:T.Array(T.Unknown())
 },{
 	title:'DELETE /api/server/delete/:uuid response',
 	additionalProperties:false

@@ -40,7 +40,7 @@ import {PetQuerySchemaSearchRequest} from
 import {PetQuerySchemaSearchResponse} from
 	'#schema/search/response.js';
 import {PetQueryServerResponseSchemaError} from
-	'#petquery/server/response/schema/error.js';
+	'#petquery/server/response/schema.js';
 
 // Error responses of every route are described by schema/error.json.
 const schemas:Array<[utf8_t,PetQuerySchemaType]> = [

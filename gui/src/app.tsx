@@ -121,6 +121,9 @@ export function App():ReactElement{
 		event:MouseEvent<HTMLAnchorElement>,
 		next:Page
 	):void{
+		if('docs' === next){
+			return;
+		}
 		if(event.ctrlKey || event.metaKey || event.shiftKey
 		|| 0 !== event.button){
 			return;
@@ -177,6 +180,8 @@ export function App():ReactElement{
 	let content:ReactElement;
 	if('docs' === page){
 		content = <Docs/>;
+	}else if('search' === page){
+		content = <Search token={token}/>;
 	}else if(checking){
 		content = (
 			<section className="login-card">
@@ -191,8 +196,6 @@ export function App():ReactElement{
 				onLogin={onLogin}
 			/>
 		);
-	}else if('search' === page){
-		content = <Search token={token}/>;
 	}else{
 		content = <Admin token={token} user={user}/>;
 	}

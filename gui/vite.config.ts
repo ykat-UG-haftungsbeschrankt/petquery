@@ -10,8 +10,8 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
 	plugins:[react()],
-	// The server serves the build at /admin.
-	base:'/admin/',
+	// The server serves the build at /gui.
+	base:'/gui/',
 	build:{
 		outDir:'../dist/gui',
 		emptyOutDir:true

@@ -5,13 +5,12 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {default as Express} from 'express';
 import {PetQueryServerRoute} from '#petquery/server/route.js';
 import {PetQueryServerConfig} from '#petquery/server/config.js';
 import type {PetQueryServerConfigValues} from
 	'#petquery/server/config.js';
 import {PetQueryServerResponseSchemaError} from
-	'#petquery/server/response/schema/error.js';
+	'#petquery/server/response/schema.js';
 import {PetQuerySchemaSearchRequest} from '#schema/search/request.js';
 import {PetQuerySchemaApiPingGetRequest} from
 	'#schema/api/ping/get/request.js';
@@ -39,21 +38,21 @@ import {PetQuerySchemaApiConfigPutResponse} from
 	'#schema/api/config/put/response.js';
 
 export class PetQueryServerRouteApi extends PetQueryServerRoute{
-	register(app:Express.Express):void{
-		const config = this._server._getConfig().route.api;
+	register():void{
+		const config = this.getServer()._getConfig().route.api;
 		if(true !== config.enabled){
 			return;
 		}
 
-		app.all(
+		this.getServer().all(
 			'/api',
-			this._server._authenticateUser.bind(this._server),
+			this._authenticateUser.bind(this),
 			PetQuerySchemaSearchRequest._handle.bind(
 				this,
 				this._handleSearch.bind(this,config.plugins)
 			)
 		);
-		app.get(
+		this.getServer().get(
 			'/api/ping/get',
 			PetQuerySchemaApiPingGetRequest._handle.bind(
 				this,
@@ -61,40 +60,40 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 			)
 		);
 		// Public so that peers can sync their server index.
-		app.get(
+		this.getServer().get(
 			'/api/server/get',
 			PetQuerySchemaApiServerGetRequest._handle.bind(
 				this,
 				this._handleListServer.bind(this)
 			)
 		);
-		app.put(
+		this.getServer().put(
 			'/api/server/put/:uuid',
-			this._server._authenticateAdmin.bind(this._server),
+			this._authenticateAdmin.bind(this),
 			PetQuerySchemaApiServerPutRequest._handle.bind(
 				this,
 				this._handleAddServer.bind(this)
 			)
 		);
-		app.delete(
+		this.getServer().delete(
 			'/api/server/delete/:uuid',
-			this._server._authenticateAdmin.bind(this._server),
+			this._authenticateAdmin.bind(this),
 			PetQuerySchemaApiServerDeleteRequest._handle.bind(
 				this,
 				this._handleDeleteServer.bind(this)
 			)
 		);
-		app.get(
+		this.getServer().get(
 			'/api/config/get',
-			this._server._authenticateAdmin.bind(this._server),
+			this._authenticateAdmin.bind(this),
 			PetQuerySchemaApiConfigGetRequest._handle.bind(
 				this,
 				this._handleGetConfig.bind(this)
 			)
 		);
-		app.put(
+		this.getServer().put(
 			'/api/config/put',
-			this._server._authenticateAdmin.bind(this._server),
+			this._authenticateAdmin.bind(this),
 			PetQuerySchemaApiConfigPutRequest._handle.bind(
 				this,
 				this._handlePutConfig.bind(this)
@@ -108,7 +107,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		return new PetQuerySchemaApiPingGetResponse(200,{
 			success:true,
 			error:[],
-			data:{uuid:this._server._getUuid()}
+			data:{uuid:this.getServer()._getUuid()}
 		});
 	}
 
@@ -116,7 +115,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		UNUSED_request:PetQuerySchemaApiServerGetRequest
 	):Promise<PetQuerySchemaApiServerGetResponse>{
 		const servers =
-			await this._server._getServerIndex().getServerList();
+			await this.getServer()._getIndexDatabase().getServerList();
 		const data = [];
 
 		for(const [uuid,uri] of servers){
@@ -132,23 +131,27 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	protected async _handleAddServer(
 		request:PetQuerySchemaApiServerPutRequest
 	):Promise<PetQuerySchemaApiServerPutResponse>{
-		await this._server._getServerIndex().addServer(
+		await this.getServer()._getIndexDatabase().addServer(
 			request.getUuid(),
 			request.getUri()
 		);
 		return new PetQuerySchemaApiServerPutResponse(200,{
 			success:true,
-			error:[]
+			error:[],
+			data:[]
 		});
 	}
 
 	protected async _handleDeleteServer(
 		request:PetQuerySchemaApiServerDeleteRequest
 	):Promise<PetQuerySchemaApiServerDeleteResponse>{
-		await this._server._getServerIndex().deleteServer(request.getUuid());
+		await this.getServer()._getIndexDatabase().deleteServer(
+			request.getUuid()
+		);
 		return new PetQuerySchemaApiServerDeleteResponse(200,{
 			success:true,
-			error:[]
+			error:[],
+			data:[]
 		});
 	}
 
@@ -157,9 +160,9 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	protected async _handleGetConfig(
 		UNUSED_request:PetQuerySchemaApiConfigGetRequest
 	):Promise<PetQuerySchemaApiConfigGetResponse>{
-		const configFile = this._server._getConfigFile();
+		const configFile = this.getServer()._getConfigFile();
 		const active = PetQueryServerConfig.fromServerConfig(
-			this._server._getConfig()
+			this.getServer()._getConfig()
 		);
 		let saved:PetQueryServerConfigValues|null = null;
 		let savedError:utf8_t|null = null;
@@ -185,9 +188,10 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	protected async _handlePutConfig(
 		request:PetQuerySchemaApiConfigPutRequest
 	):Promise<
-		PetQuerySchemaApiConfigPutResponse|PetQueryServerResponseSchemaError
+		PetQuerySchemaApiConfigPutResponse
+		|PetQueryServerResponseSchemaError
 	>{
-		const configFile = this._server._getConfigFile();
+		const configFile = this.getServer()._getConfigFile();
 		let saved:PetQueryServerConfigValues;
 
 		try{

@@ -6,16 +6,16 @@
  */
 
 import util from 'node:util';
-import type {
-	PetQueryServerRequest,
-	PetQueryServerResponse
-} from '#petquery/server/types.js';
+import type {PetQueryServerRequest} from
+	'#petquery/server/request.js';
+import type {PetQueryServerResponse} from
+	'#petquery/server/response.js';
 import type {
 	PetQueryServerResponseSchema,
 	PetQueryServerResponseSchemaValues
 } from '#petquery/server/response/schema.js';
 import {PetQueryServerResponseSchemaError} from
-	'#petquery/server/response/schema/error.js';
+	'#petquery/server/response/schema.js';
 
 // The parts of an HTTP request that a request schema validates. body is
 // {} when the request has none. files are the uploads parsed by

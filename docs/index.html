@@ -190,38 +190,56 @@ Replace the example bearer tokens with your own secrets before you deploy.</p>
 <tr>
 <td><code>/</code></td>
 <td style="text-align:center">—</td>
-<td>HTML search page</td>
-<td><code>route[&quot;/&quot;].enabled</code></td>
+<td>PetQuery GUI</td>
+<td><code>route.gui.enabled</code></td>
 </tr>
 <tr>
 <td><code>/json</code></td>
-<td style="text-align:center">🔐</td>
-<td>Merged results from <strong>all</strong> plugins</td>
+<td style="text-align:center">🔐 user/admin</td>
+<td>Merged results from all plugins and local pets</td>
 <td><code>route.json.enabled</code></td>
 </tr>
 <tr>
 <td><code>/api</code></td>
-<td style="text-align:center">🔐</td>
-<td>Results from <strong>one</strong> plugin only</td>
+<td style="text-align:center">🔐 user/admin</td>
+<td>Results from the configured API plugins</td>
 <td><code>route.api.enabled</code></td>
 </tr>
 <tr>
 <td><code>/api/server/*</code></td>
-<td style="text-align:center">🔐</td>
-<td>Manage the server index (list and ping are public)</td>
+<td style="text-align:center">varies</td>
+<td>Read or manage the server index</td>
 <td><code>route.api.enabled</code></td>
 </tr>
 <tr>
 <td><code>/api/config/*</code></td>
-<td style="text-align:center">🔐</td>
+<td style="text-align:center">🔐 admin</td>
 <td>Read or save the editable config</td>
 <td><code>route.api.enabled</code></td>
 </tr>
 <tr>
-<td><code>/admin</code></td>
+<td><code>/api/pets</code></td>
+<td style="text-align:center">🔐 user/admin</td>
+<td>Manage local pet JSON records</td>
+<td><code>route.api.enabled</code></td>
+</tr>
+<tr>
+<td><code>/auth/*</code></td>
+<td style="text-align:center">varies</td>
+<td>Login, sessions and user management</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/admin/*</code></td>
+<td style="text-align:center">🔐 varies</td>
+<td>Admin sections of the GUI</td>
+<td><code>route.gui.enabled</code></td>
+</tr>
+<tr>
+<td><code>/docs/</code></td>
 <td style="text-align:center">—</td>
-<td>Admin GUI (see <a href="#admin-gui">Admin GUI</a>)</td>
-<td><code>route.admin.enabled</code></td>
+<td>Generated API documentation</td>
+<td>—</td>
 </tr>
 </tbody>
 </table>
@@ -248,29 +266,97 @@ bodies, and <code>multipart/form-data</code> file uploads.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="api-schemas" class="tsd-anchor-link">API schemas<a href="#api-schemas" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>Successful API responses use this envelope:</p>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;success&quot;</span><span class="hl-1">: </span><span class="hl-4">true</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;error&quot;</span><span class="hl-1">: [],</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;data&quot;</span><span class="hl-1">: {}</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Validated request and response schemas are generated from the TypeScript
+definitions. The complete schema index is:</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Request schema</th>
+<th>Response schema</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/ping/get</code></td>
+<td><a href="media/request.json"><code>request.json</code></a></td>
+<td><a href="media/response.json"><code>response.json</code></a></td>
+</tr>
+<tr>
+<td><code>GET /api/server/get</code></td>
+<td><a href="media/request-1.json"><code>request.json</code></a></td>
+<td><a href="media/response-1.json"><code>response.json</code></a></td>
+</tr>
+<tr>
+<td><code>PUT /api/server/put/:uuid</code></td>
+<td><a href="media/request-2.json"><code>request.json</code></a></td>
+<td><a href="media/response-2.json"><code>response.json</code></a></td>
+</tr>
+<tr>
+<td><code>DELETE /api/server/delete/:uuid</code></td>
+<td><a href="media/request-3.json"><code>request.json</code></a></td>
+<td><a href="media/response-3.json"><code>response.json</code></a></td>
+</tr>
+<tr>
+<td><code>GET /api/config/get</code></td>
+<td><a href="media/request-4.json"><code>request.json</code></a></td>
+<td><a href="media/response-4.json"><code>response.json</code></a></td>
+</tr>
+<tr>
+<td><code>PUT /api/config/put</code></td>
+<td><a href="media/request-5.json"><code>request.json</code></a></td>
+<td><a href="media/response-5.json"><code>response.json</code></a></td>
+</tr>
+<tr>
+<td><code>POST /json</code></td>
+<td><a href="media/request-6.json"><code>request.json</code></a></td>
+<td><a href="media/response-6.json"><code>response.json</code></a></td>
+</tr>
+<tr>
+<td><code>POST /api</code></td>
+<td><a href="media/request-6.json"><code>request.json</code></a></td>
+<td><a href="media/response-6.json"><code>response.json</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>The request-schema envelope mirrors the Express request parts:</p>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;params&quot;</span><span class="hl-1">: {},</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;query&quot;</span><span class="hl-1">: {},</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;body&quot;</span><span class="hl-1">: {}</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p>For <code>POST /json</code> and <code>POST /api</code>, <code>body.query</code> is the search string.
+<code>body.tracerouteUuid</code> is an optional UUID array with at most 1000 entries.
+Query-string values are strings, so <code>query.iframe</code> accepts <code>&quot;true&quot;</code> or
+<code>&quot;false&quot;</code>, while JSON and form bodies accept a boolean.</p>
+<p>All generated schemas are also available as TypeScript sources under
+<a href="media/schema"><code>schema/</code></a> and can be regenerated with <code>npm run build:schema</code>.</p>
 <h3 id="-search-everything" class="tsd-anchor-link"><code>/json</code>: search everything<a href="#-search-everything" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>Use this to show petquery results on your own website or in your own
 application.</p>
 <details open>
 <summary><b>JavaScript</b></summary>
-<pre><code class="js"><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">response</span><span class="hl-1"> = </span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-0">fetch</span><span class="hl-1">(</span><span class="hl-2">&#39;https://petquery.org/json&#39;</span><span class="hl-1">, {</span><br/><span class="hl-1">	</span><span class="hl-6">method:</span><span class="hl-1"> </span><span class="hl-2">&#39;POST&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-6">headers:</span><span class="hl-1"> {</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;accept&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;content-type&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;authorization&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;Bearer &lt;your-token&gt;&#39;</span><br/><span class="hl-1">	},</span><br/><span class="hl-1">	</span><span class="hl-6">body:</span><span class="hl-1"> </span><span class="hl-4">JSON</span><span class="hl-1">.</span><span class="hl-0">stringify</span><span class="hl-1">({</span><span class="hl-6">query:</span><span class="hl-1"> </span><span class="hl-2">&#39;112093400000465&#39;</span><span class="hl-1">})</span><br/><span class="hl-1">});</span><br/><span class="hl-5">if</span><span class="hl-1">(!</span><span class="hl-6">response</span><span class="hl-1">.</span><span class="hl-6">ok</span><span class="hl-1">){</span><br/><span class="hl-1">	</span><span class="hl-5">throw</span><span class="hl-1"> </span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">Error</span><span class="hl-1">(</span><span class="hl-6">response</span><span class="hl-1">.</span><span class="hl-6">statusText</span><span class="hl-1">);</span><br/><span class="hl-1">}</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">response</span><span class="hl-1">.</span><span class="hl-0">json</span><span class="hl-1">());</span>
+<pre><code class="js"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">response</span><span class="hl-1"> = </span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-0">fetch</span><span class="hl-1">(</span><span class="hl-2">&#39;https://petquery.org/json&#39;</span><span class="hl-1">, {</span><br/><span class="hl-1">	</span><span class="hl-7">method:</span><span class="hl-1"> </span><span class="hl-2">&#39;POST&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-7">headers:</span><span class="hl-1"> {</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;accept&#39;</span><span class="hl-7">:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;content-type&#39;</span><span class="hl-7">:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;authorization&#39;</span><span class="hl-7">:</span><span class="hl-1"> </span><span class="hl-2">&#39;Bearer &lt;your-token&gt;&#39;</span><br/><span class="hl-1">	},</span><br/><span class="hl-1">	</span><span class="hl-7">body:</span><span class="hl-1"> </span><span class="hl-5">JSON</span><span class="hl-1">.</span><span class="hl-0">stringify</span><span class="hl-1">({</span><span class="hl-7">query:</span><span class="hl-1"> </span><span class="hl-2">&#39;112093400000465&#39;</span><span class="hl-1">})</span><br/><span class="hl-1">});</span><br/><span class="hl-6">if</span><span class="hl-1">(!</span><span class="hl-7">response</span><span class="hl-1">.</span><span class="hl-7">ok</span><span class="hl-1">){</span><br/><span class="hl-1">	</span><span class="hl-6">throw</span><span class="hl-1"> </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-0">Error</span><span class="hl-1">(</span><span class="hl-7">response</span><span class="hl-1">.</span><span class="hl-7">statusText</span><span class="hl-1">);</span><br/><span class="hl-1">}</span><br/><span class="hl-7">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-7">response</span><span class="hl-1">.</span><span class="hl-0">json</span><span class="hl-1">());</span>
 </code><button type="button">Copy</button></pre>
 
 </details>
 <details>
 <summary><b>PHP</b></summary>
-<pre><code class="php"><span class="hl-7">#!/usr/bin/php</span><br/><span class="hl-1">&lt;?php</span><br/><br/><span class="hl-6">$result</span><span class="hl-1"> = </span><span class="hl-0">file_get_contents</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;https://petquery.org/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">false</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-0">stream_context_create</span><span class="hl-1">([</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;http&#39;</span><span class="hl-1"> =&gt; [</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;method&#39;</span><span class="hl-1">  =&gt; </span><span class="hl-2">&#39;POST&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;header&#39;</span><span class="hl-1">  =&gt; </span><span class="hl-2">&quot;Content-Type: application/json</span><span class="hl-8">\r\n</span><span class="hl-2">&quot;</span><br/><span class="hl-1">				</span><span class="hl-1">.</span><span class="hl-1"> </span><span class="hl-2">&quot;Authorization: Bearer &lt;your-token&gt;&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;content&#39;</span><span class="hl-1"> =&gt; </span><span class="hl-0">json_encode</span><span class="hl-1">([</span><span class="hl-2">&#39;query&#39;</span><span class="hl-1"> =&gt; </span><span class="hl-2">&#39;112093400000465&#39;</span><span class="hl-1">])</span><br/><span class="hl-1">		]</span><br/><span class="hl-1">	])</span><br/><span class="hl-1">);</span><br/><br/><span class="hl-0">print_r</span><span class="hl-1">(</span><span class="hl-0">json_decode</span><span class="hl-1">(</span><span class="hl-6">$result</span><span class="hl-1">, </span><span class="hl-3">true</span><span class="hl-1">));</span>
+<pre><code class="php"><span class="hl-8">#!/usr/bin/php</span><br/><span class="hl-1">&lt;?php</span><br/><br/><span class="hl-7">$result</span><span class="hl-1"> = </span><span class="hl-0">file_get_contents</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;https://petquery.org/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-4">false</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-0">stream_context_create</span><span class="hl-1">([</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;http&#39;</span><span class="hl-1"> =&gt; [</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;method&#39;</span><span class="hl-1">  =&gt; </span><span class="hl-2">&#39;POST&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;header&#39;</span><span class="hl-1">  =&gt; </span><span class="hl-2">&quot;Content-Type: application/json</span><span class="hl-9">\r\n</span><span class="hl-2">&quot;</span><br/><span class="hl-1">				</span><span class="hl-1">.</span><span class="hl-1"> </span><span class="hl-2">&quot;Authorization: Bearer &lt;your-token&gt;&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;content&#39;</span><span class="hl-1"> =&gt; </span><span class="hl-0">json_encode</span><span class="hl-1">([</span><span class="hl-2">&#39;query&#39;</span><span class="hl-1"> =&gt; </span><span class="hl-2">&#39;112093400000465&#39;</span><span class="hl-1">])</span><br/><span class="hl-1">		]</span><br/><span class="hl-1">	])</span><br/><span class="hl-1">);</span><br/><br/><span class="hl-0">print_r</span><span class="hl-1">(</span><span class="hl-0">json_decode</span><span class="hl-1">(</span><span class="hl-7">$result</span><span class="hl-1">, </span><span class="hl-4">true</span><span class="hl-1">));</span>
 </code><button type="button">Copy</button></pre>
 
 </details>
 <details>
 <summary><b>curl</b></summary>
-<pre><code class="bash"><span class="hl-0">curl</span><span class="hl-1"> </span><span class="hl-3">-X</span><span class="hl-1"> </span><span class="hl-2">POST</span><span class="hl-1"> </span><span class="hl-2">https://petquery.org/json</span><span class="hl-1"> </span><span class="hl-8">\</span><br/><span class="hl-1">	</span><span class="hl-3">-H</span><span class="hl-1"> </span><span class="hl-2">&#39;content-type: application/json&#39;</span><span class="hl-1"> </span><span class="hl-8">\</span><br/><span class="hl-1">	</span><span class="hl-3">-H</span><span class="hl-1"> </span><span class="hl-2">&#39;authorization: Bearer &lt;your-token&gt;&#39;</span><span class="hl-1"> </span><span class="hl-8">\</span><br/><span class="hl-1">	</span><span class="hl-3">-d</span><span class="hl-1"> </span><span class="hl-2">&#39;{&quot;query&quot;:&quot;112093400000465&quot;}&#39;</span>
+<pre><code class="bash"><span class="hl-0">curl</span><span class="hl-1"> </span><span class="hl-4">-X</span><span class="hl-1"> </span><span class="hl-2">POST</span><span class="hl-1"> </span><span class="hl-2">https://petquery.org/json</span><span class="hl-1"> </span><span class="hl-9">\</span><br/><span class="hl-1">	</span><span class="hl-4">-H</span><span class="hl-1"> </span><span class="hl-2">&#39;content-type: application/json&#39;</span><span class="hl-1"> </span><span class="hl-9">\</span><br/><span class="hl-1">	</span><span class="hl-4">-H</span><span class="hl-1"> </span><span class="hl-2">&#39;authorization: Bearer &lt;your-token&gt;&#39;</span><span class="hl-1"> </span><span class="hl-9">\</span><br/><span class="hl-1">	</span><span class="hl-4">-d</span><span class="hl-1"> </span><span class="hl-2">&#39;{&quot;query&quot;:&quot;112093400000465&quot;}&#39;</span>
 </code><button type="button">Copy</button></pre>
 
 </details>
 <p>Response:</p>
-<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-9">&quot;success&quot;</span><span class="hl-1">: </span><span class="hl-3">true</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-9">&quot;error&quot;</span><span class="hl-1">: [],</span><br/><span class="hl-1">	</span><span class="hl-9">&quot;data&quot;</span><span class="hl-1">: [</span><br/><span class="hl-1">		{</span><br/><span class="hl-1">			</span><span class="hl-9">&quot;source&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">				</span><span class="hl-9">&quot;favicon&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;https://animalid.by/favicon.ico&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">				</span><span class="hl-9">&quot;url&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;https://animalid.by&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">				</span><span class="hl-9">&quot;name&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;Animalid&quot;</span><br/><span class="hl-1">			},</span><br/><span class="hl-1">			</span><span class="hl-9">&quot;preview&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-9">&quot;files&quot;</span><span class="hl-1">: [],</span><br/><span class="hl-1">			</span><span class="hl-9">&quot;attributes&quot;</span><span class="hl-1">: {</span><span class="hl-9">&quot;name&quot;</span><span class="hl-1">: {</span><span class="hl-9">&quot;first&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;Bob&quot;</span><span class="hl-1">, </span><span class="hl-9">&quot;last&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;Smith&quot;</span><span class="hl-1">}}</span><br/><span class="hl-1">		}</span><br/><span class="hl-1">	]</span><br/><span class="hl-1">}</span>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;success&quot;</span><span class="hl-1">: </span><span class="hl-4">true</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;error&quot;</span><span class="hl-1">: [],</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;data&quot;</span><span class="hl-1">: [</span><br/><span class="hl-1">		{</span><br/><span class="hl-1">			</span><span class="hl-3">&quot;source&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">				</span><span class="hl-3">&quot;favicon&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;https://animalid.by/favicon.ico&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">				</span><span class="hl-3">&quot;url&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;https://animalid.by&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">				</span><span class="hl-3">&quot;name&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;Animalid&quot;</span><br/><span class="hl-1">			},</span><br/><span class="hl-1">			</span><span class="hl-3">&quot;preview&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-3">&quot;files&quot;</span><span class="hl-1">: [],</span><br/><span class="hl-1">			</span><span class="hl-3">&quot;attributes&quot;</span><span class="hl-1">: {</span><span class="hl-3">&quot;name&quot;</span><span class="hl-1">: {</span><span class="hl-3">&quot;first&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;Bob&quot;</span><span class="hl-1">, </span><span class="hl-3">&quot;last&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;Smith&quot;</span><span class="hl-1">}}</span><br/><span class="hl-1">		}</span><br/><span class="hl-1">	]</span><br/><span class="hl-1">}</span>
 </code><button type="button">Copy</button></pre>
 
 <p>An invalid request, for example a <code>query</code> that is not a string or a
@@ -286,14 +372,14 @@ database, expose it through <code>/api</code>, and give other petquery servers a
 They add your server as a <code>petquery</code> plugin, with your URL and token in their
 config, and your registry becomes part of their search. Your database itself
 is never exposed.</p>
-<pre><code class="js"><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">response</span><span class="hl-1"> = </span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-0">fetch</span><span class="hl-1">(</span><span class="hl-2">&#39;https://petquery.org/api&#39;</span><span class="hl-1">, {</span><br/><span class="hl-1">	</span><span class="hl-6">method:</span><span class="hl-1"> </span><span class="hl-2">&#39;POST&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-6">headers:</span><span class="hl-1"> {</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;content-type&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;authorization&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;Bearer &lt;your-token&gt;&#39;</span><br/><span class="hl-1">	},</span><br/><span class="hl-1">	</span><span class="hl-6">body:</span><span class="hl-1"> </span><span class="hl-4">JSON</span><span class="hl-1">.</span><span class="hl-0">stringify</span><span class="hl-1">({</span><span class="hl-6">query:</span><span class="hl-1"> </span><span class="hl-2">&#39;112093400000465&#39;</span><span class="hl-1">})</span><br/><span class="hl-1">});</span><br/><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">response</span><span class="hl-1">.</span><span class="hl-0">json</span><span class="hl-1">());</span>
+<pre><code class="js"><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">response</span><span class="hl-1"> = </span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-0">fetch</span><span class="hl-1">(</span><span class="hl-2">&#39;https://petquery.org/api&#39;</span><span class="hl-1">, {</span><br/><span class="hl-1">	</span><span class="hl-7">method:</span><span class="hl-1"> </span><span class="hl-2">&#39;POST&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-7">headers:</span><span class="hl-1"> {</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;content-type&#39;</span><span class="hl-7">:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;authorization&#39;</span><span class="hl-7">:</span><span class="hl-1"> </span><span class="hl-2">&#39;Bearer &lt;your-token&gt;&#39;</span><br/><span class="hl-1">	},</span><br/><span class="hl-1">	</span><span class="hl-7">body:</span><span class="hl-1"> </span><span class="hl-5">JSON</span><span class="hl-1">.</span><span class="hl-0">stringify</span><span class="hl-1">({</span><span class="hl-7">query:</span><span class="hl-1"> </span><span class="hl-2">&#39;112093400000465&#39;</span><span class="hl-1">})</span><br/><span class="hl-1">});</span><br/><span class="hl-7">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-7">response</span><span class="hl-1">.</span><span class="hl-0">json</span><span class="hl-1">());</span>
 </code><button type="button">Copy</button></pre>
 
 <h3 id="-manage-the-server-index" class="tsd-anchor-link"><code>/api/server/*</code>: manage the server index<a href="#-manage-the-server-index" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>These routes manage the <a href="#persistent-server-index">persistent server index</a>.
-<code>GET</code> routes are public so that peers can sync; <code>PUT</code> and <code>DELETE</code> use the
-same authentication as <code>/api</code>. Each path names its HTTP method, and the
-request must use that method.</p>
+<code>GET</code> routes are public so that peers can sync; <code>PUT</code> and <code>DELETE</code> require the
+<code>admin</code> group. Each path names its HTTP method, and the request must use that
+method.</p>
 <table>
 <thead>
 <tr>
@@ -337,9 +423,169 @@ UUID succeeds.</p>
 <p>The request and response of <code>PUT /api/server/put/:uuid</code> are described as
 JSON Schema in <a href="media/put"><code>schema/api/server/put/</code></a>, see
 <a href="#schemas">Schemas</a>.</p>
-<pre><code class="js"><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-0">fetch</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;https://petquery.org/api/server/put/550e8400-e29b-41d4-a716-446655440000&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	{</span><br/><span class="hl-1">		</span><span class="hl-6">method:</span><span class="hl-1"> </span><span class="hl-2">&#39;PUT&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-6">headers:</span><span class="hl-1"> {</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;content-type&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;authorization&#39;</span><span class="hl-6">:</span><span class="hl-1"> </span><span class="hl-2">&#39;******&#39;</span><br/><span class="hl-1">		},</span><br/><span class="hl-1">		</span><span class="hl-6">body:</span><span class="hl-1"> </span><span class="hl-4">JSON</span><span class="hl-1">.</span><span class="hl-0">stringify</span><span class="hl-1">({</span><span class="hl-6">uri:</span><span class="hl-1"> </span><span class="hl-2">&#39;https://registry.example.org/&#39;</span><span class="hl-1">})</span><br/><span class="hl-1">	}</span><br/><span class="hl-1">);</span>
+<pre><code class="js"><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-0">fetch</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;https://petquery.org/api/server/put/550e8400-e29b-41d4-a716-446655440000&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	{</span><br/><span class="hl-1">		</span><span class="hl-7">method:</span><span class="hl-1"> </span><span class="hl-2">&#39;PUT&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-7">headers:</span><span class="hl-1"> {</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;content-type&#39;</span><span class="hl-7">:</span><span class="hl-1"> </span><span class="hl-2">&#39;application/json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-2">&#39;authorization&#39;</span><span class="hl-7">:</span><span class="hl-1"> </span><span class="hl-2">&#39;******&#39;</span><br/><span class="hl-1">		},</span><br/><span class="hl-1">		</span><span class="hl-7">body:</span><span class="hl-1"> </span><span class="hl-5">JSON</span><span class="hl-1">.</span><span class="hl-0">stringify</span><span class="hl-1">({</span><span class="hl-7">uri:</span><span class="hl-1"> </span><span class="hl-2">&#39;https://registry.example.org/&#39;</span><span class="hl-1">})</span><br/><span class="hl-1">	}</span><br/><span class="hl-1">);</span>
 </code><button type="button">Copy</button></pre>
 
+<h3 id="-read-and-save-configuration" class="tsd-anchor-link"><code>/api/config/*</code>: read and save configuration<a href="#-read-and-save-configuration" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>These routes require the <code>admin</code> group. <code>GET /api/config/get</code> returns:</p>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;success&quot;</span><span class="hl-1">: </span><span class="hl-4">true</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;error&quot;</span><span class="hl-1">: [],</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;data&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;active&quot;</span><span class="hl-1">: {},</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;saved&quot;</span><span class="hl-1">: </span><span class="hl-4">null</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;saved_error&quot;</span><span class="hl-1">: </span><span class="hl-4">null</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;plugins&quot;</span><span class="hl-1">: [</span><span class="hl-2">&quot;test&quot;</span><span class="hl-1">]</span><br/><span class="hl-1">	}</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>active</code> is the running configuration. <code>saved</code> is the configuration file
+that will be applied after restart, or <code>null</code> if it has not been saved.
+<code>PUT /api/config/put</code> accepts the same configuration shape as <code>data.saved</code>.
+The complete request and response definitions are in
+<a href="media/config"><code>schema/api/config/</code></a>.</p>
+<p>The <code>authenticate</code> configuration contains:</p>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;mode&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;bearer&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;bearer&quot;</span><span class="hl-1">: [</span><span class="hl-2">&quot;token&quot;</span><span class="hl-1">],</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;session&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;cookie_name&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;petquery_session&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;max_age&quot;</span><span class="hl-1">: </span><span class="hl-10">28800000</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;secure&quot;</span><span class="hl-1">: </span><span class="hl-4">false</span><br/><span class="hl-1">	},</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;lmdb&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;users_name&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;users&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;sessions_name&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;sessions&quot;</span><br/><span class="hl-1">	},</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;ldap&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;url&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;ldaps://ldap.example.org&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;bind_dn&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;bind_password&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;base_dn&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;ou=people,dc=example,dc=org&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;user_filter&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;(uid={{username}})&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;admin_group&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;petquery-admin&quot;</span><br/><span class="hl-1">	},</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;oidc&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;issuer&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;https://login.example.org&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;client_id&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;client_secret&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;redirect_uri&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;https://petquery.example.org/auth/oidc/callback&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;scopes&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;openid profile email groups&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;admin_group&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;petquery-admin&quot;</span><br/><span class="hl-1">	}</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p>The provider <code>mode</code> is one of <code>bearer</code>, <code>lmdb</code>, <code>ldap</code> or <code>oidc</code>.
+Secrets should be supplied through a protected configuration file and
+the server should use HTTPS when credentials are sent over the network.</p>
+<h3 id="-manage-local-pet-records" class="tsd-anchor-link"><code>/api/pets</code>: manage local pet records<a href="#-manage-local-pet-records" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>Authenticated <code>admin</code> and <code>user</code> accounts can manage the local pet database.
+The pet database is LMDB-backed and each record has this shape:</p>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;pet_id&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;112093400000465&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;name&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;Bob&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;species&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;dog&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;owner_contact&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;owner@example.org&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;notes&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;Friendly and chipped.&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;files&quot;</span><span class="hl-1">: [</span><br/><span class="hl-1">		</span><span class="hl-2">&quot;https://files.example.org/bob-photo.jpg&quot;</span><br/><span class="hl-1">	]</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p>All six fields are required. <code>files</code> may be an empty array.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Request body</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/pets</code></td>
+<td>—</td>
+<td>All pet records</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/pets</code></td>
+<td>Pet record</td>
+<td>Create a record</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/pets/:pet_id</code></td>
+<td>—</td>
+<td>One pet record</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/api/pets/:pet_id</code></td>
+<td>Pet record</td>
+<td>Replace a record</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/api/pets/:pet_id</code></td>
+<td>—</td>
+<td>Delete a record</td>
+</tr>
+</tbody>
+</table>
+<p>Successful responses use the common envelope. Invalid fields return <code>400</code>,
+missing records return <code>404</code>, and authorization failures return <code>401</code> or
+<code>403</code>.</p>
+<h3 id="-sessions-and-user-management" class="tsd-anchor-link"><code>/auth/*</code>: sessions and user management<a href="#-sessions-and-user-management" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p><code>GET /auth/mode</code> is public and returns the selected provider:</p>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;success&quot;</span><span class="hl-1">: </span><span class="hl-4">true</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;error&quot;</span><span class="hl-1">: [],</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;data&quot;</span><span class="hl-1">: {</span><span class="hl-3">&quot;mode&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;lmdb&quot;</span><span class="hl-1">}</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>POST /auth/login</code> accepts a username and password for LMDB or LDAP:</p>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;username&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;alice&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;password&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;correct horse battery staple&quot;</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p>The server sets an HttpOnly session cookie and returns:</p>
+<pre><code class="json"><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;success&quot;</span><span class="hl-1">: </span><span class="hl-4">true</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;error&quot;</span><span class="hl-1">: [],</span><br/><span class="hl-1">	</span><span class="hl-3">&quot;data&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">		</span><span class="hl-3">&quot;user&quot;</span><span class="hl-1">: {</span><br/><span class="hl-1">			</span><span class="hl-3">&quot;username&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;alice&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-3">&quot;displayName&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;Alice&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-3">&quot;group&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;admin&quot;</span><span class="hl-1">,</span><br/><span class="hl-1">			</span><span class="hl-3">&quot;provider&quot;</span><span class="hl-1">: </span><span class="hl-2">&quot;lmdb&quot;</span><br/><span class="hl-1">		}</span><br/><span class="hl-1">	}</span><br/><span class="hl-1">}</span>
+</code><button type="button">Copy</button></pre>
+
+<p>For bearer mode, send the bearer token in the <code>Authorization</code> header.
+For OIDC mode, open <code>GET /auth/oidc/login</code>; the callback creates the same
+session and redirects to the appropriate Admin page.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/auth/mode</code></td>
+<td>—</td>
+<td>Read the selected provider</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/auth/session</code></td>
+<td>Session</td>
+<td>Read the current user</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/auth/login</code></td>
+<td>Provider-specific</td>
+<td>Create a session</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/auth/logout</code></td>
+<td>Session</td>
+<td>Revoke the session</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/auth/oidc/login</code></td>
+<td>—</td>
+<td>Start OIDC login</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/auth/oidc/callback</code></td>
+<td>OIDC</td>
+<td>Finish OIDC login</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/auth/users</code></td>
+<td>Admin</td>
+<td>List users or active external sessions</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/auth/users</code></td>
+<td>Admin</td>
+<td>Create an LMDB user</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/auth/users/:username</code></td>
+<td>Admin</td>
+<td>Update an LMDB user</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/auth/users/:username</code></td>
+<td>Admin</td>
+<td>Delete an LMDB user</td>
+</tr>
+</tbody>
+</table>
+<p>Local users have <code>admin</code> or <code>user</code> groups. LDAP and OIDC users are
+read-only in the Users tab; their group is determined by the configured
+provider group mapping.</p>
 <h2 id="🔌-plugins" class="tsd-anchor-link">🔌 Plugins<a href="#🔌-plugins" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <table>
 <thead>
@@ -374,12 +620,12 @@ JSON Schema in <a href="media/put"><code>schema/api/server/put/</code></a>, see
 <h3 id="writing-your-own-plugin" class="tsd-anchor-link">Writing your own plugin<a href="#writing-your-own-plugin" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <p>A plugin is a class that extends <code>PetQueryPlugin</code>. It receives the query and
 returns a result:</p>
-<pre><code class="ts"><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">PetQueryPlugin</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;#petquery/plugin.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">PetQueryPluginQuery</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;#petquery/plugin/query.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">PetQueryPluginResult</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;#petquery/plugin/result.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">PetQueryPluginMyRegistryConfig</span><span class="hl-1">} </span><span class="hl-5">from</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;#petquery/plugin/my/registry/config.js&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">export</span><span class="hl-1"> </span><span class="hl-3">class</span><span class="hl-1"> </span><span class="hl-10">PetQueryPluginMyRegistry</span><span class="hl-1"> </span><span class="hl-3">extends</span><span class="hl-1"> </span><span class="hl-10">PetQueryPlugin</span><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-3">constructor</span><span class="hl-1">(</span><span class="hl-6">cfg</span><span class="hl-1">:</span><span class="hl-10">PetQueryPluginMyRegistryConfig</span><span class="hl-1">){</span><br/><span class="hl-1">		</span><span class="hl-3">super</span><span class="hl-1">(</span><span class="hl-2">&#39;my-registry&#39;</span><span class="hl-1">,</span><span class="hl-6">cfg</span><span class="hl-1">);</span><br/><span class="hl-1">	}</span><br/><br/><span class="hl-1">	</span><span class="hl-3">override</span><span class="hl-1"> </span><span class="hl-3">async</span><span class="hl-1"> </span><span class="hl-0">query</span><span class="hl-1">(</span><br/><span class="hl-1">		</span><span class="hl-6">query</span><span class="hl-1">:</span><span class="hl-10">PetQueryPluginQuery</span><br/><span class="hl-1">	):</span><span class="hl-10">Promise</span><span class="hl-1">&lt;</span><span class="hl-10">PetQueryPluginResult</span><span class="hl-1">&gt;{</span><br/><span class="hl-1">		</span><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">rows</span><span class="hl-1"> = </span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-0">lookUp</span><span class="hl-1">(</span><span class="hl-6">query</span><span class="hl-1">.</span><span class="hl-0">getQuery</span><span class="hl-1">());</span><br/><span class="hl-1">		</span><span class="hl-5">return</span><span class="hl-1"> </span><span class="hl-6">PetQueryPluginResult</span><span class="hl-1">.</span><span class="hl-0">fromJson</span><span class="hl-1">(</span><span class="hl-6">rows</span><span class="hl-1">.</span><span class="hl-0">map</span><span class="hl-1">((</span><span class="hl-6">row</span><span class="hl-1">)</span><span class="hl-3">=&gt;</span><span class="hl-1">{</span><br/><span class="hl-1">			</span><span class="hl-5">return</span><span class="hl-1"> {</span><br/><span class="hl-1">				</span><span class="hl-6">source:</span><span class="hl-3">this</span><span class="hl-1">.</span><span class="hl-0">getSource</span><span class="hl-1">().</span><span class="hl-0">toJson</span><span class="hl-1">(),</span><br/><span class="hl-1">				</span><span class="hl-6">preview:</span><span class="hl-2">&#39;&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">				</span><span class="hl-6">files:</span><span class="hl-1">[],</span><br/><span class="hl-1">				</span><span class="hl-6">attributes:row</span><br/><span class="hl-1">			};</span><br/><span class="hl-1">		}));</span><br/><span class="hl-1">	}</span><br/><span class="hl-1">};</span>
+<pre><code class="ts"><span class="hl-6">import</span><span class="hl-1"> {</span><span class="hl-7">PetQueryPlugin</span><span class="hl-1">} </span><span class="hl-6">from</span><span class="hl-1"> </span><span class="hl-2">&#39;#petquery/plugin.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-6">import</span><span class="hl-1"> {</span><span class="hl-7">PetQueryPluginQuery</span><span class="hl-1">} </span><span class="hl-6">from</span><span class="hl-1"> </span><span class="hl-2">&#39;#petquery/plugin/query.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-6">import</span><span class="hl-1"> {</span><span class="hl-7">PetQueryPluginResult</span><span class="hl-1">} </span><span class="hl-6">from</span><span class="hl-1"> </span><span class="hl-2">&#39;#petquery/plugin/result.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-6">import</span><span class="hl-1"> {</span><span class="hl-7">PetQueryPluginMyRegistryConfig</span><span class="hl-1">} </span><span class="hl-6">from</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;#petquery/plugin/my/registry/config.js&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-6">export</span><span class="hl-1"> </span><span class="hl-4">class</span><span class="hl-1"> </span><span class="hl-11">PetQueryPluginMyRegistry</span><span class="hl-1"> </span><span class="hl-4">extends</span><span class="hl-1"> </span><span class="hl-11">PetQueryPlugin</span><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-4">constructor</span><span class="hl-1">(</span><span class="hl-7">cfg</span><span class="hl-1">:</span><span class="hl-11">PetQueryPluginMyRegistryConfig</span><span class="hl-1">){</span><br/><span class="hl-1">		</span><span class="hl-4">super</span><span class="hl-1">(</span><span class="hl-2">&#39;my-registry&#39;</span><span class="hl-1">,</span><span class="hl-7">cfg</span><span class="hl-1">);</span><br/><span class="hl-1">	}</span><br/><br/><span class="hl-1">	</span><span class="hl-4">override</span><span class="hl-1"> </span><span class="hl-4">async</span><span class="hl-1"> </span><span class="hl-0">query</span><span class="hl-1">(</span><br/><span class="hl-1">		</span><span class="hl-7">query</span><span class="hl-1">:</span><span class="hl-11">PetQueryPluginQuery</span><br/><span class="hl-1">	):</span><span class="hl-11">Promise</span><span class="hl-1">&lt;</span><span class="hl-11">PetQueryPluginResult</span><span class="hl-1">&gt;{</span><br/><span class="hl-1">		</span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">rows</span><span class="hl-1"> = </span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-0">lookUp</span><span class="hl-1">(</span><span class="hl-7">query</span><span class="hl-1">.</span><span class="hl-0">getQuery</span><span class="hl-1">());</span><br/><span class="hl-1">		</span><span class="hl-6">return</span><span class="hl-1"> </span><span class="hl-7">PetQueryPluginResult</span><span class="hl-1">.</span><span class="hl-0">fromJson</span><span class="hl-1">(</span><span class="hl-7">rows</span><span class="hl-1">.</span><span class="hl-0">map</span><span class="hl-1">((</span><span class="hl-7">row</span><span class="hl-1">)</span><span class="hl-4">=&gt;</span><span class="hl-1">{</span><br/><span class="hl-1">			</span><span class="hl-6">return</span><span class="hl-1"> {</span><br/><span class="hl-1">				</span><span class="hl-7">source:</span><span class="hl-4">this</span><span class="hl-1">.</span><span class="hl-0">getSource</span><span class="hl-1">().</span><span class="hl-0">toJson</span><span class="hl-1">(),</span><br/><span class="hl-1">				</span><span class="hl-7">preview:</span><span class="hl-2">&#39;&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">				</span><span class="hl-7">files:</span><span class="hl-1">[],</span><br/><span class="hl-1">				</span><span class="hl-7">attributes:row</span><br/><span class="hl-1">			};</span><br/><span class="hl-1">		}));</span><br/><span class="hl-1">	}</span><br/><span class="hl-1">};</span>
 </code><button type="button">Copy</button></pre>
 
 <p>Then add its config to the <code>plugin</code> map in <code>config.ts</code> and register it in
 <code>index.ts</code>:</p>
-<pre><code class="ts"><span class="hl-6">server</span><span class="hl-1">.</span><span class="hl-0">addPlugin</span><span class="hl-1">(</span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">PetQueryPluginMyRegistry</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-6">PetQueryConfig</span><span class="hl-1">.</span><span class="hl-0">getPluginConfig</span><span class="hl-1">(</span><br/><span class="hl-1">		</span><span class="hl-6">PetQueryPluginMyRegistryConfig</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;my-registry&#39;</span><br/><span class="hl-1">	)</span><br/><span class="hl-1">));</span>
+<pre><code class="ts"><span class="hl-7">server</span><span class="hl-1">.</span><span class="hl-0">addPlugin</span><span class="hl-1">(</span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-0">PetQueryPluginMyRegistry</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-7">PetQueryConfig</span><span class="hl-1">.</span><span class="hl-0">getPluginConfig</span><span class="hl-1">(</span><br/><span class="hl-1">		</span><span class="hl-7">PetQueryPluginMyRegistryConfig</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;my-registry&#39;</span><br/><span class="hl-1">	)</span><br/><span class="hl-1">));</span>
 </code><button type="button">Copy</button></pre>
 
 <h2 id="persistent-server-index" class="tsd-anchor-link">Persistent server index<a href="#persistent-server-index" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
@@ -395,7 +641,7 @@ closes the database on <code>SIGINT</code> or <code>SIGTERM</code>. Routes reach
 <p>The server's UUID is generated on first start and stored in the
 <code>settings_name</code> database of the same LMDB directory, so it stays the same
 across restarts. Deleting that directory gives the server a new identity.</p>
-<pre><code class="ts"><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">PetQueryServerDatabaseLmdb</span><span class="hl-1">} </span><span class="hl-5">from</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;#petquery/server/database/lmdb.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-5">import</span><span class="hl-1"> {</span><span class="hl-6">PetQueryServerIndex</span><span class="hl-1">} </span><span class="hl-5">from</span><span class="hl-1"> </span><span class="hl-2">&#39;#petquery/server/index.js&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">db</span><span class="hl-1"> = </span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">PetQueryServerDatabaseLmdb</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;/var/lib/petquery/servers&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;servers&#39;</span><br/><span class="hl-1">);</span><br/><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">serverIndex</span><span class="hl-1"> = </span><span class="hl-3">new</span><span class="hl-1"> </span><span class="hl-0">PetQueryServerIndex</span><span class="hl-1">(</span><span class="hl-6">db</span><span class="hl-1">);</span><br/><span class="hl-5">try</span><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">serverIndex</span><span class="hl-1">.</span><span class="hl-0">addServer</span><span class="hl-1">(</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;550e8400-e29b-41d4-a716-446655440000&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;https://registry.example.org/&#39;</span><br/><span class="hl-1">	);</span><br/><span class="hl-1">	</span><span class="hl-3">const</span><span class="hl-1"> </span><span class="hl-4">servers</span><span class="hl-1">:</span><span class="hl-10">Map</span><span class="hl-1">&lt;</span><span class="hl-10">uuid_t</span><span class="hl-1">,</span><span class="hl-10">uri_t</span><span class="hl-1">&gt; = </span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">serverIndex</span><span class="hl-1">.</span><span class="hl-0">getServerList</span><span class="hl-1">();</span><br/><span class="hl-1">	</span><span class="hl-6">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-6">servers</span><span class="hl-1">);</span><br/><span class="hl-1">	</span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">serverIndex</span><span class="hl-1">.</span><span class="hl-0">deleteServer</span><span class="hl-1">(</span><span class="hl-2">&#39;550e8400-e29b-41d4-a716-446655440000&#39;</span><span class="hl-1">);</span><br/><span class="hl-1">}</span><br/><span class="hl-5">finally</span><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-6">serverIndex</span><span class="hl-1">.</span><span class="hl-0">destructor</span><span class="hl-1">();</span><br/><span class="hl-1">	</span><span class="hl-5">await</span><span class="hl-1"> </span><span class="hl-6">db</span><span class="hl-1">.</span><span class="hl-0">destructor</span><span class="hl-1">();</span><br/><span class="hl-1">}</span>
+<pre><code class="ts"><span class="hl-6">import</span><span class="hl-1"> {</span><span class="hl-7">PetQueryServerDatabaseLmdb</span><span class="hl-1">} </span><span class="hl-6">from</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;#petquery/server/database/lmdb.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-6">import</span><span class="hl-1"> {</span><span class="hl-7">PetQueryServerIndex</span><span class="hl-1">} </span><span class="hl-6">from</span><span class="hl-1"> </span><span class="hl-2">&#39;#petquery/server/index.js&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">db</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-0">PetQueryServerDatabaseLmdb</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;/var/lib/petquery/servers&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;servers&#39;</span><br/><span class="hl-1">);</span><br/><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">serverIndex</span><span class="hl-1"> = </span><span class="hl-4">new</span><span class="hl-1"> </span><span class="hl-0">PetQueryServerIndex</span><span class="hl-1">(</span><span class="hl-7">db</span><span class="hl-1">);</span><br/><span class="hl-6">try</span><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-7">serverIndex</span><span class="hl-1">.</span><span class="hl-0">addServer</span><span class="hl-1">(</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;550e8400-e29b-41d4-a716-446655440000&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-2">&#39;https://registry.example.org/&#39;</span><br/><span class="hl-1">	);</span><br/><span class="hl-1">	</span><span class="hl-4">const</span><span class="hl-1"> </span><span class="hl-5">servers</span><span class="hl-1">:</span><span class="hl-11">Map</span><span class="hl-1">&lt;</span><span class="hl-11">uuid_t</span><span class="hl-1">,</span><span class="hl-11">uri_t</span><span class="hl-1">&gt; = </span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-7">serverIndex</span><span class="hl-1">.</span><span class="hl-0">getServerList</span><span class="hl-1">();</span><br/><span class="hl-1">	</span><span class="hl-7">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-7">servers</span><span class="hl-1">);</span><br/><span class="hl-1">	</span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-7">serverIndex</span><span class="hl-1">.</span><span class="hl-0">deleteServer</span><span class="hl-1">(</span><span class="hl-2">&#39;550e8400-e29b-41d4-a716-446655440000&#39;</span><span class="hl-1">);</span><br/><span class="hl-1">}</span><br/><span class="hl-6">finally</span><span class="hl-1">{</span><br/><span class="hl-1">	</span><span class="hl-7">serverIndex</span><span class="hl-1">.</span><span class="hl-0">destructor</span><span class="hl-1">();</span><br/><span class="hl-1">	</span><span class="hl-6">await</span><span class="hl-1"> </span><span class="hl-7">db</span><span class="hl-1">.</span><span class="hl-0">destructor</span><span class="hl-1">();</span><br/><span class="hl-1">}</span>
 </code><button type="button">Copy</button></pre>
 
 <p><code>addServer()</code> persists an entry, replacing the URI when its UUID already
@@ -495,7 +741,7 @@ with <code>#schema/...</code>, for example <code>#schema/api/server/put/request.
 <p>Every JSON route validates its request with the request class's static
 <code>_handle()</code>, which calls the route handler with the typed request and sends
 the response it returns:</p>
-<pre><code class="ts"><span class="hl-6">app</span><span class="hl-1">.</span><span class="hl-0">put</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;/api/server/put/:uuid&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-6">authenticate</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-6">PetQuerySchemaApiServerPutRequest</span><span class="hl-1">.</span><span class="hl-6">_handle</span><span class="hl-1">.</span><span class="hl-0">bind</span><span class="hl-1">(</span><br/><span class="hl-1">		</span><span class="hl-3">this</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-3">this</span><span class="hl-1">.</span><span class="hl-6">_handleAddServer</span><span class="hl-1">.</span><span class="hl-0">bind</span><span class="hl-1">(</span><span class="hl-3">this</span><span class="hl-1">)</span><br/><span class="hl-1">	)</span><br/><span class="hl-1">);</span>
+<pre><code class="ts"><span class="hl-7">app</span><span class="hl-1">.</span><span class="hl-0">put</span><span class="hl-1">(</span><br/><span class="hl-1">	</span><span class="hl-2">&#39;/api/server/put/:uuid&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-7">authenticate</span><span class="hl-1">,</span><br/><span class="hl-1">	</span><span class="hl-7">PetQuerySchemaApiServerPutRequest</span><span class="hl-1">.</span><span class="hl-7">_handle</span><span class="hl-1">.</span><span class="hl-0">bind</span><span class="hl-1">(</span><br/><span class="hl-1">		</span><span class="hl-4">this</span><span class="hl-1">,</span><br/><span class="hl-1">		</span><span class="hl-4">this</span><span class="hl-1">.</span><span class="hl-7">_handleAddServer</span><span class="hl-1">.</span><span class="hl-0">bind</span><span class="hl-1">(</span><span class="hl-4">this</span><span class="hl-1">)</span><br/><span class="hl-1">	)</span><br/><span class="hl-1">);</span>
 </code><button type="button">Copy</button></pre>
 
 <p>An invalid request returns <code>400</code> and a handler error <code>500</code>, both with
@@ -509,30 +755,43 @@ languages. They are generated; edit the <code>.ts</code> file and run
 </li>
 </ul>
 <h3 id="admin-gui" class="tsd-anchor-link">Admin GUI<a href="#admin-gui" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
-<p>The admin GUI at <code>/admin</code> is a React app in <a href="media/gui"><code>gui/</code></a>, built with Vite.
+<p>The PetQuery GUI at <code>/</code> is a React app in <a href="media/gui"><code>gui/</code></a>, built with Vite.
 It has its own dependencies, so install them once with
 <code>npm run install:gui</code> before building.</p>
 <ul>
 <li><strong>Production:</strong> <code>npm run build</code> writes the GUI to <code>dist/gui/</code>, which
-<code>route.admin.path</code> points to. Without a build, <code>/admin</code> returns <code>503</code>.</li>
+<code>route.gui.path</code> points to. Without a build, <code>/</code> returns <code>503</code>.</li>
 <li><strong>Development:</strong> start the server, then run <code>npm run dev:gui</code> and open
-<code>http://localhost:5173/admin/</code>. The dev server forwards <code>/api</code> to the
-server on port 50000.</li>
+<code>http://localhost:5173/</code>. The dev server forwards <code>/api</code>, <code>/auth</code>
+and <code>/docs</code> to the server on port 50000.</li>
+<li><strong>Documentation:</strong> generated TypeDoc files are served at <code>/docs/</code> and are
+browsable from the GUI's Docs page.</li>
 </ul>
-<p>The GUI has two pages, selected from the menu:</p>
+<p>The GUI has Home, Docs and Admin sections:</p>
 <ul>
-<li><strong>Config</strong> edits the HTTP port, bearer tokens, result limits, file
-upload, peer sync, routes and <code>/api</code> plugins. It calls
+<li><strong>Home</strong> and the PetQuery logo open <code>/search</code>, which queries the
+<code>/json</code> endpoint with a bearer token and can upload supporting files.</li>
+<li><strong>Docs</strong> embeds the generated API documentation served at <code>/docs/</code>.</li>
+<li><strong>Admin</strong> opens <code>/admin/config</code> and contains Config, Servers, Users
+and Pets. Config selects bearer, LMDB, LDAP or OpenID Connect
+authentication and edits the HTTP port, session settings, provider
+settings, bearer tokens, result limits, file upload, peer sync, routes and
+<code>/api</code> plugins. It calls
 <code>GET /api/config/get</code> and <code>PUT /api/config/put</code>, which save to
 <code>config/server.json</code>. Changes apply when the server restarts; until
 then, the page shows a pending-restart notice.</li>
 <li><strong>Servers</strong> lists, adds, edits and deletes entries in the server index.</li>
+<li><strong>Users</strong> manages local LMDB users with <code>admin</code> and <code>user</code> groups. LDAP and
+OpenID Connect users are displayed read-only from active sessions.</li>
+<li><strong>Pets</strong> manages JSON records with required <code>pet_id</code>, <code>name</code>, <code>species</code>,
+<code>owner_contact</code>, <code>notes</code> and <code>files</code> fields.</li>
 </ul>
-<p>The pages are public; listing servers needs no token. Viewing the config
-and changing servers need one of the <code>server.authenticate.bearer</code> tokens.
-Anyone with a token can also edit the tokens. The GUI keeps
-the token in the browser tab's <code>sessionStorage</code> until you click <strong>Forget</strong>
-or close the tab. Turn the GUI off with <code>route.admin.enabled</code>.</p>
+<p>Docs are public. Search and Admin require authentication. The <code>admin</code> group
+has full access; the <code>user</code> group can search and manage only Pets. Bearer
+tokens remain supported for machine clients. GUI sessions use HttpOnly
+cookies and are kept in LMDB.
+Only the <code>admin</code> group can edit authentication settings. Turn the GUI off with
+<code>route.gui.enabled</code>.</p>
 <h2 id="📚-documentation" class="tsd-anchor-link">📚 Documentation<a href="#📚-documentation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>The API documentation is generated from the source with
 <a href="https://typedoc.org">TypeDoc</a>:</p>
@@ -571,9 +830,13 @@ configuration in VS Code.</p>
 <li><a href="#🌐-endpoints"><span>🌐 <wbr/>Endpoints</span></a></li>
 <li>
 <ul>
+<li><a href="#api-schemas"><span>API schemas</span></a></li>
 <li><a href="#-search-everything"><span>: search everything</span></a></li>
 <li><a href="#-share-your-own-registry"><span>: share your own registry</span></a></li>
-<li><a href="#-manage-the-server-index"><span>: manage the server index</span></a></li></ul></li>
+<li><a href="#-manage-the-server-index"><span>: manage the server index</span></a></li>
+<li><a href="#-read-and-save-configuration"><span>: read and save configuration</span></a></li>
+<li><a href="#-manage-local-pet-records"><span>: manage local pet records</span></a></li>
+<li><a href="#-sessions-and-user-management"><span>: sessions and user management</span></a></li></ul></li>
 <li><a href="#🔌-plugins"><span>🔌 <wbr/>Plugins</span></a></li>
 <li>
 <ul>

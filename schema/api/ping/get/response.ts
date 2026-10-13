@@ -13,7 +13,7 @@ import {PetQueryServerResponseSchema} from
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	success:T.Literal(true),
+	success:T.Boolean(),
 	error:T.Array(T.String()),
 	data:T.Object({
 		uuid:T.String({format:'uuid'})
@@ -29,7 +29,9 @@ export type PetQuerySchemaApiPingGetResponseValues =
 // Successful response of GET /api/ping/get. Errors are sent as
 // PetQueryServerResponseSchemaError.
 export class PetQuerySchemaApiPingGetResponse
-	extends PetQueryServerResponseSchema<PetQuerySchemaApiPingGetResponseValues>{
+	extends PetQueryServerResponseSchema<
+		PetQuerySchemaApiPingGetResponseValues
+	>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);
 

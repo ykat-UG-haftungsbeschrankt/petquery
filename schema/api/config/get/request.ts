@@ -12,11 +12,11 @@ import {PetQueryServerRequestSchema} from
 import type {PetQueryServerRequestSchemaInput} from
 	'#petquery/server/request/schema.js';
 import type {PetQueryServerResponseSchemaError} from
-	'#petquery/server/response/schema/error.js';
-import type {
-	PetQueryServerRequest,
-	PetQueryServerResponse
-} from '#petquery/server/types.js';
+	'#petquery/server/response/schema.js';
+import type {PetQueryServerRequest} from
+	'#petquery/server/request.js';
+import type {PetQueryServerResponse} from
+	'#petquery/server/response.js';
 import type {PetQuerySchemaApiConfigGetResponse} from
 	'#schema/api/config/get/response.js';
 

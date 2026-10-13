@@ -24,6 +24,6 @@
 		"schema/**/*.ts",
 		"examples/**/*.ts",
 		"types/**/*.d.ts"
-	],
+,         "src/pet/query/server/route/.trash/html_old.ts"	],
 	"exclude": ["node_modules", "dist"]
 }

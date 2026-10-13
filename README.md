@@ -83,17 +83,19 @@ All settings are in
 |---|---|
 | `server.http` / `server.https` | Ports, on/off switches and the TLS certificate |
 | `server.authenticate.bearer` | The bearer tokens accepted by `/json` and `/api` |
-| `server.config_file` | Saved admin GUI settings (`config/server.json`) |
+| `server.index.database` | Server index and saved configuration storage |
 | `server.file.upload` | Upload switch and `max_file_size` (10 MB) |
 | `server.max_results_per_module` | Maximum number of results kept per plugin |
 | `server.max_results_total` | Maximum number of results in a response |
-| `server.server_index` | LMDB directory, database names and peer sync of the server index |
+| `server.index` | Database instance and peer sync of the server index |
+| `server.settings.database` | Database instance for local pet records |
 | `server.route` | Turns each endpoint on or off and sets its authentication |
 | `plugin` | One entry per plugin: on/off, timeout, source and settings |
 
-At startup, values saved by the [admin GUI](#admin-gui) in
-`config/server.json` override these defaults. The file is git-ignored,
-readable only by its owner and holds the bearer tokens.
+At startup, values saved by the [admin GUI](#admin-gui) in the configured
+database override these defaults. Configuration and the server UUID share the
+database's settings store; bearer tokens never need to be stored in a source
+file.
 
 > [!IMPORTANT]
 > Replace the example bearer tokens with your own secrets before you deploy.
@@ -102,14 +104,14 @@ readable only by its owner and holds the bearer tokens.
 
 | Endpoint | Auth | Returns | Turned on by |
 |---|:---:|---|---|
-| `/` | — | HTML search page | `route["/"].enabled` |
-| `/json` | 🔐 user/admin | Merged results from all plugins and local pets | `route.json.enabled` |
+| `/` | — | Redirects to `/gui` | — |
+| `/gui/*` | —/🔐 | PetQuery GUI and Admin sections | `route.gui.enabled` |
+| `/json` | — | Merged results from all plugins and local pets | `route.json.enabled` |
 | `/api` | 🔐 user/admin | Results from the configured API plugins | `route.api.enabled` |
 | `/api/server/*` | varies | Read or manage the server index | `route.api.enabled` |
 | `/api/config/*` | 🔐 admin | Read or save the editable config | `route.api.enabled` |
 | `/api/pets` | 🔐 user/admin | Manage local pet JSON records | `route.api.enabled` |
 | `/auth/*` | varies | Login, sessions and user management | — |
-| `/admin` | — | Admin GUI (see [Admin GUI](#admin-gui)) | `route.admin.enabled` |
 | `/docs/` | — | Generated API documentation | — |
 
 Every search endpoint accepts `GET` query strings, JSON or form `POST`
@@ -253,6 +255,9 @@ An invalid request, for example a `query` that is not a string or a
 `error`. An unexpected server error returns `500`. A circular query returns
 `200` with `success: false`. The request and response are described in
 [`schema/search/`](schema/search).
+
+The GUI uses the same public `POST /json` endpoint, so pet searches do not
+require a GUI login.
 
 ### `/api`: share your own registry
 
@@ -523,42 +528,50 @@ server.addPlugin(new PetQueryPluginMyRegistry(
 
 ## Persistent server index
 
-`PetQueryServerIndex` stores UUID-to-URI entries in a
-`PetQueryServerDatabase`, an asynchronous key-value backend.
-`PetQueryServerDatabaseLmdb` is the LMDB implementation; pass it a database
-directory and a database name. Reopening that directory restores the entries.
-Other backends can extend `PetQueryServerDatabase`.
-
-`index.ts` creates the index from `server.server_index` (by default
-`var/lmdb` in the working directory), passes it to `PetQueryServer`, and
-closes the database on `SIGINT` or `SIGTERM`. Routes reach it through
-`server._getServerIndex()`.
-
-The server's UUID is generated on first start and stored in the
-`settings_name` database of the same LMDB directory, so it stays the same
-across restarts. Deleting that directory gives the server a new identity.
+`PetQueryDatabase` stores UUID-to-URI entries and local pet records through
+an asynchronous key-value backend.
+`PetQueryDatabaseLmdb` is the LMDB implementation. The runtime configuration
+creates the database instances:
 
 ```ts
-import {PetQueryServerDatabaseLmdb} from
-	'#petquery/server/database/lmdb.js';
-import {PetQueryServerIndex} from '#petquery/server/index.js';
+import {PetQueryDatabaseLmdb} from '#petquery/database/lmdb.js';
 
-const db = new PetQueryServerDatabaseLmdb(
-	'/var/lib/petquery/servers',
-	'servers'
-);
-const serverIndex = new PetQueryServerIndex(db);
+const serverDatabase = new PetQueryDatabaseLmdb({
+	// LMDB environment directory, relative to the working directory.
+	 path:'var/lmdb' as filename_t
+	,name:'servers' as utf8_t
+	// Database in the same LMDB environment holding this server's UUID.
+	,settings_name:'settings' as utf8_t
+});
+const petDatabase = new PetQueryDatabaseLmdb({
+	 path:'var/lmdb' as filename_t
+	,name:'pets' as utf8_t
+});
+```
+
+The server's UUID is generated on first start and stored in the configured
+`settings_name` database, so it stays the same across restarts. Deleting that
+LMDB environment gives the server a new identity. Database instances are
+closed on `SIGINT` or `SIGTERM`.
+
+```ts
+import {PetQueryDatabaseLmdb} from '#petquery/database/lmdb.js';
+
+const db = new PetQueryDatabaseLmdb({
+	 path:'/var/lib/petquery' as filename_t
+	,name:'servers' as utf8_t
+	,settings_name:'settings' as utf8_t
+});
 try{
-	await serverIndex.addServer(
+	await db.addServer(
 		'550e8400-e29b-41d4-a716-446655440000',
 		'https://registry.example.org/'
 	);
-	const servers:Map<uuid_t,uri_t> = await serverIndex.getServerList();
+	const servers:Map<uuid_t,uri_t> = await db.getServerList();
 	console.log(servers);
-	await serverIndex.deleteServer('550e8400-e29b-41d4-a716-446655440000');
+	await db.deleteServer('550e8400-e29b-41d4-a716-446655440000');
 }
 finally{
-	serverIndex.destructor();
 	await db.destructor();
 }
 ```
@@ -573,7 +586,7 @@ destruction reject. Keep the database directory outside the source tree.
 
 ### Peer sync
 
-When `server_index.sync.enabled` is on, `PetQueryServerIndexSync` syncs the
+When `index.sync.enabled` is on, `PetQueryServerIndexSync` syncs the
 index at startup and then every `sync.interval` after the previous run ends.
 For each known server, it fetches `GET <uri>/api/server/get` and merges the
 returned entries:
@@ -592,7 +605,7 @@ most `sync.max_servers` entries per peer. Peers need `route.api.enabled`.
 > [!WARNING]
 > Sync makes this server send `GET` requests to URIs announced by peers,
 > including private network addresses. Run it only where that is acceptable,
-> or disable `server_index.sync.enabled`.
+> or disable `index.sync.enabled`.
 
 ## 🛠️ Development
 
@@ -647,30 +660,30 @@ The path mirrors the route, for example
 
 ### Admin GUI
 
-The admin GUI at `/admin` is a React app in [`gui/`](gui), built with Vite.
+The PetQuery GUI at `/gui/` is a React app in [`gui/`](gui), built with Vite.
 It has its own dependencies, so install them once with
 `npm run install:gui` before building.
 
 - **Production:** `npm run build` writes the GUI to `dist/gui/`, which
-  `route.admin.path` points to. Without a build, `/admin` returns `503`.
+  `route.gui.path` points to. Without a build, `/gui/` returns `503`.
 - **Development:** start the server, then run `npm run dev:gui` and open
-  `http://localhost:5173/admin/`. The dev server forwards `/api`, `/auth`
+  `http://localhost:5173/gui/`. The dev server forwards `/api`, `/auth`
   and `/docs` to the server on port 50000.
 - **Documentation:** generated TypeDoc files are served at `/docs/` and are
   browsable from the GUI's Docs page.
 
 The GUI has Home, Docs and Admin sections:
 
-- **Home** and the PetQuery logo open `/admin/search`, which queries the
+- **Home** and the PetQuery logo open `/gui/search`, which queries the
   `/json` endpoint with a bearer token and can upload supporting files.
 - **Docs** embeds the generated API documentation served at `/docs/`.
-- **Admin** opens `/admin/admin/config` and contains Config, Servers, Users
+- **Admin** opens `/gui/admin/config` and contains Config, Servers, Users
   and Pets. Config selects bearer, LMDB, LDAP or OpenID Connect
   authentication and edits the HTTP port, session settings, provider
   settings, bearer tokens, result limits, file upload, peer sync, routes and
   `/api` plugins. It calls
   `GET /api/config/get` and `PUT /api/config/put`, which save to
-  `config/server.json`. Changes apply when the server restarts; until
+  the database settings store. Changes apply when the server restarts; until
   then, the page shows a pending-restart notice.
 - **Servers** lists, adds, edits and deletes entries in the server index.
 - **Users** manages local LMDB users with `admin` and `user` groups. LDAP and
@@ -683,7 +696,7 @@ has full access; the `user` group can search and manage only Pets. Bearer
 tokens remain supported for machine clients. GUI sessions use HttpOnly
 cookies and are kept in LMDB.
 Only the `admin` group can edit authentication settings. Turn the GUI off with
-`route.admin.enabled`.
+`route.gui.enabled`.
 
 ## 📚 Documentation
 

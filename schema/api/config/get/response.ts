@@ -14,7 +14,7 @@ import {PetQueryServerConfig} from '#petquery/server/config.js';
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	success:T.Literal(true),
+	success:T.Boolean(),
 	error:T.Array(T.String()),
 	data:T.Object({
 		// Values the server runs with.
@@ -37,7 +37,9 @@ export type PetQuerySchemaApiConfigGetResponseValues =
 // Successful response of GET /api/config/get. Errors are sent as
 // PetQueryServerResponseSchemaError.
 export class PetQuerySchemaApiConfigGetResponse
-	extends PetQueryServerResponseSchema<PetQuerySchemaApiConfigGetResponseValues>{
+	extends PetQueryServerResponseSchema<
+		PetQuerySchemaApiConfigGetResponseValues
+	>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);
 

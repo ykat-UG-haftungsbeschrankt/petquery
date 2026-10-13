@@ -11,8 +11,10 @@ import {PetQueryResultDataSource} from '#petquery/result/data/source.js';
 //import { PetQueryPluginEuropetnetOrgConfig } from './plugin/europetnet.org/index.js';
 import { PetQueryTypes } from './types.js';
 import {PetQueryPluginConfig} from '#petquery/plugin/config.js';
-import type {PetQueryServerRequest} from '#petquery/server.js';
-import type {PetQueryServerResponse} from '#petquery/server.js';
+import type {PetQueryServerRequest} from
+	'#petquery/server/request.js';
+import type {PetQueryServerResponse} from
+	'#petquery/server/response.js';
 import {PetQuery3pPluginPetqueryConfig} from
 	'#petquery/3p/plugin/petquery/config.js';
 import {PetQuery3pPluginMysqlConfig} from
@@ -23,10 +25,106 @@ import {PetQuery3pPluginTestConfig} from
 	'#petquery/3p/plugin/test/config.js';
 import {PetQuery3pPluginAnimalidConfig} from
 	'#petquery/3p/plugin/animalid/config.js';
+import {PetQueryDatabaseLmdb} from '#petquery/database/lmdb.js';
 import fileUpload from 'express-fileupload';
+import type {ServerOptions} from 'node:https';
 
 //const { authenticate_api } = require('express-oauth2-jwt-bearer');
 //const { authenticate_json } = require('express-oauth2-jwt-bearer');
+
+export type PetQueryConfigAuthMode =
+	'bearer'|'lmdb'|'ldap'|'oidc';
+
+export type PetQueryConfigAuthenticate = (
+	req:PetQueryServerRequest,
+	res:PetQueryServerResponse,
+	next:()=>void
+)=>void;
+
+export type PetQueryConfigServerType = {
+		http:{
+			port:port_t;
+			enabled:bool_t;
+		};
+		https:{
+			port:port_t;
+			enabled:bool_t;
+			certificate:ServerOptions;
+		};
+		authenticate:{
+			mode:PetQueryConfigAuthMode;
+			bearer:Set<utf8_t>;
+			session:{
+				cookie_name:utf8_t;
+				max_age:milliseconds_t;
+				secure:bool_t;
+			};
+			lmdb:{
+				users_name:utf8_t;
+				sessions_name:utf8_t;
+			};
+			ldap:{
+				url:uri_t;
+				bind_dn:utf8_t;
+				bind_password:utf8_t;
+				base_dn:utf8_t;
+				user_filter:utf8_t;
+				admin_group:utf8_t;
+			};
+			oidc:{
+				issuer:uri_t;
+				client_id:utf8_t;
+				client_secret:utf8_t;
+				redirect_uri:uri_t;
+				scopes:utf8_t;
+				admin_group:utf8_t;
+			};
+		};
+		file:{
+			upload:{
+				enabled:bool_t;
+				max_file_size:uint_t;
+				options:fileUpload.Options;
+			};
+		};
+		max_results_per_module:uint_t;
+		max_results_total:uint_t;
+		index:{
+			database:PetQueryDatabaseLmdb;
+			sync:{
+				enabled:bool_t;
+				interval:milliseconds_t;
+				timeout:milliseconds_t;
+				max_servers:uint_t;
+			};
+		};
+		settings:{
+			database:PetQueryDatabaseLmdb;
+		};
+		route:{
+			api:{
+				plugins:Set<utf8_t>;
+				enabled:bool_t;
+				authenticate:PetQueryConfigAuthenticate;
+			};
+			json:{
+				enabled:bool_t;
+				authenticate:PetQueryConfigAuthenticate;
+			};
+			'/':{
+				enabled:bool_t;
+			};
+			gui:{
+				enabled:bool_t;
+				path:filename_t;
+			};
+		};
+};
+
+export type PetQueryConfigType = {
+	server:PetQueryConfigServerType;
+	plugin:Map<string,PetQueryPluginConfig>;
+};
 
 function authenticate(
 	req:PetQueryServerRequest,
@@ -41,12 +139,9 @@ function authenticate(
 	}
 }
 
-const settings = {
+const settings:PetQueryConfigType = {
 	server:{
-		// Values editable in the admin GUI, overriding the defaults below.
-		// Relative to the working directory; holds secrets, so not in git.
-		 config_file:'config/server.json' as filename_t
-		,http:{
+		 http:{
 			port:50000 as port_t
 			,enabled:true
 		}
@@ -59,7 +154,7 @@ const settings = {
 			}
 		}
 		,authenticate:{
-			 mode:'bearer' as 'bearer'|'lmdb'|'ldap'|'oidc'
+			 mode:'bearer' as PetQueryConfigAuthMode
 			,bearer:new Set<string>([
 				 '75258ce9e0a7e751ce4e78cf20dd3f8f'
 				,'c815512c071af26c864e6af29c2e2080'
@@ -110,12 +205,16 @@ const settings = {
 		}
 		,max_results_per_module:10 as uint_t
 		,max_results_total:1000 as uint_t
-		,server_index:{
-			// LMDB environment directory, relative to the working directory.
-			 path:'var/lmdb' as filename_t
-			,name:'servers' as utf8_t
-			// Database in the same environment holding this server's UUID.
-			,settings_name:'settings' as utf8_t
+		,index:{
+			database:new PetQueryDatabaseLmdb({
+				// LMDB environment directory, relative to the
+				// working directory.
+				 path:'var/lmdb' as filename_t
+				,name:'servers' as utf8_t
+				// Database in the same environment holding this
+				// server's UUID.
+				,settings_name:'settings' as utf8_t
+			})
 			,sync:{
 				 enabled:true
 				,interval:15 * 60 * 1000 as milliseconds_t
@@ -125,8 +224,11 @@ const settings = {
 				,max_servers:1000 as uint_t
 			}
 		}
-		,pet_database:{
-			name:'pets' as utf8_t
+		,settings:{
+			database:new PetQueryDatabaseLmdb({
+				 path:'var/lmdb' as filename_t
+				,name:'pets' as utf8_t
+			})
 		}
 		,route:{
 			api:{
@@ -141,7 +243,7 @@ const settings = {
 			,"/":{
 				enabled:true
 			}
-			,admin:{
+			,gui:{
 				 enabled:true
 				// Build output of gui/, relative to the working directory.
 				,path:'dist/gui' as filename_t
@@ -247,8 +349,7 @@ const settings = {
 	])
 };
 
-export type PetQueryConfigServerType = typeof settings.server;
-export type PetQueryConfigPluginType = typeof settings.plugin;
+export type PetQueryConfigPluginType = Map<string,PetQueryPluginConfig>;
 
 export class PetQueryConfig{
 	static getServerConfig(){

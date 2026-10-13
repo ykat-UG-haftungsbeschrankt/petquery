@@ -15,11 +15,14 @@ import * as oidc from 'openid-client';
 import {Client as LdapClient} from 'ldapts';
 import {PetQuerySchema} from '#petquery/schema.js';
 import type {PetQueryConfigServerType} from '#petquery/config.js';
-import type {PetQueryServerDatabase} from '#petquery/server/database.js';
-import type {
-	PetQueryServerRequest,
-	PetQueryServerResponse
-} from '#petquery/server/types.js';
+import type {PetQueryServerDatabaseAuth} from
+	'#petquery/server/database/auth.js';
+import type {PetQueryServerDatabaseSession} from
+	'#petquery/server/database/session.js';
+import type {PetQueryServerRequest} from
+	'#petquery/server/request.js';
+import type {PetQueryServerResponse} from
+	'#petquery/server/response.js';
 
 export type PetQueryServerAuthMode = 'bearer'|'lmdb'|'ldap'|'oidc';
 export type PetQueryServerAuthGroup = 'admin'|'user';
@@ -102,19 +105,19 @@ const oidcPendingValidator = PetQuerySchema.compile(oidcPendingSchema);
 export class PetQueryServerAuth{
 	protected readonly _config:PetQueryConfigServerType;
 	// Borrowed; its owner closes it.
-	protected readonly _users:PetQueryServerDatabase;
+	protected readonly _users:PetQueryServerDatabaseAuth;
 	// Borrowed; its owner closes it.
-	protected readonly _sessions:PetQueryServerDatabase;
+	protected readonly _database:PetQueryServerDatabaseSession;
 	protected _oidcConfig:Promise<Configuration>|null;
 
 	constructor(
 		config:PetQueryConfigServerType,
-		users:PetQueryServerDatabase,
-		sessions:PetQueryServerDatabase
+		users:PetQueryServerDatabaseAuth,
+		database:PetQueryServerDatabaseSession
 	){
 		this._config = config;
 		this._users = users;
-		this._sessions = sessions;
+		this._database = database;
 		this._oidcConfig = null;
 	}
 
@@ -168,7 +171,9 @@ export class PetQueryServerAuth{
 	):Promise<void>{
 		const sessionId = this._getCookie(req);
 		if(null !== sessionId){
-			await this._sessions.remove(this._getSessionKey(sessionId));
+			await this._database.serverSessionRemove(
+				this._getSessionKey(sessionId)
+			);
 		}
 		res.clearCookie(this._config.authenticate.session.cookie_name,{
 			httpOnly:true,
@@ -183,7 +188,7 @@ export class PetQueryServerAuth{
 		&& 'bearer' !== this.getMode()){
 			return this._listSessionUsers();
 		}
-		const entries = await this._users.getEntries();
+		const entries = await this._users.serverAuthGetEntries();
 		const ret:Array<PetQueryServerAuthManagedUser> = [];
 		for(const [key,value] of entries){
 			if(!key.startsWith('user:')){
@@ -198,7 +203,7 @@ export class PetQueryServerAuth{
 
 	protected async _listSessionUsers():
 		Promise<Array<PetQueryServerAuthManagedUser>>{
-		const entries = await this._sessions.getEntries();
+		const entries = await this._database.serverSessionGetEntries();
 		const seen = new Set<utf8_t>();
 		const ret:Array<PetQueryServerAuthManagedUser> = [];
 		for(const [key,value] of entries){
@@ -230,9 +235,10 @@ export class PetQueryServerAuth{
 	}):Promise<PetQueryServerAuthManagedUser>{
 		this._assertLocalUsersWritable();
 		this._validateUserInput(values.username,values.password);
-		if(undefined !== await this._users.get(this._getUserKey(
-			values.username
-		))){
+		const existing = await this._users.serverAuthGet(
+			this._getUserKey(values.username)
+		);
+		if(undefined !== existing){
 			throw new Error(`User "${values.username}" already exists`);
 		}
 		const now = new Date().toISOString();
@@ -245,7 +251,7 @@ export class PetQueryServerAuth{
 			createdAt:now,
 			updatedAt:now
 		};
-		await this._users.put(
+		await this._users.serverAuthPut(
 			this._getUserKey(values.username),
 			JSON.stringify(user)
 		);
@@ -276,14 +282,17 @@ export class PetQueryServerAuth{
 			this._validateUserInput(username,values.password);
 			user.passwordHash = await this._hashPassword(values.password);
 		}
-		await this._users.put(this._getUserKey(username),JSON.stringify(user));
+		await this._users.serverAuthPut(
+			this._getUserKey(username),
+			JSON.stringify(user)
+		);
 		return this._toManagedUser(user);
 	}
 
 	async deleteUser(username:utf8_t):Promise<void>{
 		this._assertLocalUsersWritable();
 		this._validateUserInput(username,null);
-		await this._users.remove(this._getUserKey(username));
+		await this._users.serverAuthRemove(this._getUserKey(username));
 	}
 
 	async getOidcLoginUrl():Promise<URL>{
@@ -299,7 +308,7 @@ export class PetQueryServerAuth{
 			expiresAt:Date.now() + 10 * 60 * 1000
 		};
 
-		await this._sessions.put(
+		await this._database.serverSessionPut(
 			this._getOidcKey(state),
 			JSON.stringify(pending)
 		);
@@ -318,13 +327,17 @@ export class PetQueryServerAuth{
 		res:PetQueryServerResponse
 	):Promise<PetQueryServerAuthUser>{
 		const state = this._getQueryString(req.query.state,'state');
-		const text = await this._sessions.get(this._getOidcKey(state));
+		const text = await this._database.serverSessionGet(
+			this._getOidcKey(state)
+		);
 		if(undefined === text){
 			throw new Error('OIDC state is invalid or expired');
 		}
 		const pending = this._parseOidcPending(text);
 		if(Date.now() > pending.expiresAt){
-			await this._sessions.remove(this._getOidcKey(state));
+			await this._database.serverSessionRemove(
+				this._getOidcKey(state)
+			);
 			throw new Error('OIDC state has expired');
 		}
 		const checks:AuthorizationCodeGrantChecks = {
@@ -337,7 +350,9 @@ export class PetQueryServerAuth{
 			this._getOidcCallbackUrl(req),
 			checks
 		);
-		await this._sessions.remove(this._getOidcKey(state));
+		await this._database.serverSessionRemove(
+			this._getOidcKey(state)
+		);
 		const claims = tokens.claims() ?? {};
 		const user = await this._getOidcUser(tokens.access_token,claims);
 		await this._createSession(user,res);
@@ -351,13 +366,17 @@ export class PetQueryServerAuth{
 		if(null === sessionId){
 			return null;
 		}
-		const text = await this._sessions.get(this._getSessionKey(sessionId));
+		const text = await this._database.serverSessionGet(
+			this._getSessionKey(sessionId)
+		);
 		if(undefined === text){
 			return null;
 		}
 		const session = this._parseSession(text);
 		if(Date.now() > session.expiresAt){
-			await this._sessions.remove(this._getSessionKey(sessionId));
+			await this._database.serverSessionRemove(
+				this._getSessionKey(sessionId)
+			);
 			return null;
 		}
 		return {
@@ -458,7 +477,7 @@ export class PetQueryServerAuth{
 			createdAt:now,
 			expiresAt:now + maxAge
 		};
-		await this._sessions.put(
+		await this._database.serverSessionPut(
 			this._getSessionKey(sessionId),
 			JSON.stringify(session)
 		);
@@ -474,7 +493,9 @@ export class PetQueryServerAuth{
 	protected async _getLocalUser(
 		username:utf8_t
 	):Promise<PetQueryServerAuthLocalUser|null>{
-		const text = await this._users.get(this._getUserKey(username));
+		const text = await this._users.serverAuthGet(
+			this._getUserKey(username)
+		);
 		return undefined === text ? null : this._parseLocalUser(text);
 	}
 

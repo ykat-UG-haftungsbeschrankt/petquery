@@ -3,7 +3,8 @@
 	"type": "object",
 	"required": [
 		"success",
-		"error"
+		"error",
+		"data"
 	],
 	"properties": {
 		"success": {
@@ -15,6 +16,10 @@
 			"items": {
 				"type": "string"
 			}
+		},
+		"data": {
+			"type": "array",
+			"items": {}
 		}
 	},
 	"title": "Error response of every route",

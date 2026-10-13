@@ -6,7 +6,8 @@
  */
 
 import util from 'node:util';
-import type {PetQueryServerIndex} from '#petquery/server/index.js';
+import {PetQueryTimer} from '#petquery/timer.js';
+import type {PetQueryDatabase} from '#petquery/database.js';
 import {PetQuerySchemaApiPingGetRequest} from
 	'#schema/api/ping/get/request.js';
 import {PetQuerySchemaApiServerGetRequest} from
@@ -18,32 +19,34 @@ import {PetQueryServerRequestSchema} from
 // into the index. A remote entry is added, or replaces a known URI, only
 // when pinging its URI answers with the same UUID. The index is borrowed.
 export class PetQueryServerIndexSync{
-	protected readonly _serverIndex:PetQueryServerIndex;
+	protected readonly _database:PetQueryDatabase;
 	protected readonly _uuid:uuid_t;
 	protected readonly _interval:milliseconds_t;
 	protected readonly _timeout:milliseconds_t;
 	protected readonly _maxServers:uint_t;
 	protected readonly _abortController:AbortController;
-	protected _timer:NodeJS.Timeout|null;
-	protected _running:Promise<void>|null;
+	protected readonly _timer:PetQueryTimer;
 	protected _destructorPromise:Promise<void>|null;
 
 	// uuid is this server's own UUID; entries with it are never merged.
 	constructor(
-		serverIndex:PetQueryServerIndex,
+		database:PetQueryDatabase,
 		uuid:uuid_t,
 		interval:milliseconds_t,
 		timeout:milliseconds_t,
 		maxServers:uint_t
 	){
-		this._serverIndex = serverIndex;
+		this._database = database;
 		this._uuid = uuid;
 		this._interval = interval;
 		this._timeout = timeout;
 		this._maxServers = maxServers;
 		this._abortController = new AbortController();
-		this._timer = null;
-		this._running = null;
+		this._timer = new PetQueryTimer(
+			interval,
+			this._runTimer.bind(this),
+			this._reportTimerError.bind(this)
+		);
 		this._destructorPromise = null;
 	}
 
@@ -53,16 +56,13 @@ export class PetQueryServerIndexSync{
 		if(null !== this._destructorPromise){
 			throw new Error('Server index sync is destroyed');
 		}
-		if(null !== this._timer || null !== this._running){
-			return;
-		}
-		this._schedule(0);
+		this._timer.start();
 	}
 
 	// Runs one sync pass. Failures of single servers are reported and
 	// skipped; failures reading the local index reject.
 	async sync():Promise<void>{
-		const known = await this._serverIndex.getServerList();
+		const known = await this._database.getServerList();
 		for(const [uuid,uri] of [...known]){
 			if(this._abortController.signal.aborted){
 				return;
@@ -92,39 +92,19 @@ export class PetQueryServerIndexSync{
 
 	protected async _destroy():Promise<void>{
 		try{
-			if(null !== this._timer){
-				clearTimeout(this._timer);
-				this._timer = null;
-			}
 			this._abortController.abort();
-			if(null !== this._running){
-				await this._running;
-			}
+			await this._timer.destructor();
 		}
 		catch(UNUSED_e){
 		}
 	}
 
-	protected _schedule(delay:milliseconds_t):void{
-		this._timer = setTimeout(this._onTimer.bind(this),delay);
+	protected _runTimer():Promise<void>{
+		return this.sync();
 	}
 
-	protected _onTimer():void{
-		this._timer = null;
-		this._running = this.sync()
-			.catch(this._onSyncError.bind(this))
-			.finally(this._onSyncDone.bind(this));
-	}
-
-	protected _onSyncError(error:unknown):void{
+	protected _reportTimerError(error:unknown):void{
 		this._report('Server index sync failed',error);
-	}
-
-	protected _onSyncDone():void{
-		this._running = null;
-		if(null === this._destructorPromise){
-			this._schedule(this._interval);
-		}
 	}
 
 	protected async _merge(
@@ -145,7 +125,7 @@ export class PetQueryServerIndexSync{
 						`Ping answered with UUID ${pingUuid}, expected ${uuid}`
 					);
 				}
-				await this._serverIndex.addServer(uuid,uri);
+				await this._database.addServer(uuid,uri);
 				known.set(uuid,uri);
 			}
 			catch(error){

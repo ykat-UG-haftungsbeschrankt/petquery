@@ -5,13 +5,12 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {default as Express} from 'express';
 import util from 'node:util';
 import {PetQueryServerRoute} from '#petquery/server/route.js';
-import type {
-	PetQueryServerRequest,
-	PetQueryServerResponse
-} from '#petquery/server/types.js';
+import type {PetQueryServerRequest} from
+	'#petquery/server/request.js';
+import type {PetQueryServerResponse} from
+	'#petquery/server/response.js';
 
 type PetQueryServerRoutePetHandler = (
 	req:PetQueryServerRequest,
@@ -19,33 +18,33 @@ type PetQueryServerRoutePetHandler = (
 )=>Promise<void>;
 
 export class PetQueryServerRoutePet extends PetQueryServerRoute{
-	register(app:Express.Express):void{
-		if(true !== this._server._getConfig().route.api.enabled){
+	register():void{
+		if(true !== this.getServer()._getConfig().route.api.enabled){
 			return;
 		}
-		app.get(
+		this.getServer().get(
 			'/api/pets',
-			this._server._authenticateUser.bind(this._server),
+			this._authenticateUser.bind(this),
 			this._wrap(this._handleList.bind(this))
 		);
-		app.post(
+		this.getServer().post(
 			'/api/pets',
-			this._server._authenticateUser.bind(this._server),
+			this._authenticateUser.bind(this),
 			this._wrap(this._handleCreate.bind(this))
 		);
-		app.get(
+		this.getServer().get(
 			'/api/pets/:pet_id',
-			this._server._authenticateUser.bind(this._server),
+			this._authenticateUser.bind(this),
 			this._wrap(this._handleGet.bind(this))
 		);
-		app.put(
+		this.getServer().put(
 			'/api/pets/:pet_id',
-			this._server._authenticateUser.bind(this._server),
+			this._authenticateUser.bind(this),
 			this._wrap(this._handleUpdate.bind(this))
 		);
-		app.delete(
+		this.getServer().delete(
 			'/api/pets/:pet_id',
-			this._server._authenticateUser.bind(this._server),
+			this._authenticateUser.bind(this),
 			this._wrap(this._handleDelete.bind(this))
 		);
 	}
@@ -67,14 +66,14 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		UNUSED_req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		this._sendSuccess(res,await this._server._getPetStore().list());
+		this._sendSuccess(res,await this.getServer()._getPetStore().list());
 	}
 
 	protected async _handleGet(
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		const pet = await this._server._getPetStore().get(
+		const pet = await this.getServer()._getPetStore().get(
 			this._getParam(req,'pet_id')
 		);
 		if(null === pet){
@@ -88,8 +87,8 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		const pet = await this._server._getPetStore().create(
-			this._server._getPetStore().parse(req.body)
+		const pet = await this.getServer()._getPetStore().create(
+			this.getServer()._getPetStore().parse(req.body)
 		);
 		this._sendSuccess(res,pet);
 	}
@@ -98,9 +97,9 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		const pet = await this._server._getPetStore().update(
+		const pet = await this.getServer()._getPetStore().update(
 			this._getParam(req,'pet_id'),
-			this._server._getPetStore().parse(req.body)
+			this.getServer()._getPetStore().parse(req.body)
 		);
 		this._sendSuccess(res,pet);
 	}
@@ -109,7 +108,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		await this._server._getPetStore().remove(
+		await this.getServer()._getPetStore().remove(
 			this._getParam(req,'pet_id')
 		);
 		this._sendSuccess(res,null);
@@ -140,7 +139,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		error:Array<utf8_t>
 	):void{
 		res.set('Cache-Control','no-store');
-		res.status(status).json({success:false,error,data:null});
+		res.status(status).json({success:false,error,data:[]});
 	}
 
 	protected override _getErrorMessage(error:unknown):utf8_t{

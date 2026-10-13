@@ -5,13 +5,12 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {default as Express} from 'express';
 import util from 'node:util';
 import {PetQueryServerRoute} from '#petquery/server/route.js';
-import type {
-	PetQueryServerRequest,
-	PetQueryServerResponse
-} from '#petquery/server/types.js';
+import type {PetQueryServerRequest} from
+	'#petquery/server/request.js';
+import type {PetQueryServerResponse} from
+	'#petquery/server/response.js';
 import type {PetQueryServerAuthGroup} from '#petquery/server/auth.js';
 
 type PetQueryServerRouteAuthHandler = (
@@ -20,37 +19,49 @@ type PetQueryServerRouteAuthHandler = (
 )=>Promise<void>;
 
 export class PetQueryServerRouteAuth extends PetQueryServerRoute{
-	register(app:Express.Express):void{
-		app.get('/auth/mode',this._wrap(this._handleMode.bind(this)));
-		app.get('/auth/session',this._wrap(this._handleSession.bind(this)));
-		app.post('/auth/login',this._wrap(this._handleLogin.bind(this)));
-		app.post('/auth/logout',this._wrap(this._handleLogout.bind(this)));
-		app.get(
+	register():void{
+		this.getServer().get(
+			'/auth/mode',
+			this._wrap(this._handleMode.bind(this))
+		);
+		this.getServer().get(
+			'/auth/session',
+			this._wrap(this._handleSession.bind(this))
+		);
+		this.getServer().post(
+			'/auth/login',
+			this._wrap(this._handleLogin.bind(this))
+		);
+		this.getServer().post(
+			'/auth/logout',
+			this._wrap(this._handleLogout.bind(this))
+		);
+		this.getServer().get(
 			'/auth/oidc/login',
 			this._wrap(this._handleOidcLogin.bind(this))
 		);
-		app.get(
+		this.getServer().get(
 			'/auth/oidc/callback',
 			this._wrap(this._handleOidcCallback.bind(this))
 		);
-		app.get(
+		this.getServer().get(
 			'/auth/users',
-			this._server._authenticateAdmin.bind(this._server),
+			this._authenticateAdmin.bind(this),
 			this._wrap(this._handleListUsers.bind(this))
 		);
-		app.post(
+		this.getServer().post(
 			'/auth/users',
-			this._server._authenticateAdmin.bind(this._server),
+			this._authenticateAdmin.bind(this),
 			this._wrap(this._handleCreateUser.bind(this))
 		);
-		app.put(
+		this.getServer().put(
 			'/auth/users/:username',
-			this._server._authenticateAdmin.bind(this._server),
+			this._authenticateAdmin.bind(this),
 			this._wrap(this._handleUpdateUser.bind(this))
 		);
-		app.delete(
+		this.getServer().delete(
 			'/auth/users/:username',
-			this._server._authenticateAdmin.bind(this._server),
+			this._authenticateAdmin.bind(this),
 			this._wrap(this._handleDeleteUser.bind(this))
 		);
 	}
@@ -72,14 +83,14 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		UNUSED_req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		this._sendSuccess(res,{mode:this._server._getAuth().getMode()});
+		this._sendSuccess(res,{mode:this.getServer()._getAuth().getMode()});
 	}
 
 	protected async _handleSession(
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		const user = await this._server._getAuth().authenticate(req);
+		const user = await this.getServer()._getAuth().authenticate(req);
 		if(null === user){
 			this._sendError(res,401,['Authentication required']);
 			return;
@@ -91,7 +102,10 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		const user = await this._server._getAuth().createLoginSession(req,res);
+		const user = await this.getServer()._getAuth().createLoginSession(
+			req,
+			res
+		);
 		this._sendSuccess(res,{user});
 	}
 
@@ -99,7 +113,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		await this._server._getAuth().logout(req,res);
+		await this.getServer()._getAuth().logout(req,res);
 		this._sendSuccess(res,null);
 	}
 
@@ -107,39 +121,47 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		UNUSED_req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		if('oidc' !== this._server._getAuth().getMode()){
+		if('oidc' !== this.getServer()._getAuth().getMode()){
 			this._sendError(res,400,['OpenID Connect is not enabled']);
 			return;
 		}
-		res.redirect((await this._server._getAuth().getOidcLoginUrl()).href);
+		res.redirect(
+			(await this.getServer()._getAuth().getOidcLoginUrl()).href
+		);
 	}
 
 	protected async _handleOidcCallback(
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		const user = await this._server._getAuth().handleOidcCallback(req,res);
+		const user = await this.getServer()._getAuth().handleOidcCallback(
+			req,
+			res
+		);
 		const section = 'admin' === user.group ? 'config' : 'pets';
-		res.redirect(`/admin/admin/${section}`);
+		res.redirect(`/gui/admin/${section}`);
 	}
 
 	protected async _handleListUsers(
 		UNUSED_req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		this._sendSuccess(res,await this._server._getAuth().listUsers());
+		this._sendSuccess(
+			res,
+			await this.getServer()._getAuth().listUsers()
+		);
 	}
 
 	protected async _handleCreateUser(
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		if('lmdb' !== this._server._getAuth().getMode()
-		&& 'bearer' !== this._server._getAuth().getMode()){
+		if('lmdb' !== this.getServer()._getAuth().getMode()
+		&& 'bearer' !== this.getServer()._getAuth().getMode()){
 			this._sendError(res,403,['User management is read-only']);
 			return;
 		}
-		const user = await this._server._getAuth().createUser(
+		const user = await this.getServer()._getAuth().createUser(
 			this._getCreateUser(req)
 		);
 		this._sendSuccess(res,user);
@@ -149,12 +171,12 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		if('lmdb' !== this._server._getAuth().getMode()
-		&& 'bearer' !== this._server._getAuth().getMode()){
+		if('lmdb' !== this.getServer()._getAuth().getMode()
+		&& 'bearer' !== this.getServer()._getAuth().getMode()){
 			this._sendError(res,403,['User management is read-only']);
 			return;
 		}
-		const user = await this._server._getAuth().updateUser(
+		const user = await this.getServer()._getAuth().updateUser(
 			this._getParam(req,'username'),
 			this._getUpdateUser(req)
 		);
@@ -165,12 +187,12 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		if('lmdb' !== this._server._getAuth().getMode()
-		&& 'bearer' !== this._server._getAuth().getMode()){
+		if('lmdb' !== this.getServer()._getAuth().getMode()
+		&& 'bearer' !== this.getServer()._getAuth().getMode()){
 			this._sendError(res,403,['User management is read-only']);
 			return;
 		}
-		await this._server._getAuth().deleteUser(
+		await this.getServer()._getAuth().deleteUser(
 			this._getParam(req,'username')
 		);
 		this._sendSuccess(res,null);
@@ -257,7 +279,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		error:Array<utf8_t>
 	):void{
 		res.set('Cache-Control','no-store');
-		res.status(status).json({success:false,error,data:null});
+		res.status(status).json({success:false,error,data:[]});
 	}
 
 	protected override _getErrorMessage(error:unknown):utf8_t{
