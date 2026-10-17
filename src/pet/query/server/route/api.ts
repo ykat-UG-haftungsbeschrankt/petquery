@@ -6,36 +6,23 @@
  */
 
 import {PetQueryServerRoute, PetQueryServerRouteAccessGroup} from '#petquery/server/route.js';
-import {PetQueryServerConfig} from '#petquery/server/config.js';
-import type {PetQueryServerConfigType} from
-	'#petquery/server/config.js';
-import {PetQueryServerResponseSchemaError} from
-	'#petquery/server/response/schema.js';
+import {PetQueryConfig} from '#petquery/config.js';
 import {PetQuerySchemaSearchRequest} from '#schema/search/request.js';
 import {PetQuerySchemaApiPingGetRequest} from
 	'#schema/api/ping/get/request.js';
-import {PetQuerySchemaApiPingGetResponse} from
-	'#schema/api/ping/get/response.js';
 import {PetQuerySchemaApiServerGetRequest} from
 	'#schema/api/server/get/request.js';
-import {PetQuerySchemaApiServerGetResponse} from
-	'#schema/api/server/get/response.js';
 import {PetQuerySchemaApiServerPutRequest} from
 	'#schema/api/server/put/request.js';
-import {PetQuerySchemaApiServerPutResponse} from
-	'#schema/api/server/put/response.js';
 import {PetQuerySchemaApiServerDeleteRequest} from
 	'#schema/api/server/delete/request.js';
-import {PetQuerySchemaApiServerDeleteResponse} from
-	'#schema/api/server/delete/response.js';
 import {PetQuerySchemaApiConfigGetRequest} from
 	'#schema/api/config/get/request.js';
-import {PetQuerySchemaApiConfigGetResponse} from
-	'#schema/api/config/get/response.js';
 import {PetQuerySchemaApiConfigPutRequest} from
 	'#schema/api/config/put/request.js';
-import {PetQuerySchemaApiConfigPutResponse} from
-	'#schema/api/config/put/response.js';
+import type {
+	PetQuerySchemaServerDatabaseConfigEntryType
+} from '#schema/server/database/config/entry.js';
 
 import type {
 	PetQuerySchemaApiServerGetRequestType
@@ -154,7 +141,10 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		UNUSED_request: PetQuerySchemaApiPingGetRequestType
 	): Promise<PetQuerySchemaApiPingGetResponseType>{
 		return {
-			
+			uid:this.getServer()._getUuid(),
+			uri:`http://127.0.0.1:${
+				this.getServer()._getConfig().http.port
+			}/`
 		};
 	}
 
@@ -172,19 +162,24 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	protected async _handleAddServer(
 		request:PetQuerySchemaApiServerPutRequestType
 	):Promise<PetQuerySchemaApiServerPutResponseType>{
-		return await this.getServer()
+		await this.getServer()
 			._getDatabase()
 			.getDbIndex()
-			.serverIndexAddServer(request);
+			.serverIndexAddServer({
+				uid:request.uuid,
+				uri:request.uri
+			});
+		return [];
 	}
 
 	protected async _handleDeleteServer(
 		request:PetQuerySchemaApiServerDeleteRequestType
 	):Promise<PetQuerySchemaApiServerDeleteResponseType>{
-		return await this.getServer()
+		await this.getServer()
 			._getDatabase()
 			.getDbIndex()
 			.serverIndexRemoveServer(request.uuid);
+		return [];
 	}
 
 	// Returns the running values, the saved values (applied on restart)
@@ -193,10 +188,10 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		UNUSED_request:PetQuerySchemaApiConfigGetRequestType
 	):Promise<PetQuerySchemaApiConfigGetResponseType>{
 		const configFile = this.getServer()._getConfigFile();
-		const active = PetQueryServerConfig.fromServerConfig(
+		const active = configFile.fromServerConfig(
 			this.getServer()._getConfig()
 		);
-		let saved:PetQueryServerConfigType|null = null;
+		let saved:PetQuerySchemaServerDatabaseConfigEntryType|null = null;
 		let savedError:utf8_t|null = null;
 
 		try{
@@ -204,16 +199,12 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		}catch(error){
 			savedError = this._getErrorMessage(error);
 		}
-		return new PetQuerySchemaApiConfigGetResponse(200,{
-			success:true,
-			error:[],
-			data:{
-				active,
-				saved,
-				saved_error:savedError,
-				plugins:configFile.getPluginNames()
-			}
-		});
+		return {
+			active,
+			saved,
+			saved_error:savedError,
+			plugins:PetQueryConfig.getPluginNames()
+		};
 	}
 
 	// Saves the values, applied on restart. Unknown plugin names get a 400.
@@ -221,21 +212,8 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		request:PetQuerySchemaApiConfigPutRequestType
 	):Promise<PetQuerySchemaApiConfigPutResponseType>{
 		const configFile = this.getServer()._getConfigFile();
-		let saved:PetQueryServerConfigType;
-
-		try{
-			saved = configFile.normalize(request.getConfig());
-		}catch(error){
-			return new PetQueryServerResponseSchemaError(
-				400,
-				[this._getErrorMessage(error)]
-			);
-		}
+		const saved = configFile.parse(request);
 		await configFile.save(saved);
-		return new PetQuerySchemaApiConfigPutResponse(200,{
-			success:true,
-			error:[],
-			data:{saved}
-		});
+		return {saved};
 	}
 };

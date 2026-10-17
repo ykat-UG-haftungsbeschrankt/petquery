@@ -8,8 +8,8 @@
 import { PetQueryHttpStatusCode } from '#petquery/http.js';
 import { PetQuerySchema, PetQuerySchemaStatic } from '#petquery/schema.js';
 import type {default as Express} from 'express';
-import { NodeUtilInspect } from 'node:util';
-
+import { inspect as NodeUtilInspect } from 'node:util';
+import type { SendFileOptions as ExpressSendFileOptions } from 'express-serve-static-core';
 
 const T = PetQuerySchema.type;
 
@@ -153,7 +153,7 @@ export class PetQueryServerResponse{
 
 	sendFile(
 		file:filename_t,
-		options:Express.SendFileOptions,
+		options:ExpressSendFileOptions,
 		callback:(error?:Error)=>void
 	):void{
 		this._response.sendFile(file,options,callback);

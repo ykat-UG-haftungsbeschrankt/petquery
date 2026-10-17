@@ -1,7 +1,17 @@
-export class PetQueryAbortController{
+/*
+ * Copyright (c) 2026 ykat UG (haftungsbeschraenkt) - All Rights Reserved
+ *
+ * Permission for non-commercial use is hereby granted,
+ * free of charge, without warranty of any kind.
+ */
+
+import { PetQueryDestructor } from "./destructor.js";
+
+export class PetQueryAbortController extends PetQueryDestructor{
 	protected readonly _abortController:AbortController;
 	protected readonly _abortControllerSet:Set<AbortController>;
 	constructor(){
+		super();
 		this._abortController = new AbortController();
 		this._abortControllerSet = new Set<AbortController>();
 	}
@@ -20,7 +30,9 @@ export class PetQueryAbortController{
 	remove(abortController: AbortController):void{
 		this._abortControllerSet.delete(abortController);
 	}
-	private _getTimeoutSignalCallback(abortController: AbortController){
+	protected _getTimeoutSignalCallback(
+		abortController:AbortController
+	):void{
 		this.remove(abortController);
 		abortController.abort();
 	}
@@ -33,5 +45,10 @@ export class PetQueryAbortController{
 			,timeout
 		);
 		return signal;
+	}
+
+	async _destructor(){
+		this.abort();
+		this._abortControllerSet.clear();
 	}
 };

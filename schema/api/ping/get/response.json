@@ -2,32 +2,17 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"required": [
-		"success",
-		"error",
-		"data"
+		"uid",
+		"uri"
 	],
 	"properties": {
-		"success": {
-			"type": "boolean"
+		"uid": {
+			"type": "string",
+			"format": "uuid"
 		},
-		"error": {
-			"type": "array",
-			"items": {
-				"type": "string"
-			}
-		},
-		"data": {
-			"type": "object",
-			"required": [
-				"uuid"
-			],
-			"properties": {
-				"uuid": {
-					"type": "string",
-					"format": "uuid"
-				}
-			},
-			"additionalProperties": false
+		"uri": {
+			"type": "string",
+			"format": "uri"
 		}
 	},
 	"title": "GET /api/ping/get response",

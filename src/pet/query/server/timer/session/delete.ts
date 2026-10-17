@@ -8,11 +8,6 @@
 import util from 'node:util';
 import {PetQueryTimer} from '#petquery/timer.js';
 import type {PetQueryDatabase} from '#petquery/database.js';
-import {PetQuerySchemaApiPingGetRequest} from
-	'#schema/api/ping/get/request.js';
-import {PetQuerySchemaApiServerGetRequest} from
-	'#schema/api/server/get/request.js';
-import { PetQueryAbortController } from '#petquery/abort.js';
 import { PetQueryServerDatabaseSession } from '#petquery/server/database/session.js';
 
 export class PetQueryServerIndexSync extends PetQueryTimer{

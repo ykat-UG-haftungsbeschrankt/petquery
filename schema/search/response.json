@@ -1,71 +1,52 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"type": "object",
-	"required": [
-		"success",
-		"error",
-		"data"
-	],
-	"properties": {
-		"success": {
-			"type": "boolean"
-		},
-		"error": {
-			"type": "array",
-			"items": {
-				"type": "string"
-			}
-		},
-		"data": {
-			"type": "array",
-			"items": {
+	"type": "array",
+	"items": {
+		"type": "object",
+		"required": [
+			"source",
+			"preview",
+			"files",
+			"attributes"
+		],
+		"properties": {
+			"source": {
 				"type": "object",
 				"required": [
-					"source",
-					"preview",
-					"files",
-					"attributes"
+					"favicon",
+					"url",
+					"name"
 				],
 				"properties": {
-					"source": {
-						"type": "object",
-						"required": [
-							"favicon",
-							"url",
-							"name"
-						],
-						"properties": {
-							"favicon": {
-								"type": "string"
-							},
-							"url": {
-								"type": "string"
-							},
-							"name": {
-								"type": "string"
-							}
-						},
-						"additionalProperties": false
-					},
-					"preview": {
+					"favicon": {
 						"type": "string"
 					},
-					"files": {
-						"type": "array",
-						"items": {
-							"type": "string"
-						}
+					"url": {
+						"type": "string"
 					},
-					"attributes": {
-						"type": "object",
-						"patternProperties": {
-							"^.*$": {}
-						}
+					"name": {
+						"type": "string"
 					}
 				},
 				"additionalProperties": false
+			},
+			"preview": {
+				"type": "string"
+			},
+			"files": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				}
+			},
+			"attributes": {
+				"type": "object",
+				"patternProperties": {
+					"^.*$": {}
+				}
 			}
-		}
+		},
+		"additionalProperties": false
 	},
 	"title": "Search response of /api and /json",
 	"additionalProperties": false

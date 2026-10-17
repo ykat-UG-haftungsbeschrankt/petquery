@@ -19,7 +19,7 @@ export abstract class PetQueryDestructor{
 	}
 	protected _assertNotDestroyed():void{
 		if(null !== this._destructorPromise){
-			throw new Error('LMDB database is closed');
+			throw new Error(this.constructor.name+' is destructed');
 		}
 	}
 	protected abstract _destructor():Promise<void>;

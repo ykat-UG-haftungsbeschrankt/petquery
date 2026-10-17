@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"target": "ES2025",
+		"target": "ESNext",
 		"module": "NodeNext",
 		"moduleResolution": "NodeNext",
 		"paths": {
@@ -10,7 +10,7 @@
 		"rootDir": ".",
 		"outDir": "dist",
 		"sourceMap": true,
-		"lib": ["ES2025"],
+		"lib": ["ESNext"],
 		"types": ["node"],
 		"strict": true,
 		"noImplicitAny": true,
@@ -24,6 +24,6 @@
 		"schema/**/*.ts",
 		"examples/**/*.ts",
 		"types/**/*.d.ts"
-,         "src/pet/query/server/route/.trash/html_old.ts", "src/pet/query/server/route/.trash/json.ts"	],
+	],
 	"exclude": ["node_modules", "dist"]
 }

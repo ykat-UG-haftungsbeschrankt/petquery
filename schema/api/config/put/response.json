@@ -2,354 +2,339 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"required": [
-		"success",
-		"error",
-		"data"
+		"saved"
 	],
 	"properties": {
-		"success": {
-			"type": "boolean"
-		},
-		"error": {
-			"type": "array",
-			"items": {
-				"type": "string"
-			}
-		},
-		"data": {
+		"saved": {
 			"type": "object",
 			"required": [
-				"saved"
+				"serverUid",
+				"http",
+				"authenticate",
+				"file",
+				"max_results_per_module",
+				"max_results_total",
+				"index",
+				"route"
 			],
 			"properties": {
-				"saved": {
+				"serverUid": {
+					"type": "string",
+					"pattern": "^[\\x21-\\x7e]{16,256}$"
+				},
+				"http": {
 					"type": "object",
 					"required": [
-						"http",
-						"authenticate",
-						"file",
-						"max_results_per_module",
-						"max_results_total",
-						"index",
-						"route"
+						"port"
 					],
 					"properties": {
-						"http": {
+						"port": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 65535
+						}
+					},
+					"additionalProperties": false
+				},
+				"authenticate": {
+					"type": "object",
+					"required": [
+						"mode",
+						"bearer",
+						"session",
+						"lmdb",
+						"ldap",
+						"oidc"
+					],
+					"properties": {
+						"mode": {
+							"anyOf": [
+								{
+									"type": "string",
+									"const": "bearer"
+								},
+								{
+									"type": "string",
+									"const": "lmdb"
+								},
+								{
+									"type": "string",
+									"const": "ldap"
+								},
+								{
+									"type": "string",
+									"const": "oidc"
+								}
+							]
+						},
+						"bearer": {
+							"type": "array",
+							"items": {
+								"type": "string",
+								"pattern": "^[\\x21-\\x7e]{16,256}$"
+							},
+							"minItems": 1,
+							"maxItems": 100
+						},
+						"session": {
 							"type": "object",
 							"required": [
-								"port"
+								"cookie_name",
+								"max_age",
+								"secure"
 							],
 							"properties": {
-								"port": {
+								"cookie_name": {
+									"type": "string",
+									"pattern": "^[A-Za-z0-9._-]{1,64}$"
+								},
+								"max_age": {
 									"type": "integer",
-									"minimum": 1,
-									"maximum": 65535
+									"minimum": 60000,
+									"maximum": 2147483647
+								},
+								"secure": {
+									"type": "boolean"
 								}
 							},
 							"additionalProperties": false
 						},
-						"authenticate": {
+						"lmdb": {
 							"type": "object",
 							"required": [
-								"mode",
-								"bearer",
-								"session",
-								"lmdb",
-								"ldap",
-								"oidc"
+								"users_name",
+								"sessions_name"
 							],
 							"properties": {
-								"mode": {
-									"anyOf": [
-										{
-											"type": "string",
-											"const": "bearer"
-										},
-										{
-											"type": "string",
-											"const": "lmdb"
-										},
-										{
-											"type": "string",
-											"const": "ldap"
-										},
-										{
-											"type": "string",
-											"const": "oidc"
-										}
-									]
+								"users_name": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 128
 								},
-								"bearer": {
+								"sessions_name": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 128
+								}
+							},
+							"additionalProperties": false
+						},
+						"ldap": {
+							"type": "object",
+							"required": [
+								"url",
+								"bind_dn",
+								"bind_password",
+								"base_dn",
+								"user_filter",
+								"admin_group"
+							],
+							"properties": {
+								"url": {
+									"type": "string",
+									"maxLength": 4096
+								},
+								"bind_dn": {
+									"type": "string",
+									"maxLength": 4096
+								},
+								"bind_password": {
+									"type": "string",
+									"maxLength": 4096
+								},
+								"base_dn": {
+									"type": "string",
+									"maxLength": 4096
+								},
+								"user_filter": {
+									"type": "string",
+									"maxLength": 4096
+								},
+								"admin_group": {
+									"type": "string",
+									"maxLength": 1024
+								}
+							},
+							"additionalProperties": false
+						},
+						"oidc": {
+							"type": "object",
+							"required": [
+								"issuer",
+								"client_id",
+								"client_secret",
+								"redirect_uri",
+								"scopes",
+								"admin_group"
+							],
+							"properties": {
+								"issuer": {
+									"type": "string",
+									"maxLength": 4096
+								},
+								"client_id": {
+									"type": "string",
+									"maxLength": 1024
+								},
+								"client_secret": {
+									"type": "string",
+									"maxLength": 4096
+								},
+								"redirect_uri": {
+									"type": "string",
+									"maxLength": 4096
+								},
+								"scopes": {
+									"type": "string",
+									"maxLength": 1024
+								},
+								"admin_group": {
+									"type": "string",
+									"maxLength": 1024
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
+				},
+				"file": {
+					"type": "object",
+					"required": [
+						"upload"
+					],
+					"properties": {
+						"upload": {
+							"type": "object",
+							"required": [
+								"enabled",
+								"max_file_size"
+							],
+							"properties": {
+								"enabled": {
+									"type": "boolean"
+								},
+								"max_file_size": {
+									"type": "integer",
+									"minimum": 1
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
+				},
+				"max_results_per_module": {
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 1000000
+				},
+				"max_results_total": {
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 1000000
+				},
+				"index": {
+					"type": "object",
+					"required": [
+						"sync"
+					],
+					"properties": {
+						"sync": {
+							"type": "object",
+							"required": [
+								"enabled",
+								"interval",
+								"timeout",
+								"max_servers"
+							],
+							"properties": {
+								"enabled": {
+									"type": "boolean"
+								},
+								"interval": {
+									"type": "integer",
+									"minimum": 1000,
+									"maximum": 2147483647
+								},
+								"timeout": {
+									"type": "integer",
+									"minimum": 100,
+									"maximum": 2147483647
+								},
+								"max_servers": {
+									"type": "integer",
+									"minimum": 1,
+									"maximum": 1000000
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
+				},
+				"route": {
+					"type": "object",
+					"required": [
+						"api",
+						"json",
+						"/",
+						"gui"
+					],
+					"properties": {
+						"api": {
+							"type": "object",
+							"required": [
+								"enabled",
+								"plugins"
+							],
+							"properties": {
+								"enabled": {
+									"type": "boolean"
+								},
+								"plugins": {
 									"type": "array",
 									"items": {
 										"type": "string",
-										"pattern": "^[\\x21-\\x7e]{16,256}$"
+										"minLength": 1
 									},
-									"minItems": 1,
-									"maxItems": 100
-								},
-								"session": {
-									"type": "object",
-									"required": [
-										"cookie_name",
-										"max_age",
-										"secure"
-									],
-									"properties": {
-										"cookie_name": {
-											"type": "string",
-											"pattern": "^[A-Za-z0-9._-]{1,64}$"
-										},
-										"max_age": {
-											"type": "integer",
-											"minimum": 60000,
-											"maximum": 2147483647
-										},
-										"secure": {
-											"type": "boolean"
-										}
-									},
-									"additionalProperties": false
-								},
-								"lmdb": {
-									"type": "object",
-									"required": [
-										"users_name",
-										"sessions_name"
-									],
-									"properties": {
-										"users_name": {
-											"type": "string",
-											"minLength": 1,
-											"maxLength": 128
-										},
-										"sessions_name": {
-											"type": "string",
-											"minLength": 1,
-											"maxLength": 128
-										}
-									},
-									"additionalProperties": false
-								},
-								"ldap": {
-									"type": "object",
-									"required": [
-										"url",
-										"bind_dn",
-										"bind_password",
-										"base_dn",
-										"user_filter",
-										"admin_group"
-									],
-									"properties": {
-										"url": {
-											"type": "string",
-											"maxLength": 4096
-										},
-										"bind_dn": {
-											"type": "string",
-											"maxLength": 4096
-										},
-										"bind_password": {
-											"type": "string",
-											"maxLength": 4096
-										},
-										"base_dn": {
-											"type": "string",
-											"maxLength": 4096
-										},
-										"user_filter": {
-											"type": "string",
-											"maxLength": 4096
-										},
-										"admin_group": {
-											"type": "string",
-											"maxLength": 1024
-										}
-									},
-									"additionalProperties": false
-								},
-								"oidc": {
-									"type": "object",
-									"required": [
-										"issuer",
-										"client_id",
-										"client_secret",
-										"redirect_uri",
-										"scopes",
-										"admin_group"
-									],
-									"properties": {
-										"issuer": {
-											"type": "string",
-											"maxLength": 4096
-										},
-										"client_id": {
-											"type": "string",
-											"maxLength": 1024
-										},
-										"client_secret": {
-											"type": "string",
-											"maxLength": 4096
-										},
-										"redirect_uri": {
-											"type": "string",
-											"maxLength": 4096
-										},
-										"scopes": {
-											"type": "string",
-											"maxLength": 1024
-										},
-										"admin_group": {
-											"type": "string",
-											"maxLength": 1024
-										}
-									},
-									"additionalProperties": false
+									"maxItems": 1000
 								}
 							},
 							"additionalProperties": false
 						},
-						"file": {
+						"json": {
 							"type": "object",
 							"required": [
-								"upload"
+								"enabled"
 							],
 							"properties": {
-								"upload": {
-									"type": "object",
-									"required": [
-										"enabled",
-										"max_file_size"
-									],
-									"properties": {
-										"enabled": {
-											"type": "boolean"
-										},
-										"max_file_size": {
-											"type": "integer",
-											"minimum": 1
-										}
-									},
-									"additionalProperties": false
+								"enabled": {
+									"type": "boolean"
 								}
 							},
 							"additionalProperties": false
 						},
-						"max_results_per_module": {
-							"type": "integer",
-							"minimum": 1,
-							"maximum": 1000000
-						},
-						"max_results_total": {
-							"type": "integer",
-							"minimum": 1,
-							"maximum": 1000000
-						},
-						"index": {
+						"/": {
 							"type": "object",
 							"required": [
-								"sync"
+								"enabled"
 							],
 							"properties": {
-								"sync": {
-									"type": "object",
-									"required": [
-										"enabled",
-										"interval",
-										"timeout",
-										"max_servers"
-									],
-									"properties": {
-										"enabled": {
-											"type": "boolean"
-										},
-										"interval": {
-											"type": "integer",
-											"minimum": 1000,
-											"maximum": 2147483647
-										},
-										"timeout": {
-											"type": "integer",
-											"minimum": 100,
-											"maximum": 2147483647
-										},
-										"max_servers": {
-											"type": "integer",
-											"minimum": 1,
-											"maximum": 1000000
-										}
-									},
-									"additionalProperties": false
+								"enabled": {
+									"type": "boolean"
 								}
 							},
 							"additionalProperties": false
 						},
-						"route": {
+						"gui": {
 							"type": "object",
 							"required": [
-								"api",
-								"json",
-								"/",
-								"gui"
+								"enabled"
 							],
 							"properties": {
-								"api": {
-									"type": "object",
-									"required": [
-										"enabled",
-										"plugins"
-									],
-									"properties": {
-										"enabled": {
-											"type": "boolean"
-										},
-										"plugins": {
-											"type": "array",
-											"items": {
-												"type": "string",
-												"minLength": 1
-											},
-											"maxItems": 1000
-										}
-									},
-									"additionalProperties": false
-								},
-								"json": {
-									"type": "object",
-									"required": [
-										"enabled"
-									],
-									"properties": {
-										"enabled": {
-											"type": "boolean"
-										}
-									},
-									"additionalProperties": false
-								},
-								"/": {
-									"type": "object",
-									"required": [
-										"enabled"
-									],
-									"properties": {
-										"enabled": {
-											"type": "boolean"
-										}
-									},
-									"additionalProperties": false
-								},
-								"gui": {
-									"type": "object",
-									"required": [
-										"enabled"
-									],
-									"properties": {
-										"enabled": {
-											"type": "boolean"
-										}
-									},
-									"additionalProperties": false
+								"enabled": {
+									"type": "boolean"
 								}
 							},
 							"additionalProperties": false

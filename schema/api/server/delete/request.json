@@ -2,31 +2,12 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"required": [
-		"params",
-		"query",
-		"body"
+		"uuid"
 	],
 	"properties": {
-		"params": {
-			"type": "object",
-			"required": [
-				"uuid"
-			],
-			"properties": {
-				"uuid": {
-					"type": "string",
-					"format": "uuid"
-				}
-			},
-			"additionalProperties": false
-		},
-		"query": {
-			"type": "object",
-			"properties": {}
-		},
-		"body": {
-			"type": "object",
-			"properties": {}
+		"uuid": {
+			"type": "string",
+			"format": "uuid"
 		}
 	},
 	"title": "DELETE /api/server/delete/:uuid request"

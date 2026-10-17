@@ -1,40 +1,20 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"type": "object",
-	"required": [
-		"success",
-		"error",
-		"data"
-	],
-	"properties": {
-		"success": {
-			"type": "boolean"
-		},
-		"error": {
-			"type": "array",
-			"items": {
-				"type": "string"
-			}
-		},
-		"data": {
-			"type": "array",
-			"items": {
-				"type": "object",
-				"required": [
-					"uuid",
-					"uri"
-				],
-				"properties": {
-					"uuid": {
-						"type": "string",
-						"format": "uuid"
-					},
-					"uri": {
-						"type": "string",
-						"format": "uri"
-					}
-				},
-				"additionalProperties": false
+	"type": "array",
+	"items": {
+		"type": "object",
+		"required": [
+			"uid",
+			"uri"
+		],
+		"properties": {
+			"uid": {
+				"type": "string",
+				"format": "uuid"
+			},
+			"uri": {
+				"type": "string",
+				"format": "uri"
 			}
 		}
 	},

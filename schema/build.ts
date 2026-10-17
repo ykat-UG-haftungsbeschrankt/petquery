@@ -39,70 +39,64 @@ import {PetQuerySchemaSearchRequest} from
 	'#schema/search/request.js';
 import {PetQuerySchemaSearchResponse} from
 	'#schema/search/response.js';
-import {PetQueryServerResponseSchemaError} from
-	'#petquery/server/response/schema.js';
 
 // Error responses of every route are described by schema/error.json.
 const schemas:Array<[utf8_t,PetQuerySchemaType]> = [
 	[
 		'schema/api/ping/get/request.json',
-		PetQuerySchemaApiPingGetRequest.schema
+		PetQuerySchemaApiPingGetRequest.getSchema()
 	],
 	[
 		'schema/api/ping/get/response.json',
-		PetQuerySchemaApiPingGetResponse.schema
+		PetQuerySchemaApiPingGetResponse.getSchema()
 	],
 	[
 		'schema/api/server/get/request.json',
-		PetQuerySchemaApiServerGetRequest.schema
+		PetQuerySchemaApiServerGetRequest.getSchema()
 	],
 	[
 		'schema/api/server/get/response.json',
-		PetQuerySchemaApiServerGetResponse.schema
+		PetQuerySchemaApiServerGetResponse.getSchema()
 	],
 	[
 		'schema/api/server/put/request.json',
-		PetQuerySchemaApiServerPutRequest.schema
+		PetQuerySchemaApiServerPutRequest.getSchema()
 	],
 	[
 		'schema/api/server/put/response.json',
-		PetQuerySchemaApiServerPutResponse.schema
+		PetQuerySchemaApiServerPutResponse.getSchema()
 	],
 	[
 		'schema/api/server/delete/request.json',
-		PetQuerySchemaApiServerDeleteRequest.schema
+		PetQuerySchemaApiServerDeleteRequest.getSchema()
 	],
 	[
 		'schema/api/server/delete/response.json',
-		PetQuerySchemaApiServerDeleteResponse.schema
+		PetQuerySchemaApiServerDeleteResponse.getSchema()
 	],
 	[
 		'schema/api/config/get/request.json',
-		PetQuerySchemaApiConfigGetRequest.schema
+		PetQuerySchemaApiConfigGetRequest.getSchema()
 	],
 	[
 		'schema/api/config/get/response.json',
-		PetQuerySchemaApiConfigGetResponse.schema
+		PetQuerySchemaApiConfigGetResponse.getSchema()
 	],
 	[
 		'schema/api/config/put/request.json',
-		PetQuerySchemaApiConfigPutRequest.schema
+		PetQuerySchemaApiConfigPutRequest.getSchema()
 	],
 	[
 		'schema/api/config/put/response.json',
-		PetQuerySchemaApiConfigPutResponse.schema
+		PetQuerySchemaApiConfigPutResponse.getSchema()
 	],
 	[
 		'schema/search/request.json',
-		PetQuerySchemaSearchRequest.schema
+		PetQuerySchemaSearchRequest.getSchema()
 	],
 	[
 		'schema/search/response.json',
-		PetQuerySchemaSearchResponse.schema
-	],
-	[
-		'schema/error.json',
-		PetQueryServerResponseSchemaError.schema
+		PetQuerySchemaSearchResponse.getSchema()
 	]
 ];
 

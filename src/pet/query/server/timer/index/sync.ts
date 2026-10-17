@@ -42,7 +42,7 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 	}
 
 	protected override async _destructor():Promise<void>{
-		this._abortController.abort();
+		this._abortController.destructor();
 		await super._destructor();
 	}
 
@@ -85,7 +85,7 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 								`Ping answered with UUID ${data.uid}, expected ${remoteServer.uid}`
 							);
 						}
-						await this._database.serverIndexAddServer(data.uid,data);
+						await this._database.serverIndexAddServer(data);
 					}catch(error){
 						this._report(`Server index sync with ${remoteServer.uri} failed`,error);
 					}

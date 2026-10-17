@@ -26,7 +26,8 @@ import {PetQueryServerRouteDocs} from '#petquery/server/route/docs.js';
 import {PetQueryServerRouteGui} from '#petquery/server/route/gui.js';
 import {PetQueryServerRouteAuth} from '#petquery/server/route/auth.js';
 import {PetQueryServerRoutePet} from '#petquery/server/route/pet.js';
-import {PetQueryServerIndexSync} from '#petquery/server/index/sync.js';
+import {PetQueryServerIndexSync} from
+	'#petquery/server/timer/index/sync.js';
 import {PetQueryServerConfig} from '#petquery/server/config.js';
 import {PetQueryServerAuth} from '#petquery/server/auth.js';
 import {v4 as uuidv4, validate as uuidValidate} from 'uuid';
@@ -46,18 +47,18 @@ async function loadServerUuid(
 	await db.serverIndexPut('uuid',uuid);
 	return uuid;
 }
-const serverUuid = await loadServerUuid(settingsDatabase);
 const serverConfig = PetQueryConfig.getServerConfig();
 const indexConfig = serverConfig.index;
 const indexDatabase = indexConfig.database;
 const settingsDatabase = indexDatabase.createSettingsDatabase();
+const serverUuid = await loadServerUuid(indexDatabase.getDbIndex());
 const serverConfigFile = new PetQueryServerConfig(
 	serverUuid,
 	settingsDatabase
 );
 const savedServerConfig = await serverConfigFile.load();
 if(null !== savedServerConfig){
-	PetQueryServerConfig.applyToServerConfig(serverConfig,savedServerConfig);
+	serverConfigFile.applyToServerConfig(serverConfig,savedServerConfig);
 }
 const authUserDatabase = indexDatabase.createSibling(
 	serverConfig.authenticate.lmdb.users_name

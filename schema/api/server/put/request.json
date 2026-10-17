@@ -2,41 +2,18 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"required": [
-		"params",
-		"query",
-		"body"
+		"uuid",
+		"uri"
 	],
 	"properties": {
-		"params": {
-			"type": "object",
-			"required": [
-				"uuid"
-			],
-			"properties": {
-				"uuid": {
-					"type": "string",
-					"format": "uuid"
-				}
-			},
-			"additionalProperties": false
+		"uuid": {
+			"type": "string",
+			"format": "uuid"
 		},
-		"query": {
-			"type": "object",
-			"properties": {}
-		},
-		"body": {
-			"type": "object",
-			"required": [
-				"uri"
-			],
-			"properties": {
-				"uri": {
-					"type": "string",
-					"format": "uri",
-					"maxLength": 2048
-				}
-			},
-			"additionalProperties": false
+		"uri": {
+			"type": "string",
+			"format": "uri",
+			"maxLength": 2048
 		}
 	},
 	"title": "PUT /api/server/put/:uuid request"

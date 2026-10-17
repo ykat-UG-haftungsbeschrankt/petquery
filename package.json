@@ -3,8 +3,14 @@
 	"type": "module",
 	"main": "./dist/index.js",
 	"imports": {
-		"#petquery/*.js": "./dist/src/pet/query/*.js",
-		"#schema/*.js": "./dist/schema/*.js"
+		"#petquery/*.js": {
+			"types": "./src/pet/query/*.ts",
+			"default": "./dist/src/pet/query/*.js"
+		},
+		"#schema/*.js": {
+			"types": "./schema/*.ts",
+			"default": "./dist/schema/*.js"
+		}
 	},
 	"scripts": {
 		"build": "eslint . && tsc --project tsconfig.json && npm run build:schema && npm run build:gui",

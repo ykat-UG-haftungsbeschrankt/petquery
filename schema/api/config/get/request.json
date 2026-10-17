@@ -1,24 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"type": "object",
-	"required": [
-		"params",
-		"query",
-		"body"
-	],
-	"properties": {
-		"params": {
-			"type": "object",
-			"properties": {}
-		},
-		"query": {
-			"type": "object",
-			"properties": {}
-		},
-		"body": {
-			"type": "object",
-			"properties": {}
-		}
-	},
-	"title": "GET /api/config/get request"
+	"type": "null",
+	"title": "GET /api/config/get request",
+	"additionalProperties": false
 }

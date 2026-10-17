@@ -1,68 +1,35 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
-	"required": [
-		"params",
-		"query",
-		"body"
-	],
 	"properties": {
-		"params": {
-			"type": "object",
-			"properties": {}
-		},
 		"query": {
-			"type": "object",
-			"properties": {
-				"query": {
-					"type": "string"
-				},
-				"bearer": {
-					"type": "string"
-				},
-				"iframe": {
-					"anyOf": [
-						{
-							"type": "string",
-							"const": "true"
-						},
-						{
-							"type": "string",
-							"const": "false"
-						}
-					]
-				},
-				"tracerouteUuid": {
-					"anyOf": [
-						{
-							"type": "string",
-							"format": "uuid"
-						},
-						{
-							"type": "array",
-							"items": {
-								"type": "string",
-								"format": "uuid"
-							},
-							"maxItems": 1000
-						}
-					]
-				}
-			}
+			"type": "string"
 		},
-		"body": {
-			"type": "object",
-			"properties": {
-				"query": {
-					"type": "string"
-				},
-				"bearer": {
-					"type": "string"
-				},
-				"iframe": {
+		"bearer": {
+			"type": "string"
+		},
+		"iframe": {
+			"anyOf": [
+				{
 					"type": "boolean"
 				},
-				"tracerouteUuid": {
+				{
+					"type": "string",
+					"const": "true"
+				},
+				{
+					"type": "string",
+					"const": "false"
+				}
+			]
+		},
+		"tracerouteUuid": {
+			"anyOf": [
+				{
+					"type": "string",
+					"format": "uuid"
+				},
+				{
 					"type": "array",
 					"items": {
 						"type": "string",
@@ -70,7 +37,7 @@
 					},
 					"maxItems": 1000
 				}
-			}
+			]
 		}
 	},
 	"title": "Search request of /api and /json"

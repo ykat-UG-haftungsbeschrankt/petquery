@@ -107,7 +107,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			this._sendError(res,400,['OpenID Connect is not enabled']);
 			return;
 		}
-		res.redirect(
+		res.redirectUrl(
 			(await this.getServer()._getAuth().getOidcLoginUrl()).href
 		);
 	}
@@ -121,7 +121,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			res
 		);
 		const section = 'admin' === user.group ? 'config' : 'pets';
-		res.redirect(`/gui/admin/${section}`);
+		res.redirectUrl(`/gui/admin/${section}`);
 	}
 
 	protected async _handleListUsers(

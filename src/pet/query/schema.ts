@@ -12,7 +12,6 @@ import Value from 'typebox/value';
 import type {
 	TLocalizedValidationError as PetQuerySchemaValidationError
 } from 'typebox/error';
-import { int } from 'zod/v4/mini';
 
 import type {
 	TSchema as PetQuerySchemaType
