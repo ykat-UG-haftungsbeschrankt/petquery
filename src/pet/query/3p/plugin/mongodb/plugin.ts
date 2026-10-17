@@ -6,9 +6,8 @@
  */
 
 import {PetQueryPlugin} from '#petquery/plugin.js';
-import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import {PetQueryResultData} from '#petquery/result/data.js';
-import {PetQueryResult} from '#petquery/.trash/result.js';
+import {PetQuerySchemaPluginRequestType} from '#schema/plugin/request.js';
+import {PetQuerySchemaPluginResponseType} from '#schema/plugin/response.js';
 import {PetQueryResultDataEntry} from '#petquery/result/data/entry.js';
 import {
 	Filter,
@@ -28,14 +27,14 @@ export class PetQuery3pPluginMongodbPlugin extends PetQueryPlugin{
 		);
 	}
 	protected _db:MongoClient;
-	_normalizeQuery(obj:PetQueryPluginQuery):Filter<Document>{
+	_normalizeQuery(obj:PetQuerySchemaPluginRequestType):Filter<Document>{
 		return {
 			uid:{
 				$eq: obj.getQuery().trim()
 			}
 		};
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryResult>{
+	override async query(query:PetQuerySchemaPluginRequestType):Promise<PetQuerySchemaPluginResponseType>{
 		const ret = [];
 
 		await this._db.connect();
@@ -50,7 +49,7 @@ export class PetQuery3pPluginMongodbPlugin extends PetQueryPlugin{
 			ret.push(PetQueryResultDataEntry.fromJson(row));
 		}
 
-		return new PetQueryResult(
+		return new PetQuerySchemaPluginResponseType(
 			true,
 			[],
 			new PetQueryResultData(ret)

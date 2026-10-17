@@ -13,9 +13,9 @@ import {PetQueryServerRequestSchema} from
 	'#petquery/server/request/schema.js';
 import {PetQuerySchemaApiConfigPutResponse} from
 	'#schema/api/config/put/response.js';
-import {PetQueryServerConfig} from '#petquery/server/config.js';
+import { PetQuerySchemaServerDatabaseConfigEntry } from '#schema/server/database/config/entry.js';
 
-const schema = PetQueryServerConfig.schema;
+const schema = PetQuerySchemaServerDatabaseConfigEntry.getSchema();
 
 const validator = PetQuerySchema.compile(schema);
 

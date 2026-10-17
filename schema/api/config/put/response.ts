@@ -9,17 +9,9 @@ import {PetQuerySchema} from '#petquery/schema.js';
 import type {PetQuerySchemaStatic} from '#petquery/schema.js';
 import {PetQueryServerResponseSchema} from
 	'#petquery/server/response/schema.js';
-import {PetQueryServerConfig} from '#petquery/server/config.js';
+import { PetQuerySchemaServerDatabaseConfigEntry } from '#schema/server/database/config/entry.js';
 
-const T = PetQuerySchema.type;
-
-const schema = T.Object({
-	// The values as saved, applied on restart.
-	saved:PetQueryServerConfig.schema
-},{
-	title:'PUT /api/config/put response',
-	additionalProperties:false
-});
+const schema = PetQuerySchemaServerDatabaseConfigEntry.getSchema();
 
 const validator = PetQuerySchema.compile(schema);
 

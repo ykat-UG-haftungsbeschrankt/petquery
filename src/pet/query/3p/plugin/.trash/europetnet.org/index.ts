@@ -1,6 +1,6 @@
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQueryPluginConfig} from '#petquery/plugin.js';
-import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
+import {PetQuerySchemaPluginRequestType} from '#schema/plugin/request.js';
 import {PetQueryResultData} from '#petquery/plugin/result.js';
 
 export class PetQueryPluginEuropetnetOrgConfig
@@ -16,7 +16,7 @@ export class PetQueryPluginEuropetnetOrg extends PetQueryPlugin{
 	constructor(cfg:PetQueryPluginEuropetnetOrgConfig){
 		super('europetnet.org',cfg);
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryResultData>{
+	override async query(query:PetQuerySchemaPluginRequestType):Promise<PetQueryResultData>{
 		const queryId = String(query.getQuery()).replace(/[^0-9A-Za-z]/g,'');
 		if(queryId === ''){
 			return [];

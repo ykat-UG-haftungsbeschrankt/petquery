@@ -6,9 +6,8 @@
  */
 
 import {PetQueryPlugin} from '#petquery/plugin.js';
-import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import {PetQueryResultData} from '#petquery/result/data.js';
-import {PetQueryResult} from '#petquery/.trash/result.js';
+import {PetQuerySchemaPluginRequestType} from '#schema/plugin/request.js';
+import {PetQuerySchemaPluginResponseType} from '#schema/plugin/response.js';
 import {PetQueryResultDataEntry} from '#petquery/result/data/entry.js';
 import {PetQuery3pPluginAnimalidConfig} from
 	'#petquery/3p/plugin/animalid/config.js';
@@ -19,10 +18,10 @@ export class PetQuery3pPluginAnimalidPlugin extends PetQueryPlugin{
 		super('animalid.by',cfg);
 		this._cfg = cfg;
 	}
-	override async query(query:PetQueryPluginQuery):Promise<PetQueryResult>{
+	override async query(query:PetQuerySchemaPluginRequestType):Promise<PetQuerySchemaPluginResponseType>{
 		const queryId = String(query.getQuery()).replace(/[^0-9]/g,'');
 		if(queryId === ''){
-			return new PetQueryResult(
+			return new PetQuerySchemaPluginResponseType(
 				true,
 				[],
 				new PetQueryResultData([])
@@ -71,7 +70,7 @@ export class PetQuery3pPluginAnimalidPlugin extends PetQueryPlugin{
 			}));
 		}
 
-		return new PetQueryResult(
+		return new PetQuerySchemaPluginResponseType(
 			true,
 			[],
 			new PetQueryResultData(ret)
