@@ -14,38 +14,43 @@ import {PetQueryServerConfig} from '#petquery/server/config.js';
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	success:T.Boolean(),
-	error:T.Array(T.String()),
-	data:T.Object({
-		// The values as saved, applied on restart.
-		saved:PetQueryServerConfig.schema
-	},{additionalProperties:false})
+	// The values as saved, applied on restart.
+	saved:PetQueryServerConfig.schema
 },{
 	title:'PUT /api/config/put response',
 	additionalProperties:false
 });
+
+const validator = PetQuerySchema.compile(schema);
 
 export type PetQuerySchemaApiConfigPutResponseType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // Successful response of PUT /api/config/put. Errors are sent as
 // PetQueryServerResponseSchemaError.
-export class PetQuerySchemaApiConfigPutResponse
-	extends PetQueryServerResponseSchema<
+class PetQuerySchemaApiConfigPutResponse extends
+	PetQueryServerResponseSchema<
 		PetQuerySchemaApiConfigPutResponseType
 	>{
-	static readonly schema = schema;
-	static readonly _validator = PetQuerySchema.compile(schema);
-
-	// For clients: validates a received response. Throws an Error naming
-	// each invalid field.
-	static fromJson(
-		status:uint16_t,
-		json:unknown
-	):PetQuerySchemaApiConfigPutResponse{
-		return new PetQuerySchemaApiConfigPutResponse(
-			status,
-			PetQuerySchema.parse(PetQuerySchemaApiConfigPutResponse._validator,json)
-		);
+	protected static _instance:
+		PetQuerySchemaApiConfigPutResponse | null = null;
+	public static getInstance():PetQuerySchemaApiConfigPutResponse{
+		if(this._instance === null){
+			this._instance = new PetQuerySchemaApiConfigPutResponse();
+		}
+		return this._instance;
 	}
+	getSchema(){
+		return schema;
+	}
+	getValidator(){
+		return validator;
+	}
+};
+
+const petQuerySchemaApiConfigPutResponse =
+	PetQuerySchemaApiConfigPutResponse.getInstance();
+
+export {
+	petQuerySchemaApiConfigPutResponse as PetQuerySchemaApiConfigPutResponse
 };

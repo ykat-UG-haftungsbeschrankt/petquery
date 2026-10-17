@@ -5,7 +5,7 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQueryServerRoute} from '#petquery/server/route.js';
+import {PetQueryServerRoute, PetQueryServerRouteAccessGroup} from '#petquery/server/route.js';
 import {PetQueryServerConfig} from '#petquery/server/config.js';
 import type {PetQueryServerConfigType} from
 	'#petquery/server/config.js';
@@ -37,6 +37,46 @@ import {PetQuerySchemaApiConfigPutRequest} from
 import {PetQuerySchemaApiConfigPutResponse} from
 	'#schema/api/config/put/response.js';
 
+import type {
+	PetQuerySchemaApiServerGetRequestType
+} from
+	'#schema/api/server/get/request.js';
+import type {
+	PetQuerySchemaApiServerGetResponseType
+} from
+	'#schema/api/server/get/response.js';
+import type {
+	PetQuerySchemaApiServerPutRequestType
+} from
+	'#schema/api/server/put/request.js';
+import type {
+	PetQuerySchemaApiServerPutResponseType
+} from
+	'#schema/api/server/put/response.js';
+import type {
+	PetQuerySchemaApiServerDeleteRequestType
+} from
+	'#schema/api/server/delete/request.js';
+import type {
+	PetQuerySchemaApiServerDeleteResponseType
+} from
+	'#schema/api/server/delete/response.js';
+import type {
+	PetQuerySchemaApiConfigGetRequestType
+} from
+	'#schema/api/config/get/request.js';
+import type {
+	PetQuerySchemaApiConfigGetResponseType
+} from
+	'#schema/api/config/get/response.js';
+import type {
+	PetQuerySchemaApiConfigPutRequestType
+} from
+	'#schema/api/config/put/request.js';
+import type {
+	PetQuerySchemaApiConfigPutResponseType
+} from
+	'#schema/api/config/put/response.js';
 import type {
 	PetQuerySchemaApiPingGetRequestType
 } from
@@ -78,7 +118,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		);
 		this.getServer().put(
 			'/api/server/put/:uuid',
-			this._authenticateAdmin.bind(this),
+			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			PetQuerySchemaApiServerPutRequest._handle.bind(
 				this,
 				this._handleAddServer.bind(this)
@@ -86,7 +126,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		);
 		this.getServer().delete(
 			'/api/server/delete/:uuid',
-			this._authenticateAdmin.bind(this),
+			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			PetQuerySchemaApiServerDeleteRequest._handle.bind(
 				this,
 				this._handleDeleteServer.bind(this)
@@ -94,7 +134,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		);
 		this.getServer().get(
 			'/api/config/get',
-			this._authenticateAdmin.bind(this),
+			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			PetQuerySchemaApiConfigGetRequest._handle.bind(
 				this,
 				this._handleGetConfig.bind(this)
@@ -102,7 +142,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		);
 		this.getServer().put(
 			'/api/config/put',
-			this._authenticateAdmin.bind(this),
+			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			PetQuerySchemaApiConfigPutRequest._handle.bind(
 				this,
 				this._handlePutConfig.bind(this)
@@ -119,54 +159,39 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	}
 
 	protected async _handleListServer(
-		UNUSED_request:PetQuerySchemaApiServerGetRequest
-	):Promise<PetQuerySchemaApiServerGetResponse>{
-		const servers =
-			await this.getServer()._getIndexDatabase().getServerList();
-		const data = [];
-
-		for(const [uuid,uri] of servers){
-			data.push({uuid,uri});
-		}
-		return new PetQuerySchemaApiServerGetResponse(200,{
-			success:true,
-			error:[],
-			data
-		});
+		UNUSED_request:PetQuerySchemaApiServerGetRequestType
+	):Promise<PetQuerySchemaApiServerGetResponseType>{
+		const servers = await this.getServer()
+			._getDatabase()
+			.getDbIndex()
+			.serverIndexGetServerList()
+		;
+		return servers;
 	}
 
 	protected async _handleAddServer(
-		request:PetQuerySchemaApiServerPutRequest
-	):Promise<PetQuerySchemaApiServerPutResponse>{
-		await this.getServer()._getIndexDatabase().addServer(
-			request.getUuid(),
-			request.getUri()
-		);
-		return new PetQuerySchemaApiServerPutResponse(200,{
-			success:true,
-			error:[],
-			data:[]
-		});
+		request:PetQuerySchemaApiServerPutRequestType
+	):Promise<PetQuerySchemaApiServerPutResponseType>{
+		return await this.getServer()
+			._getDatabase()
+			.getDbIndex()
+			.serverIndexAddServer(request);
 	}
 
 	protected async _handleDeleteServer(
-		request:PetQuerySchemaApiServerDeleteRequest
-	):Promise<PetQuerySchemaApiServerDeleteResponse>{
-		await this.getServer()._getIndexDatabase().deleteServer(
-			request.getUuid()
-		);
-		return new PetQuerySchemaApiServerDeleteResponse(200,{
-			success:true,
-			error:[],
-			data:[]
-		});
+		request:PetQuerySchemaApiServerDeleteRequestType
+	):Promise<PetQuerySchemaApiServerDeleteResponseType>{
+		return await this.getServer()
+			._getDatabase()
+			.getDbIndex()
+			.serverIndexRemoveServer(request.uuid);
 	}
 
 	// Returns the running values, the saved values (applied on restart)
 	// and the plugin names that route.api.plugins may contain.
 	protected async _handleGetConfig(
-		UNUSED_request:PetQuerySchemaApiConfigGetRequest
-	):Promise<PetQuerySchemaApiConfigGetResponse>{
+		UNUSED_request:PetQuerySchemaApiConfigGetRequestType
+	):Promise<PetQuerySchemaApiConfigGetResponseType>{
 		const configFile = this.getServer()._getConfigFile();
 		const active = PetQueryServerConfig.fromServerConfig(
 			this.getServer()._getConfig()
@@ -193,11 +218,8 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 
 	// Saves the values, applied on restart. Unknown plugin names get a 400.
 	protected async _handlePutConfig(
-		request:PetQuerySchemaApiConfigPutRequest
-	):Promise<
-		PetQuerySchemaApiConfigPutResponse
-		|PetQueryServerResponseSchemaError
-	>{
+		request:PetQuerySchemaApiConfigPutRequestType
+	):Promise<PetQuerySchemaApiConfigPutResponseType>{
 		const configFile = this.getServer()._getConfigFile();
 		let saved:PetQueryServerConfigType;
 

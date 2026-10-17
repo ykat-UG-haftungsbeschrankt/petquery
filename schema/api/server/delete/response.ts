@@ -12,36 +12,42 @@ import {PetQueryServerResponseSchema} from
 
 const T = PetQuerySchema.type;
 
-const schema = T.Object({
-	success:T.Boolean(),
-	error:T.Array(T.String()),
-	data:T.Array(T.Unknown())
-},{
+const schema = T.Array(T.Unknown(),{
 	title:'DELETE /api/server/delete/:uuid response',
 	additionalProperties:false
 });
+
+const validator = PetQuerySchema.compile(schema);
 
 export type PetQuerySchemaApiServerDeleteResponseType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // Successful response of DELETE /api/server/delete/:uuid. Errors are sent as
 // PetQueryServerResponseSchemaError.
-export class PetQuerySchemaApiServerDeleteResponse
-	extends PetQueryServerResponseSchema<
+class PetQuerySchemaApiServerDeleteResponse extends
+	PetQueryServerResponseSchema<
 		PetQuerySchemaApiServerDeleteResponseType
 	>{
-	static readonly schema = schema;
-	static readonly _validator = PetQuerySchema.compile(schema);
-
-	// For clients: validates a received response. Throws an Error naming
-	// each invalid field.
-	static fromJson(
-		status:uint16_t,
-		json:unknown
-	):PetQuerySchemaApiServerDeleteResponse{
-		return new PetQuerySchemaApiServerDeleteResponse(
-			status,
-			PetQuerySchema.parse(PetQuerySchemaApiServerDeleteResponse._validator,json)
-		);
+	protected static _instance:
+		PetQuerySchemaApiServerDeleteResponse | null = null;
+	public static getInstance():PetQuerySchemaApiServerDeleteResponse{
+		if(this._instance === null){
+			this._instance = new PetQuerySchemaApiServerDeleteResponse();
+		}
+		return this._instance;
 	}
+	getSchema(){
+		return schema;
+	}
+	getValidator(){
+		return validator;
+	}
+};
+
+const petQuerySchemaApiServerDeleteResponse =
+	PetQuerySchemaApiServerDeleteResponse.getInstance();
+
+export {
+	petQuerySchemaApiServerDeleteResponse
+		as PetQuerySchemaApiServerDeleteResponse
 };

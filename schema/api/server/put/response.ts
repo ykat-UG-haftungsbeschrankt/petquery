@@ -12,36 +12,41 @@ import {PetQueryServerResponseSchema} from
 
 const T = PetQuerySchema.type;
 
-const schema = T.Object({
-	success:T.Boolean(),
-	error:T.Array(T.String()),
-	data:T.Array(T.Unknown())
-},{
+const schema = T.Array(T.Unknown(),{
 	title:'PUT /api/server/put/:uuid response',
 	additionalProperties:false
 });
+
+const validator = PetQuerySchema.compile(schema);
 
 export type PetQuerySchemaApiServerPutResponseType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // Successful response of PUT /api/server/put/:uuid. Errors are sent as
 // PetQueryServerResponseSchemaError.
-export class PetQuerySchemaApiServerPutResponse
-	extends PetQueryServerResponseSchema<
+class PetQuerySchemaApiServerPutResponse extends
+	PetQueryServerResponseSchema<
 		PetQuerySchemaApiServerPutResponseType
 	>{
-	static readonly schema = schema;
-	static readonly _validator = PetQuerySchema.compile(schema);
-
-	// For clients: validates a received response. Throws an Error naming
-	// each invalid field.
-	static fromJson(
-		status:uint16_t,
-		json:unknown
-	):PetQuerySchemaApiServerPutResponse{
-		return new PetQuerySchemaApiServerPutResponse(
-			status,
-			PetQuerySchema.parse(PetQuerySchemaApiServerPutResponse._validator,json)
-		);
+	protected static _instance:
+		PetQuerySchemaApiServerPutResponse | null = null;
+	public static getInstance():PetQuerySchemaApiServerPutResponse{
+		if(this._instance === null){
+			this._instance = new PetQuerySchemaApiServerPutResponse();
+		}
+		return this._instance;
 	}
+	getSchema(){
+		return schema;
+	}
+	getValidator(){
+		return validator;
+	}
+};
+
+const petQuerySchemaApiServerPutResponse =
+	PetQuerySchemaApiServerPutResponse.getInstance();
+
+export {
+	petQuerySchemaApiServerPutResponse as PetQuerySchemaApiServerPutResponse
 };

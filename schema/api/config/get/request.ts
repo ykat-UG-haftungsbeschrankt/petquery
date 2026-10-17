@@ -7,58 +7,53 @@
 
 import {PetQuerySchema} from '#petquery/schema.js';
 import type {PetQuerySchemaStatic} from '#petquery/schema.js';
+import type {PetQuerySchemaApiConfigGetResponseType} from
+	'#schema/api/config/get/response.js';
 import {PetQueryServerRequestSchema} from
 	'#petquery/server/request/schema.js';
-import type {PetQueryServerRequestSchemaInput} from
-	'#petquery/server/request/schema.js';
-import type {PetQueryServerResponseSchemaError} from
-	'#petquery/server/response/schema.js';
-import type {PetQueryServerRequest} from
-	'#petquery/server/request.js';
-import type {PetQueryServerResponse} from
-	'#petquery/server/response.js';
-import type {PetQuerySchemaApiConfigGetResponse} from
+import {PetQuerySchemaApiConfigGetResponse} from
 	'#schema/api/config/get/response.js';
 
-const schema = PetQuerySchema.emptyRequest(
-	'GET /api/config/get request'
-);
+const T = PetQuerySchema.type;
+
+const schema = T.Null({
+	 title:'GET /api/config/get request'
+	,additionalProperties:false
+});
+
+const validator = PetQuerySchema.compile(schema);
 
 export type PetQuerySchemaApiConfigGetRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // GET /api/config/get
-export class PetQuerySchemaApiConfigGetRequest
-	extends PetQueryServerRequestSchema<PetQuerySchemaApiConfigGetRequestType>{
-	static readonly schema = schema;
-	static readonly _validator = PetQuerySchema.compile(schema);
-
-	// Throws an Error naming each invalid field.
-	static fromJson(
-		json:PetQueryServerRequestSchemaInput
-	):PetQuerySchemaApiConfigGetRequest{
-		return new PetQuerySchemaApiConfigGetRequest(
-			PetQuerySchema.parse(PetQuerySchemaApiConfigGetRequest._validator,json)
-		);
+class PetQuerySchemaApiConfigGetRequest extends
+	PetQueryServerRequestSchema<
+		 PetQuerySchemaApiConfigGetRequestType
+		,PetQuerySchemaApiConfigGetResponseType
+	>{
+	protected static _instance:
+		PetQuerySchemaApiConfigGetRequest | null = null;
+	public static getInstance():PetQuerySchemaApiConfigGetRequest{
+		if(this._instance === null){
+			this._instance = new PetQuerySchemaApiConfigGetRequest();
+		}
+		return this._instance;
 	}
-
-	// Express handler: validates the request, calls handler and sends its
-	// response. Use as PetQuerySchemaApiConfigGetRequest._handle.bind(
-	// this,this._handleX.bind(this)).
-	static _handle(
-		handler:(
-			request:PetQuerySchemaApiConfigGetRequest
-		)=>Promise<
-			PetQuerySchemaApiConfigGetResponse|PetQueryServerResponseSchemaError
-		>,
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		return PetQueryServerRequestSchema._handleRequest(
-			PetQuerySchemaApiConfigGetRequest.fromJson,
-			handler,
-			req,
-			res
-		);
+	getSchema(){
+		return schema;
 	}
+	getValidator(){
+		return validator;
+	}
+	getResponseSchema(){
+		return PetQuerySchemaApiConfigGetResponse;
+	};
+};
+
+const petQuerySchemaApiConfigGetRequest =
+	PetQuerySchemaApiConfigGetRequest.getInstance();
+
+export {
+	petQuerySchemaApiConfigGetRequest as PetQuerySchemaApiConfigGetRequest
 };

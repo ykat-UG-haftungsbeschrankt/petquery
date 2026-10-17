@@ -7,75 +7,53 @@
 
 import {PetQuerySchema} from '#petquery/schema.js';
 import type {PetQuerySchemaStatic} from '#petquery/schema.js';
+import type {PetQuerySchemaApiServerPutResponseType} from
+	'#schema/api/server/put/response.js';
 import {PetQueryServerRequestSchema} from
 	'#petquery/server/request/schema.js';
-import type {PetQueryServerRequestSchemaInput} from
-	'#petquery/server/request/schema.js';
-import type {PetQueryServerResponseSchemaError} from
-	'#petquery/server/response/schema.js';
-import type {PetQueryServerRequest} from
-	'#petquery/server/request.js';
-import type {PetQueryServerResponse} from
-	'#petquery/server/response.js';
-import type {PetQuerySchemaApiServerPutResponse} from
+import {PetQuerySchemaApiServerPutResponse} from
 	'#schema/api/server/put/response.js';
 
 const T = PetQuerySchema.type;
 
-// Unknown query parameters are ignored.
 const schema = T.Object({
-	params:T.Object({
-		uuid:T.String({format:'uuid'})
-	},{additionalProperties:false}),
-	query:T.Object({}),
-	body:T.Object({
-		uri:T.String({format:'uri',maxLength:2048})
-	},{additionalProperties:false})
+	uuid:T.String({format:'uuid'}),
+	uri:T.String({format:'uri',maxLength:2048})
 },{title:'PUT /api/server/put/:uuid request'});
+
+const validator = PetQuerySchema.compile(schema);
 
 export type PetQuerySchemaApiServerPutRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // PUT /api/server/put/:uuid
-export class PetQuerySchemaApiServerPutRequest
-	extends PetQueryServerRequestSchema<PetQuerySchemaApiServerPutRequestType>{
-	static readonly schema = schema;
-	static readonly _validator = PetQuerySchema.compile(schema);
-
-	// Throws an Error naming each invalid field.
-	static fromJson(
-		json:PetQueryServerRequestSchemaInput
-	):PetQuerySchemaApiServerPutRequest{
-		return new PetQuerySchemaApiServerPutRequest(
-			PetQuerySchema.parse(PetQuerySchemaApiServerPutRequest._validator,json)
-		);
+class PetQuerySchemaApiServerPutRequest extends
+	PetQueryServerRequestSchema<
+		 PetQuerySchemaApiServerPutRequestType
+		,PetQuerySchemaApiServerPutResponseType
+	>{
+	protected static _instance:
+		PetQuerySchemaApiServerPutRequest | null = null;
+	public static getInstance():PetQuerySchemaApiServerPutRequest{
+		if(this._instance === null){
+			this._instance = new PetQuerySchemaApiServerPutRequest();
+		}
+		return this._instance;
 	}
-
-	// Express handler: validates the request, calls handler and sends its
-	// response. Use as PetQuerySchemaApiServerPutRequest._handle.bind(
-	// this,this._handleX.bind(this)).
-	static _handle(
-		handler:(
-			request:PetQuerySchemaApiServerPutRequest
-		)=>Promise<
-			PetQuerySchemaApiServerPutResponse|PetQueryServerResponseSchemaError
-		>,
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		return PetQueryServerRequestSchema._handleRequest(
-			PetQuerySchemaApiServerPutRequest.fromJson,
-			handler,
-			req,
-			res
-		);
+	getSchema(){
+		return schema;
 	}
-
-	getUuid():uuid_t{
-		return this._values.params.uuid;
+	getValidator(){
+		return validator;
 	}
+	getResponseSchema(){
+		return PetQuerySchemaApiServerPutResponse;
+	};
+};
 
-	getUri():uri_t{
-		return this._values.body.uri;
-	}
+const petQuerySchemaApiServerPutRequest =
+	PetQuerySchemaApiServerPutRequest.getInstance();
+
+export {
+	petQuerySchemaApiServerPutRequest as PetQuerySchemaApiServerPutRequest
 };

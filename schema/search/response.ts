@@ -13,11 +13,8 @@ import type {PetQueryResult} from '#petquery/result.js';
 
 const T = PetQuerySchema.type;
 
-const schema = T.Object({
-	// false if a plugin failed; data then holds the other results.
-	success:T.Boolean(),
-	error:T.Array(T.String()),
-	data:T.Array(T.Object({
+const schema = T.Array(
+	T.Object({
 		source:T.Object({
 			favicon:T.String(),
 			url:T.String(),
@@ -26,41 +23,40 @@ const schema = T.Object({
 		preview:T.String(),
 		files:T.Array(T.String()),
 		attributes:T.Record(T.String(),T.Unknown())
-	},{additionalProperties:false}))
-},{
+	},{additionalProperties:false})
+,{
 	title:'Search response of /api and /json',
 	additionalProperties:false
 });
+
+const validator = PetQuerySchema.compile(schema);
 
 export type PetQuerySchemaSearchResponseType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // Results of a search. Invalid requests and failed handlers are sent as
 // PetQueryServerResponseSchemaError.
-export class PetQuerySchemaSearchResponse
-	extends PetQueryServerResponseSchema<
-		PetQuerySchemaSearchResponseType
-	>{
-	static readonly schema = schema;
-	static readonly _validator = PetQuerySchema.compile(schema);
-
-	// For clients: validates a received response. Throws an Error naming
-	// each invalid field.
-	static fromJson(
-		status:uint16_t,
-		json:unknown
-	):PetQuerySchemaSearchResponse{
-		return new PetQuerySchemaSearchResponse(
-			status,
-			PetQuerySchema.parse(PetQuerySchemaSearchResponse._validator,json)
-		);
+class PetQuerySchemaSearchResponse extends
+	PetQueryServerResponseSchema<PetQuerySchemaSearchResponseType>{
+	protected static _instance:
+		PetQuerySchemaSearchResponse | null = null;
+	public static getInstance():PetQuerySchemaSearchResponse{
+		if(this._instance === null){
+			this._instance = new PetQuerySchemaSearchResponse();
+		}
+		return this._instance;
+	}
+	getSchema(){
+		return schema;
+	}
+	getValidator(){
+		return validator;
 	}
 
-	static fromResult(
-		status:uint16_t,
+	fromResult(
 		result:PetQueryResult
-	):PetQuerySchemaSearchResponse{
-		const data:PetQuerySchemaSearchResponseType['data'] = [];
+	):PetQuerySchemaSearchResponseType{
+		const data:PetQuerySchemaSearchResponseType = [];
 
 		for(const entry of result.getData().getData()){
 			const source = entry.getSource();
@@ -76,10 +72,13 @@ export class PetQuerySchemaSearchResponse
 			});
 		}
 
-		return new PetQuerySchemaSearchResponse(status,{
-			success:result.isSuccess(),
-			error:result.getError(),
-			data
-		});
+		return data;
 	}
+};
+
+const petQuerySchemaSearchResponse =
+	PetQuerySchemaSearchResponse.getInstance();
+
+export {
+	petQuerySchemaSearchResponse as PetQuerySchemaSearchResponse
 };

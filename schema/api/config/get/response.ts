@@ -14,44 +14,49 @@ import {PetQueryServerConfig} from '#petquery/server/config.js';
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	success:T.Boolean(),
-	error:T.Array(T.String()),
-	data:T.Object({
-		// Type the server runs with.
-		active:PetQueryServerConfig.schema,
-		// Type in the config file, applied on restart; null if none.
-		saved:T.Union([PetQueryServerConfig.schema,T.Null()]),
-		// Why the config file could not be read, if it could not.
-		saved_error:T.Union([T.String(),T.Null()]),
-		// Plugin names allowed in route.api.plugins.
-		plugins:T.Array(T.String())
-	},{additionalProperties:false})
+	// Type the server runs with.
+	active:PetQueryServerConfig.schema,
+	// Type in the config file, applied on restart; null if none.
+	saved:T.Union([PetQueryServerConfig.schema,T.Null()]),
+	// Why the config file could not be read, if it could not.
+	saved_error:T.Union([T.String(),T.Null()]),
+	// Plugin names allowed in route.api.plugins.
+	plugins:T.Array(T.String())
 },{
 	title:'GET /api/config/get response',
 	additionalProperties:false
 });
+
+const validator = PetQuerySchema.compile(schema);
 
 export type PetQuerySchemaApiConfigGetResponseType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // Successful response of GET /api/config/get. Errors are sent as
 // PetQueryServerResponseSchemaError.
-export class PetQuerySchemaApiConfigGetResponse
-	extends PetQueryServerResponseSchema<
+class PetQuerySchemaApiConfigGetResponse extends
+	PetQueryServerResponseSchema<
 		PetQuerySchemaApiConfigGetResponseType
 	>{
-	static readonly schema = schema;
-	static readonly _validator = PetQuerySchema.compile(schema);
-
-	// For clients: validates a received response. Throws an Error naming
-	// each invalid field.
-	static fromJson(
-		status:uint16_t,
-		json:unknown
-	):PetQuerySchemaApiConfigGetResponse{
-		return new PetQuerySchemaApiConfigGetResponse(
-			status,
-			PetQuerySchema.parse(PetQuerySchemaApiConfigGetResponse._validator,json)
-		);
+	protected static _instance:
+		PetQuerySchemaApiConfigGetResponse | null = null;
+	public static getInstance():PetQuerySchemaApiConfigGetResponse{
+		if(this._instance === null){
+			this._instance = new PetQuerySchemaApiConfigGetResponse();
+		}
+		return this._instance;
 	}
+	getSchema(){
+		return schema;
+	}
+	getValidator(){
+		return validator;
+	}
+};
+
+const petQuerySchemaApiConfigGetResponse =
+	PetQuerySchemaApiConfigGetResponse.getInstance();
+
+export {
+	petQuerySchemaApiConfigGetResponse as PetQuerySchemaApiConfigGetResponse
 };

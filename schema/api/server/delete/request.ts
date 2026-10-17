@@ -7,72 +7,53 @@
 
 import {PetQuerySchema} from '#petquery/schema.js';
 import type {PetQuerySchemaStatic} from '#petquery/schema.js';
+import type {PetQuerySchemaApiServerDeleteResponseType} from
+	'#schema/api/server/delete/response.js';
 import {PetQueryServerRequestSchema} from
 	'#petquery/server/request/schema.js';
-import type {PetQueryServerRequestSchemaInput} from
-	'#petquery/server/request/schema.js';
-import type {PetQueryServerResponseSchemaError} from
-	'#petquery/server/response/schema.js';
-import type {PetQueryServerRequest} from
-	'#petquery/server/request.js';
-import type {PetQueryServerResponse} from
-	'#petquery/server/response.js';
-import type {PetQuerySchemaApiServerDeleteResponse} from
+import {PetQuerySchemaApiServerDeleteResponse} from
 	'#schema/api/server/delete/response.js';
 
 const T = PetQuerySchema.type;
 
-// Unknown query parameters are ignored.
 const schema = T.Object({
-	params:T.Object({
-		uuid:T.String({format:'uuid'})
-	},{additionalProperties:false}),
-	query:T.Object({}),
-	body:T.Object({})
+	uuid:T.String({format:'uuid'})
 },{title:'DELETE /api/server/delete/:uuid request'});
+
+const validator = PetQuerySchema.compile(schema);
 
 export type PetQuerySchemaApiServerDeleteRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // DELETE /api/server/delete/:uuid
-export class PetQuerySchemaApiServerDeleteRequest
-	extends PetQueryServerRequestSchema<
-		PetQuerySchemaApiServerDeleteRequestType
+class PetQuerySchemaApiServerDeleteRequest extends
+	PetQueryServerRequestSchema<
+		 PetQuerySchemaApiServerDeleteRequestType
+		,PetQuerySchemaApiServerDeleteResponseType
 	>{
-	static readonly schema = schema;
-	static readonly _validator = PetQuerySchema.compile(schema);
-
-	// Throws an Error naming each invalid field.
-	static fromJson(
-		json:PetQueryServerRequestSchemaInput
-	):PetQuerySchemaApiServerDeleteRequest{
-		return new PetQuerySchemaApiServerDeleteRequest(
-			PetQuerySchema.parse(PetQuerySchemaApiServerDeleteRequest._validator,json)
-		);
+	protected static _instance:
+		PetQuerySchemaApiServerDeleteRequest | null = null;
+	public static getInstance():PetQuerySchemaApiServerDeleteRequest{
+		if(this._instance === null){
+			this._instance = new PetQuerySchemaApiServerDeleteRequest();
+		}
+		return this._instance;
 	}
-
-	// Express handler: validates the request, calls handler and sends its
-	// response. Use as PetQuerySchemaApiServerDeleteRequest._handle.bind(
-	// this,this._handleX.bind(this)).
-	static _handle(
-		handler:(
-			request:PetQuerySchemaApiServerDeleteRequest
-		)=>Promise<
-			PetQuerySchemaApiServerDeleteResponse
-			|PetQueryServerResponseSchemaError
-		>,
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		return PetQueryServerRequestSchema._handleRequest(
-			PetQuerySchemaApiServerDeleteRequest.fromJson,
-			handler,
-			req,
-			res
-		);
+	getSchema(){
+		return schema;
 	}
-
-	getUuid():uuid_t{
-		return this._values.params.uuid;
+	getValidator(){
+		return validator;
 	}
+	getResponseSchema(){
+		return PetQuerySchemaApiServerDeleteResponse;
+	};
+};
+
+const petQuerySchemaApiServerDeleteRequest =
+	PetQuerySchemaApiServerDeleteRequest.getInstance();
+
+export {
+	petQuerySchemaApiServerDeleteRequest
+		as PetQuerySchemaApiServerDeleteRequest
 };
