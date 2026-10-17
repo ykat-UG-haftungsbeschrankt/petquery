@@ -36,7 +36,7 @@ import {v4 as uuidv4, validate as uuidValidate} from 'uuid';
 async function loadServerUuid(
 	db:PetQueryServerDatabaseIndex
 ):Promise<uuid_t>{
-	const stored = await db.serverIndexGet('uuid');
+	const stored = await db.serverIndexGetServerUid();
 	if(undefined !== stored){
 		if(!uuidValidate(stored)){
 			throw new Error(`Stored server UUID is invalid: ${stored}`);
@@ -44,7 +44,7 @@ async function loadServerUuid(
 		return stored;
 	}
 	const uuid = uuidv4();
-	await db.serverIndexPut('uuid',uuid);
+	await db.serverIndexSetServerUid(uuid);
 	return uuid;
 }
 const serverConfig = PetQueryConfig.getServerConfig();
@@ -52,13 +52,13 @@ const indexConfig = serverConfig.index;
 const indexDatabase = indexConfig.database;
 const settingsDatabase = indexDatabase.createSettingsDatabase();
 const serverUuid = await loadServerUuid(indexDatabase.getDbIndex());
-const serverConfigFile = new PetQueryServerConfig(
+const serverServerConfig = new PetQueryServerConfig(
 	serverUuid,
 	settingsDatabase
 );
-const savedServerConfig = await serverConfigFile.load();
+const savedServerConfig = await serverServerConfig.load();
 if(null !== savedServerConfig){
-	serverConfigFile.applyToServerConfig(serverConfig,savedServerConfig);
+	serverServerConfig.applyToServerConfig(serverConfig,savedServerConfig);
 }
 const authUserDatabase = indexDatabase.createSibling(
 	serverConfig.authenticate.lmdb.users_name
@@ -77,11 +77,10 @@ const server = new PetQueryServer(
 	serverConfig,
 	indexDatabase,
 	serverUuid,
-	serverConfigFile,
+	serverServerConfig,
 	auth,
 	petStore
 );
-const guiRoute = new PetQueryServerRouteGui(server);
 const serverIndexSync = new PetQueryServerIndexSync(
 	indexDatabase,
 	serverUuid,
@@ -92,7 +91,6 @@ const serverIndexSync = new PetQueryServerIndexSync(
 
 async function shutdown():Promise<void>{
 	await Promise.allSettled([
-		Promise.resolve(guiRoute.destructor()),
 		Promise.resolve(petStore.destructor()),
 		Promise.resolve(auth.destructor()),
 		serverIndexSync.destructor(),
@@ -102,7 +100,7 @@ async function shutdown():Promise<void>{
 		authUserDatabase.destructor(),
 		indexDatabase.destructor(),
 		settingsDatabase.destructor(),
-		serverConfigFile.destructor()
+		serverServerConfig.destructor()
 	]);
 	process.exit(0);
 }
@@ -138,7 +136,7 @@ server.registerRoutes([
 	new PetQueryServerRouteAuth(server),
 	new PetQueryServerRouteDefault(server),
 	new PetQueryServerRouteDocs(server),
-	guiRoute
+	new PetQueryServerRouteGui(server)
 ]);
 server.start();
 if(indexConfig.sync.enabled){

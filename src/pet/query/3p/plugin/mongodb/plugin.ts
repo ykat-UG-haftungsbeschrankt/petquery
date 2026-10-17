@@ -8,7 +8,7 @@
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
 import {PetQueryResultData} from '#petquery/result/data.js';
-import {PetQueryResult} from '#petquery/result.js';
+import {PetQueryResult} from '#petquery/.trash/result.js';
 import {PetQueryResultDataEntry} from '#petquery/result/data/entry.js';
 import {
 	Filter,

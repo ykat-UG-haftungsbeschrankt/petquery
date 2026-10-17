@@ -1,5 +1,5 @@
 import {PetQueryPlugin} from '#petquery/plugin.js';
-import {PetQueryPluginConfig} from '#petquery/plugin/config.js';
+import {PetQueryPluginConfig} from '#petquery/plugin.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
 import {PetQueryResultData} from '#petquery/plugin/result.js';
 

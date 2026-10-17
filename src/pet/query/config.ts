@@ -7,10 +7,7 @@
 
 import {PetQuery3pPluginMongodbConfig} from
 	'#petquery/3p/plugin/mongodb/config.js';
-import {PetQueryResultDataSource} from '#petquery/result/data/source.js';
-//import { PetQueryPluginEuropetnetOrgConfig } from './plugin/europetnet.org/index.js';
 import { PetQueryTypes } from './types.js';
-import {PetQueryPluginConfig} from '#petquery/plugin/config.js';
 import type {PetQueryServerRequest} from
 	'#petquery/server/request.js';
 import type {PetQueryServerResponse} from
@@ -25,12 +22,9 @@ import {PetQuery3pPluginTestConfig} from
 	'#petquery/3p/plugin/test/config.js';
 import {PetQuery3pPluginAnimalidConfig} from
 	'#petquery/3p/plugin/animalid/config.js';
-import {PetQueryDatabaseLmdb} from '#petquery/database/lmdb.js';
 import fileUpload from 'express-fileupload';
 import type {ServerOptions} from 'node:https';
-
-//const { authenticate_api } = require('express-oauth2-jwt-bearer');
-//const { authenticate_json } = require('express-oauth2-jwt-bearer');
+import type {PetQueryPluginConfig} from '#petquery/plugin.js';
 
 export type PetQueryConfigAuthMode =
 	'bearer'|'lmdb'|'ldap'|'oidc';
@@ -255,33 +249,33 @@ const settings:PetQueryConfigType = {
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryResultDataSource({
+				source:{
 					 favicon:'https://animalid.by/favicon.ico'
 					,url:'https://animalid.by'
 					,name:'Animalid'
-				})
+				}
 			}
 		)]
 		/*,["europetnet.org",new PetQueryPluginEuropetnetOrgConfig(
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryResultDataSource({
+				source:{
 					 favicon:'https://europetnet.org/favicon.ico'
 					,url:'https://europetnet.org'
 					,name:'Europetnet'
-				})
+				}
 			}
 		)]*/
 		,["test",new PetQuery3pPluginTestConfig(
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryResultDataSource({
+				source:{
 					favicon:'',
 					url:'',
 					name:'test'
-				})
+				}
 			}
 			,{
 				ain:'1234'
@@ -291,22 +285,22 @@ const settings:PetQueryConfigType = {
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryResultDataSource({
+				source:{
 					favicon:'',
 					url:'',
 					name:'test'
-				})
+				}
 			}
 		)]
 		,["mongodb",new PetQuery3pPluginMongodbConfig(
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryResultDataSource({
+				source:{
 					favicon:'',
 					url:'',
 					name:'test'
-				})
+				}
 			}
 			,{
 				uri:'mongodb://localhost:27017',
@@ -318,11 +312,11 @@ const settings:PetQueryConfigType = {
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryResultDataSource({
+				source:{
 					favicon:'',
 					url:'',
 					name:'test'
-				})
+				}
 			}
 			,{
 				  dbCfg: {}
@@ -333,11 +327,11 @@ const settings:PetQueryConfigType = {
 			{
 				enabled:false,
 				timeout:5000,
-				source:new PetQueryResultDataSource({
+				source:{
 					favicon:'',
 					url:'',
 					name:'test'
-				})
+				}
 			}
 			,{
 				uri: '',

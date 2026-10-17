@@ -6,6 +6,7 @@
  */
 
 import Type from 'typebox';
+import {Static} from 'typebox';
 import Compile from 'typebox/compile';
 import Format from 'typebox/format';
 import Value from 'typebox/value';
@@ -30,6 +31,22 @@ export type PetQuerySchemaCheck<T> = {
 	Check(value:unknown):value is T;
 	Errors(value:unknown):Array<PetQuerySchemaValidationError>;
 };
+
+const T = Type;
+
+export const PetQuerySchemaJson = T.Union([
+    T.Null(),
+    T.Boolean(),
+    T.Number(),
+    T.String(),
+    T.Array(T.Ref('PetQuerySchemaJson')),
+    T.Object({}, { additionalProperties: T.Ref('PetQuerySchemaJson') })
+  ]
+  ,{ $id: 'PetQuerySchemaJson' }
+);
+
+// 2. Derive the static TypeScript type
+export type PetQuerySchemaJsonType = Static<typeof PetQuerySchemaJson>;
 
 Format.Set('uri', (value) => URL.canParse(value));
 

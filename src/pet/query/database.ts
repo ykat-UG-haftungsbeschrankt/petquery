@@ -4,6 +4,7 @@
  * Permission for non-commercial use is hereby granted,
  * free of charge, without warranty of any kind.
  */
+
 import type {PetQueryServerDatabaseAuth} from
 	'#petquery/server/database/auth.js';
 import type {PetQueryServerDatabaseConfig} from

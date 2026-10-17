@@ -21,6 +21,13 @@ export abstract class PetQueryServerRequestSchema<
 	 T_REQUEST
 	,T_RESPONSE
 > extends PetQuerySingleton{
+	readonly schema:PetQuerySchemaType;
+
+	protected constructor(){
+		super();
+		this.schema = this.getSchema();
+	}
+
 	abstract getSchema():PetQuerySchemaType;
 	abstract getValidator():PetQuerySchemaCheck<T_REQUEST>;
 	abstract getResponseSchema():PetQueryServerResponseSchema<T_RESPONSE>;
@@ -73,7 +80,7 @@ export abstract class PetQueryServerRequestSchema<
 		);
 	}
 
-	async _handleRequest(
+	protected async _handleRequest(
 		parse:(json:json_t)=>T_REQUEST,
 		handler:(request:T_REQUEST)=>Promise<T_RESPONSE>,
 		req:PetQueryServerRequest,
@@ -81,7 +88,7 @@ export abstract class PetQueryServerRequestSchema<
 	):Promise<void>{
 		try{
 			try{
-				const data = await handler(this.fromJson(req.getHandlerArgs()));
+				const data = await handler(parse(req.getHandlerArgs()));
 				res.sendApiSuccess(data);
 			}catch(error){
 				res.sendApiError(error);

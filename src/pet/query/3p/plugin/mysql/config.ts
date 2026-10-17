@@ -5,7 +5,7 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQueryPluginConfig} from '#petquery/plugin/config.js';
+import {PetQueryPluginConfig} from '#petquery/plugin.js';
 import type {DbConfig} from 'mysql2-async';
 
 export class PetQuery3pPluginMysqlConfig

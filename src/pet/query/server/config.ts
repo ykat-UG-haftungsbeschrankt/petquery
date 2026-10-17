@@ -10,10 +10,11 @@ import type {PetQueryServerDatabaseConfig} from
 	'#petquery/server/database/config.js';
 import { PetQuerySchemaServerDatabaseConfigEntry, type PetQuerySchemaServerDatabaseConfigEntryType } from "#schema/server/database/config/entry.js";
 import { PetQueryDatabase } from '#petquery/database.js';
+import { PetQueryDestructor } from '#petquery/destructor.js';
 
 // Loads, validates and atomically saves the server settings that are
 // editable in the admin GUI. Saved values take effect on restart.
-export class PetQueryServerConfig{
+export class PetQueryServerConfig extends PetQueryDestructor{
 	protected readonly _database:PetQueryServerDatabaseConfig;
 	protected readonly _serverUid:uuid_t;
 
@@ -22,8 +23,12 @@ export class PetQueryServerConfig{
 		serverUid:uuid_t,
 		database:PetQueryDatabase
 	){
+		super();
 		this._serverUid = serverUid;
 		this._database = database.getDbConfig();
+	}
+
+	async _destructor():Promise<void>{
 	}
 
 	// Extracts the editable values from server settings.

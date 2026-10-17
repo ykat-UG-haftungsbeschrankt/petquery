@@ -7,7 +7,7 @@
 
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import {PetQueryResult} from '#petquery/result.js';
+import {PetQueryResult} from '#petquery/.trash/result.js';
 import {PetQuery3pPluginPetqueryConfig} from
 	'#petquery/3p/plugin/petquery/config.js';
 

@@ -5,7 +5,7 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQueryPluginConfig} from '#petquery/plugin/config.js';
+import {PetQueryPluginConfig} from '#petquery/plugin.js';
 
 export class PetQuery3pPluginTestConfig
 	extends PetQueryPluginConfig{

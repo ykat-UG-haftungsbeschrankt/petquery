@@ -10,7 +10,6 @@ import path from 'node:path';
 import type {ServerResponse} from 'node:http';
 import {PetQueryServerRoute} from '#petquery/server/route.js';
 import type {PetQueryServer} from '#petquery/server.js';
-import {_isNodeErrorCode} from '#petquery/server/config.js';
 import type {PetQueryServerRequest} from
 	'#petquery/server/request.js';
 import type {PetQueryServerResponse} from
@@ -132,8 +131,7 @@ export class PetQueryServerRouteGui extends PetQueryServerRoute{
 		if(undefined === error || null === error){
 			return;
 		}
-		if(!res.getHeadersSent()
-		&& _isNodeErrorCode(error,'ENOENT')){
+		if(!res.getHeadersSent()){
 			res.status(503);
 			res.type('text/plain');
 			res.send('Admin GUI is not built; run npm run build:gui');

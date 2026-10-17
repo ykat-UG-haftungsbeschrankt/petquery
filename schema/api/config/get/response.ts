@@ -9,15 +9,15 @@ import {PetQuerySchema} from '#petquery/schema.js';
 import type {PetQuerySchemaStatic} from '#petquery/schema.js';
 import {PetQueryServerResponseSchema} from
 	'#petquery/server/response/schema.js';
-import {PetQueryServerConfig} from '#petquery/server/config.js';
+import { PetQuerySchemaServerDatabaseConfigEntry } from '#schema/server/database/config/entry.js';
 
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
 	// Type the server runs with.
-	active:PetQueryServerConfig.schema,
+	active:PetQuerySchemaServerDatabaseConfigEntry.getSchema(),
 	// Type in the config file, applied on restart; null if none.
-	saved:T.Union([PetQueryServerConfig.schema,T.Null()]),
+	saved:T.Union([PetQuerySchemaServerDatabaseConfigEntry.getSchema(),T.Null()]),
 	// Why the config file could not be read, if it could not.
 	saved_error:T.Union([T.String(),T.Null()]),
 	// Plugin names allowed in route.api.plugins.

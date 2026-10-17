@@ -9,7 +9,7 @@ import {PetQuerySchema} from '#petquery/schema.js';
 import type {PetQuerySchemaStatic} from '#petquery/schema.js';
 import {PetQueryServerResponseSchema} from
 	'#petquery/server/response/schema.js';
-import type {PetQueryResult} from '#petquery/result.js';
+import type {PetQueryResult} from '#petquery/.trash/result.js';
 
 const T = PetQuerySchema.type;
 

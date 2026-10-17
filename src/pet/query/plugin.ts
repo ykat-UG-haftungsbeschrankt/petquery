@@ -5,18 +5,41 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {PetQueryPluginConfig} from '#petquery/plugin/config.js';
-import type {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import type {PetQueryResultDataSource} from
-	'#petquery/result/data/source.js';
-import {PetQueryResult} from '#petquery/result.js';
+import type {PetQuerySchemaPluginConfigType} from '#schema/plugin/config.js';
+import type {PetQuerySchemaPluginDataSourceType} from '#schema/plugin/data/source.js';
+import type {PetQuerySchemaPluginRequestType} from '#schema/plugin/request.js';
+import type {PetQuerySchemaPluginResponseType} from '#schema/plugin/response.js';
+
+export class PetQueryPluginConfig{
+	private _enabled:boolean;
+	private _timeout:milliseconds_t;
+	private _source:PetQuerySchemaPluginDataSourceType;
+	constructor(obj:{
+		 enabled:boolean
+		,timeout:milliseconds_t
+		,source:PetQuerySchemaPluginDataSourceType
+	}){
+		this._enabled = obj.enabled;
+		this._timeout = obj.timeout;
+		this._source = obj.source;
+	}
+	isEnabled():boolean{
+		return this._enabled !== false;
+	}
+	getTimeout():milliseconds_t{
+		return this._timeout;
+	}
+	getSource():PetQuerySchemaPluginDataSourceType{
+		return this._source;
+	}
+};
 
 export abstract class PetQueryPlugin{
 	protected readonly _name:string;
-	protected readonly _baseCfg:PetQueryPluginConfig;
+	protected readonly _baseCfg:PetQuerySchemaPluginConfigType;
 	protected _destructorPromise:Promise<void>|null;
 
-	constructor(name:string, cfg:PetQueryPluginConfig){
+	constructor(name:string, cfg:PetQuerySchemaPluginConfigType){
 		this._name = name;
 		this._baseCfg = cfg;
 		this._destructorPromise = null;
@@ -25,13 +48,13 @@ export abstract class PetQueryPlugin{
 		return this._name;
 	}
 	getTimeout():milliseconds_t{
-		return this._baseCfg.getTimeout();
+		return this._baseCfg.timeout;
 	}
 	isEnabled():boolean{
-		return this._baseCfg.isEnabled();
+		return this._baseCfg.enabled;
 	}
-	getSource():PetQueryResultDataSource{
-		return this._baseCfg.getSource();
+	getSource():PetQuerySchemaPluginDataSourceType{
+		return this._baseCfg.source;
 	}
 	destructor():Promise<void>{
 		if(null === this._destructorPromise){
@@ -48,6 +71,6 @@ export abstract class PetQueryPlugin{
 	 * @return {object} example object in function body
 	 */
 	abstract query(
-		query:PetQueryPluginQuery
-	):Promise<PetQueryResult>;
+		query:PetQuerySchemaPluginRequestType
+	):Promise<PetQuerySchemaPluginResponseType>;
 };

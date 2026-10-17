@@ -11,7 +11,6 @@ import https from 'node:https';
 import type {Server as HttpServer} from 'node:http';
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import type {PetQueryConfigServerType} from '#petquery/config.js';
-import type {PetQueryDatabaseAuth} from '#petquery/database/auth.js';
 import type {PetQueryServerRoute} from '#petquery/server/route.js';
 import type {PetQueryServerHandler} from
 	'#petquery/server/route.js';
@@ -22,8 +21,9 @@ import {PetQueryServerRequest} from
 	'#petquery/server/request.js';
 import {PetQueryServerResponse} from
 	'#petquery/server/response.js';
+import { PetQueryDestructor } from './destructor.js';
 
-export class PetQueryServer{
+export class PetQueryServer extends PetQueryDestructor{
 	protected readonly _config:PetQueryConfigServerType;
 	protected readonly _app:Express.Express;
 	protected readonly _plugins:Map<string,PetQueryPlugin>;
@@ -50,6 +50,7 @@ export class PetQueryServer{
 		auth:PetQueryServerAuth,
 		petStore:PetQueryDatabase
 	){
+		super();
 		const upload = config.file.upload;
 
 		this._config = config;
@@ -71,13 +72,30 @@ export class PetQueryServer{
 		}
 		this._plugins = new Map();
 		this._uuid = uuid;
-		this._destructorPromise = null;
 		this._httpServer = null;
 		this._httpsServer = null;
 	}
+	async _destructor():Promise<void>{
+		const servers = [
+			this._httpServer,
+			this._httpsServer
+		];
+		this._httpServer = null;
+		this._httpsServer = null;
+		await Promise.allSettled(
+			servers
+				.filter((server):server is HttpServer => null !== server)
+				.map((server)=>this._closeServer(server))
+		);
+		const plugins = Array.from(this._plugins.values());
+		this._plugins.clear();
+		await Promise.allSettled(
+			plugins.map((plugin)=>plugin.destructor())
+		);
+	}
 
 	addPlugin(plugin:PetQueryPlugin):void{
-		if(null !== this._destructorPromise){
+		if(this._isDestroyed()){
 			throw new Error('Server is destroyed');
 		}
 		if(!plugin.isEnabled()){
@@ -89,13 +107,6 @@ export class PetQueryServer{
 			);
 		}
 		this._plugins.set(plugin.getName(),plugin);
-	}
-
-	destructor():Promise<void>{
-		if(null === this._destructorPromise){
-			this._destructorPromise = this._destroy();
-		}
-		return this._destructorPromise;
 	}
 	getPlugins(pluginFilter:Set<string>|null):Iterable<PetQueryPlugin>{
 		const ret = [];
@@ -115,7 +126,7 @@ export class PetQueryServer{
 	}
 
 	start():void{
-		if(null !== this._destructorPromise){
+		if(this._isDestroyed()){
 			throw new Error('Server is destroyed');
 		}
 		if(null !== this._httpServer || null !== this._httpsServer){
@@ -161,25 +172,6 @@ export class PetQueryServer{
 
 	_getPlugin(name:string):PetQueryPlugin|undefined{
 		return this._plugins.get(name);
-	}
-
-	protected async _destroy():Promise<void>{
-		const servers = [
-			this._httpServer,
-			this._httpsServer
-		];
-		this._httpServer = null;
-		this._httpsServer = null;
-		await Promise.allSettled(
-			servers
-				.filter((server):server is HttpServer => null !== server)
-				.map((server)=>this._closeServer(server))
-		);
-		const plugins = Array.from(this._plugins.values());
-		this._plugins.clear();
-		await Promise.allSettled(
-			plugins.map((plugin)=>plugin.destructor())
-		);
 	}
 
 	protected _closeServer(server:HttpServer):Promise<void>{
