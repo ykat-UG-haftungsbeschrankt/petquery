@@ -42,9 +42,6 @@ export class PetQueryServerRouteGui extends PetQueryServerRoute{
 		);
 	}
 
-	override destructor():void{
-	}
-
 	protected _setSecurityHeaders(
 		UNUSED_req:PetQueryServerRequest,
 		res:PetQueryServerResponse,

@@ -21,14 +21,14 @@ const schema = T.Object({
 	additionalProperties:false
 });
 
-export type PetQuerySchemaApiServerDeleteResponseValues =
+export type PetQuerySchemaApiServerDeleteResponseType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // Successful response of DELETE /api/server/delete/:uuid. Errors are sent as
 // PetQueryServerResponseSchemaError.
 export class PetQuerySchemaApiServerDeleteResponse
 	extends PetQueryServerResponseSchema<
-		PetQuerySchemaApiServerDeleteResponseValues
+		PetQuerySchemaApiServerDeleteResponseType
 	>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);

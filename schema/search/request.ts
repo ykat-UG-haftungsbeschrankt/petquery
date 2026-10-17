@@ -51,20 +51,20 @@ const schema = T.Object({
 	})
 },{title:'Search request of /api and /json'});
 
-export type PetQuerySchemaSearchRequestValues =
+export type PetQuerySchemaSearchRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // Search of /api and /json. Body parameters take precedence over query
 // parameters. Uploaded files are not part of the schema.
 export class PetQuerySchemaSearchRequest
-	extends PetQueryServerRequestSchema<PetQuerySchemaSearchRequestValues>{
+	extends PetQueryServerRequestSchema<PetQuerySchemaSearchRequestType>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);
 
 	protected _files:Array<PetQueryPluginQueryFile>;
 
 	constructor(
-		values:PetQuerySchemaSearchRequestValues,
+		values:PetQuerySchemaSearchRequestType,
 		files:Array<PetQueryPluginQueryFile>
 	){
 		super(values);

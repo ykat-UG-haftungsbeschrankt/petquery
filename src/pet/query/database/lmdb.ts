@@ -15,7 +15,7 @@ export type PetQueryDatabaseLmdbConfig = {
 	settings_name?:utf8_t;
 };
 
-export class PetQueryDatabaseLmdb extends PetQueryDatabase{
+export class PetQueryDatabaseLmdb{
 	protected static readonly _configKey = '__petquery_config__';
 	protected readonly _db:RootDatabase<utf8_t,utf8_t>;
 	protected readonly _config:PetQueryDatabaseLmdbConfig;
@@ -23,7 +23,6 @@ export class PetQueryDatabaseLmdb extends PetQueryDatabase{
 
 	// Opens the named database inside the LMDB environment at path.
 	constructor(config:PetQueryDatabaseLmdbConfig){
-		super();
 		const path = config.path;
 		const name = config.name;
 		if(0 === path.trim().length){

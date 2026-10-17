@@ -12,6 +12,11 @@ import Value from 'typebox/value';
 import type {
 	TLocalizedValidationError as PetQuerySchemaValidationError
 } from 'typebox/error';
+import { int } from 'zod/v4/mini';
+
+import type {
+	TSchema as PetQuerySchemaType
+} from 'typebox';
 
 export type {
 	Static as PetQuerySchemaStatic,
@@ -27,10 +32,13 @@ export type PetQuerySchemaCheck<T> = {
 	Errors(value:unknown):Array<PetQuerySchemaValidationError>;
 };
 
+Format.Set('uri', (value) => URL.canParse(value));
+
 // Single entry point to TypeBox, like PetQueryCast for cast.ts.
 // Schemas are plain JSON Schema objects, so they can also be written to
 // schema/*.json for peers that are not written in TypeScript.
-export class PetQuerySchema{
+export class PetQuerySchema implements Singleton{
+	private constructor(){}
 	// Builders, for example PetQuerySchema.type.Object({...}).
 	static readonly type = Type;
 	// Compiles a schema into a validator whose Parse() returns the typed
@@ -41,15 +49,6 @@ export class PetQuerySchema{
 	// String format registry (uuid, uri, email, ... are built in).
 	static readonly format = Format;
 
-	static emptyRequest(title:utf8_t){
-		const T = PetQuerySchema.type;
-		return T.Object({
-			params:T.Object({}),
-			query:T.Object({}),
-			body:T.Object({})
-		},{title});
-	}
-
 	// Returns json typed as the validator's schema, or throws an Error
 	// naming each invalid field. Use it instead of `json as Type`.
 	static parse<T>(
@@ -58,7 +57,7 @@ export class PetQuerySchema{
 	):T{
 		if(!validator.Check(json)){
 			throw new Error(
-				PetQuerySchema.getErrorMessage(validator.Errors(json))
+				PetQuerySchema._getErrorMessage(validator.Errors(json))
 			);
 		}
 		return json;
@@ -66,7 +65,7 @@ export class PetQuerySchema{
 
 	// Joins validator errors into one message, for example
 	// "/params/uuid must match format \"uuid\"".
-	static getErrorMessage(
+	protected static _getErrorMessage(
 		errors:Array<PetQuerySchemaValidationError>
 	):utf8_t{
 		const ret:Array<utf8_t> = [];
@@ -75,12 +74,23 @@ export class PetQuerySchema{
 		}
 		return 0 === ret.length ? 'Invalid value' : ret.join('; ');
 	}
+};
 
-	destructor():void{
-		try{
-			// Holds no resources; present for the lifecycle convention.
-		}
-		catch(UNUSED_e){
-		}
+export abstract class PetQuerySchemaAbstract<T>{
+	abstract getSchema():PetQuerySchemaType;
+	abstract getValidator():PetQuerySchemaCheck<T>;
+
+	fromJson(
+		json:json_t
+	):T{
+		return PetQuerySchema.parse<
+			T
+		>(this.getValidator(),json);
 	}
+
+	/*toJson(
+		params:T
+	):json_t{
+		return params;
+	}*/
 };

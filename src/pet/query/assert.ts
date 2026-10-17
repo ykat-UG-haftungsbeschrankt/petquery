@@ -7,7 +7,13 @@
 
 import { PetQueryTypes } from "./types.js";
 
-export class PetQueryAssert{
+export class PetQueryAssert implements Singleton{
+	private constructor(){}
+	static notNull<T>(value:T|null|undefined):asserts value is NonNullable<T>{
+		if(null === value || undefined === value){
+			throw new Error('Value is null or undefined');
+		}
+	}
 	static assertArray<T>(value:unknown):asserts value is Array<T>{
 		if(!PetQueryTypes.isArray(value)){
 			throw new Error('Value is not an array');
@@ -22,7 +28,5 @@ export class PetQueryAssert{
 		if(!PetQueryTypes.isInstanceOf<T>(ctor,value)){
 			throw new Error(`Value is not an instance of ${ctor.name}`);
 		}
-	}
-	destructor():void{
 	}
 };

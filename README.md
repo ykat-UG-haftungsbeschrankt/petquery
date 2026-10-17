@@ -634,7 +634,7 @@ The path mirrors the route, for example
 `schema/api/server/put/request.ts` for `PUT /api/server/put/:uuid`.
 
 - Each `.ts` file exports a class with a static `schema`, a `fromJson()`
-  that returns a typed instance or throws, and a `...Values` type. Import it
+  that returns a typed instance or throws, and a `...Type` type. Import it
   with `#schema/...`, for example `#schema/api/server/put/request.js`.
 - Every JSON route validates its request with the request class's static
   `_handle()`, which calls the route handler with the typed request and sends

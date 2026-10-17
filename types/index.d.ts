@@ -33,12 +33,17 @@ declare type port_t = uint16_t;
 declare type uuid_t = string;
 
 
+declare type json_string_t = string;
+declare type json_number_t = number;
+declare type json_boolean_t = boolean;
+declare type json_null_t = null;
 declare type json_primitive_t = string | number | boolean | null;
 declare type json_array_t = json_t[];
 declare type json_object_t = { [key: string]: json_t };
 declare type json_composite_t = json_array_t | json_object_t;
 declare type json_t = json_primitive_t | json_composite_t;
-declare type json_string_t = string;
 
 
 declare type ConstructorType<T> = new (...args:ConstructorParameters<typeof T>) => T;
+
+declare interface Singleton{};

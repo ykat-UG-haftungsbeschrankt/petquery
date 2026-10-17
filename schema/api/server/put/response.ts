@@ -21,14 +21,14 @@ const schema = T.Object({
 	additionalProperties:false
 });
 
-export type PetQuerySchemaApiServerPutResponseValues =
+export type PetQuerySchemaApiServerPutResponseType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // Successful response of PUT /api/server/put/:uuid. Errors are sent as
 // PetQueryServerResponseSchemaError.
 export class PetQuerySchemaApiServerPutResponse
 	extends PetQueryServerResponseSchema<
-		PetQuerySchemaApiServerPutResponseValues
+		PetQuerySchemaApiServerPutResponseType
 	>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);

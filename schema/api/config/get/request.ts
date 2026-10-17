@@ -24,12 +24,12 @@ const schema = PetQuerySchema.emptyRequest(
 	'GET /api/config/get request'
 );
 
-export type PetQuerySchemaApiConfigGetRequestValues =
+export type PetQuerySchemaApiConfigGetRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // GET /api/config/get
 export class PetQuerySchemaApiConfigGetRequest
-	extends PetQueryServerRequestSchema<PetQuerySchemaApiConfigGetRequestValues>{
+	extends PetQueryServerRequestSchema<PetQuerySchemaApiConfigGetRequestType>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);
 

@@ -11,6 +11,7 @@ import https from 'node:https';
 import type {Server as HttpServer} from 'node:http';
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import type {PetQueryConfigServerType} from '#petquery/config.js';
+import type {PetQueryDatabaseAuth} from '#petquery/database/auth.js';
 import type {PetQueryServerRoute} from '#petquery/server/route.js';
 import type {PetQueryServerHandler} from
 	'#petquery/server/route.js';
@@ -28,14 +29,14 @@ export class PetQueryServer{
 	protected readonly _plugins:Map<string,PetQueryPlugin>;
 	protected readonly _uuid:uuid_t;
 	// Borrowed; its owner must call its destructor.
-	protected readonly _indexDatabase:PetQueryDatabase;
+	// Borrowed; its owner must call its destructor.
+	protected readonly _database:PetQueryDatabase;
 	// Borrowed; its owner must call its destructor.
 	protected readonly _configFile:PetQueryServerConfig;
 	// Borrowed; its owner must call its destructor.
 	protected readonly _auth:PetQueryServerAuth;
 	// Borrowed; its owner must call its destructor.
 	protected readonly _petStore:PetQueryDatabase;
-	protected _destructorPromise:Promise<void>|null;
 	protected _httpServer:HttpServer|null;
 	protected _httpsServer:HttpServer|null;
 
@@ -43,7 +44,7 @@ export class PetQueryServer{
 	// configFile stores the values editable in the admin GUI.
 	constructor(
 		config:PetQueryConfigServerType,
-		indexDatabase:PetQueryDatabase,
+		database:PetQueryDatabase,
 		uuid:uuid_t,
 		configFile:PetQueryServerConfig,
 		auth:PetQueryServerAuth,
@@ -52,7 +53,7 @@ export class PetQueryServer{
 		const upload = config.file.upload;
 
 		this._config = config;
-		this._indexDatabase = indexDatabase;
+		this._database = database;
 		this._configFile = configFile;
 		this._auth = auth;
 		this._petStore = petStore;
@@ -73,9 +74,6 @@ export class PetQueryServer{
 		this._destructorPromise = null;
 		this._httpServer = null;
 		this._httpsServer = null;
-	}
-	getConfig():PetQueryConfigServerType{
-		return this._config;
 	}
 
 	addPlugin(plugin:PetQueryPlugin):void{
@@ -149,8 +147,8 @@ export class PetQueryServer{
 		return this._uuid;
 	}
 
-	_getIndexDatabase():PetQueryDatabase{
-		return this._indexDatabase;
+	_getDatabase():PetQueryDatabase{
+		return this._database;
 	}
 
 	_getConfigFile():PetQueryServerConfig{
@@ -159,10 +157,6 @@ export class PetQueryServer{
 
 	_getAuth():PetQueryServerAuth{
 		return this._auth;
-	}
-
-	_getPetStore():PetQueryDatabase{
-		return this._petStore;
 	}
 
 	_getPlugin(name:string):PetQueryPlugin|undefined{

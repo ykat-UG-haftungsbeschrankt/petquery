@@ -1,0 +1,40 @@
+/*
+ * Copyright (c) 2026 ykat UG (haftungsbeschraenkt) - All Rights Reserved
+ *
+ * Permission for non-commercial use is hereby granted,
+ * free of charge, without warranty of any kind.
+ */
+
+import util from 'node:util';
+import {PetQueryTimer} from '#petquery/timer.js';
+import type {PetQueryDatabase} from '#petquery/database.js';
+import {PetQuerySchemaApiPingGetRequest} from
+	'#schema/api/ping/get/request.js';
+import {PetQuerySchemaApiServerGetRequest} from
+	'#schema/api/server/get/request.js';
+import { PetQueryAbortController } from '#petquery/abort.js';
+import { PetQueryServerDatabaseSession } from '#petquery/server/database/session.js';
+
+export class PetQueryServerIndexSync extends PetQueryTimer{
+	protected readonly _database:PetQueryServerDatabaseSession;
+
+	constructor(
+		database:PetQueryDatabase,
+		interval:milliseconds_t
+	){
+		super(interval);
+		this._database = database.getDbSession();
+	}
+
+	isInterrupted():boolean{
+		return this._isDestroyed();
+	}
+
+	protected async _onCallback(){
+		await this._database.serverSessionDeleteExpired();
+	}
+
+	protected _onError(error:unknown):void{
+		console.error(util.inspect(error));
+	}
+};

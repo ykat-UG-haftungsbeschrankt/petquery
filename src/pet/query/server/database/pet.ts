@@ -5,12 +5,18 @@
  * free of charge, without warranty of any kind.
  */
 
+import { PetQuerySchemaServerDatabasePetEntryType } from "#schema/server/database/pet/entry.js";
+//import type { PetQueryServerFile } from "#petquery/server/file.js";
+
 export interface PetQueryServerDatabasePet{
-	serverPetGet(key:utf8_t):Promise<utf8_t|undefined>;
-
-	serverPetPut(key:utf8_t,value:utf8_t):Promise<void>;
-
+	serverPetAdd(value:PetQuerySchemaServerDatabasePetEntryType):Promise<void>;
+	serverPetGet(key:utf8_t):Promise<PetQuerySchemaServerDatabasePetEntryType>;
 	serverPetRemove(key:utf8_t):Promise<void>;
-
-	serverPetGetEntries():Promise<Map<utf8_t,utf8_t>>;
+	serverPetGetEntries():Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>;
+	serverPetSearch(query:utf8_t):Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>;
+/*
+	serverPetSearchByFile(
+		files:Array<PetQueryServerFile>
+	):Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>;
+*/
 };

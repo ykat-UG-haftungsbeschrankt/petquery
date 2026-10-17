@@ -246,6 +246,10 @@
   appropriate; do not replace independent per-call state with shared mutable
   instance state.
 
+## Singleton
+- Every class which implement Singleton always have `private constructor(){}`
+  and no destructor function
+
 Example:
 
 ```ts

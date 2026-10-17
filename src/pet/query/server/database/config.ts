@@ -5,8 +5,10 @@
  * free of charge, without warranty of any kind.
  */
 
+import { PetQuerySchemaServerDatabaseConfigEntryType } from "#schema/server/database/config/entry.js";
+
 export interface PetQueryServerDatabaseConfig{
-	serverConfigSave(value:json_t):Promise<void>;
+	serverConfigSave(serverUid:uuid_t,value:PetQuerySchemaServerDatabaseConfigEntryType):Promise<void>;
 	
-	serverConfigLoad():Promise<json_t|null>;
+	serverConfigLoad(serverUid:uuid_t):Promise<PetQuerySchemaServerDatabaseConfigEntryType>;
 };

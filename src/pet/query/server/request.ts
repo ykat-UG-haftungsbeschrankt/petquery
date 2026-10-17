@@ -16,8 +16,6 @@ import type {PetQueryServerResponse} from
 	'#petquery/server/response.js';
 import type {UploadedFile} from 'express-fileupload';
 import type {default as Express} from 'express';
-import {validate as uuidValidate} from 'uuid';
-import {PetQueryTypes} from '#petquery/types.js';
 
 export class PetQueryServerRequest{
 	protected readonly _request:Express.Request;
@@ -75,45 +73,30 @@ export class PetQueryServerRequest{
 		next();
 	}
 
-	_mergePluginQuery(serverUuid:uuid_t):void{
-		const query = {
+	getHandlerArgs():json_t{
+		const files:json_object_t = {};
+		for(const [key, file] of this._getFiles()){
+			files[key] = file.toJson();
+		}
+		return {
+			...files,
+			...this.body,
 			...this.query,
-			...this.body
+			...this.params
 		};
-		const files = PetQueryServerRequest._getFiles(this.files);
-		this.petQueryPluginQuery =
-			this.petQueryPluginQuery
-			?? new PetQueryPluginQuery({
-				 query:PetQueryTypes.isString(query.query)
-					? query.query
-					: ''
-				,bearer:PetQueryTypes.isString(query.bearer)
-					? query.bearer
-					: ''
-				,files
-				,iframe:PetQueryTypes.isBoolean(query.iframe)
-					? query.iframe
-					: false
-				,serverUuid
-				,tracerouteUuid:this._parseTracerouteUuid(
-					query.tracerouteUuid
-				)
-			});
 	}
 
-	static _getFiles(
-		uploads:Express.Request['files']
-	):Array<PetQueryPluginQueryFile>{
-		const files:Array<PetQueryPluginQueryFile> = [];
-		for(const key of Object.keys(uploads ?? {})){
-			const file = uploads?.[key];
+	_getFiles():Map<string, PetQueryPluginQueryFile>{
+		const files = new Map<string, PetQueryPluginQueryFile>();
+		for(const key of Object.keys(this._request.files ?? {})){
+			const file = this._request.files?.[key];
 			if(undefined === file){
 				throw new Error(`Uploaded file "${key}" is undefined`);
 			}
 			const fileArray:Array<UploadedFile> =
 				Array.isArray(file) ? file : [file];
 			for(const value of fileArray){
-				files.push(new PetQueryPluginQueryFile({
+				files.set(key, new PetQueryPluginQueryFile({
 					filename:value.name,
 					mime:value.mimetype,
 					data:value.data.toString('base64'),
@@ -123,20 +106,5 @@ export class PetQueryServerRequest{
 			}
 		}
 		return files;
-	}
-
-	protected _parseTracerouteUuid(
-		tracerouteUuid:unknown
-	):Set<uuid_t>{
-		const ret = new Set<uuid_t>();
-		const hops = PetQueryTypes.isArray(tracerouteUuid)
-			? tracerouteUuid
-			: [];
-		for(const hop of hops){
-			if(PetQueryTypes.isString(hop) && uuidValidate(hop)){
-				ret.add(hop);
-			}
-		}
-		return ret;
 	}
 };

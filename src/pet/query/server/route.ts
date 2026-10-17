@@ -11,13 +11,6 @@ import type {PetQueryServerRequest} from
 	'#petquery/server/request.js';
 import type {PetQueryServerResponse} from
 	'#petquery/server/response.js';
-import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import {PetQueryResult} from '#petquery/result.js';
-import {PetQueryResultDataEntry} from '#petquery/result/data/entry.js';
-import util from 'node:util';
-import {PetQueryResultData} from '#petquery/result/data.js';
-import {PetQuerySchemaSearchRequest} from '#schema/search/request.js';
-import {PetQuerySchemaSearchResponse} from '#schema/search/response.js';
 
 export type PetQueryServerNext = NextFunction;
 export type PetQueryServerHandler = (
@@ -25,7 +18,56 @@ export type PetQueryServerHandler = (
 	res:PetQueryServerResponse,
 	next:PetQueryServerNext
 )=>void|Promise<void>;
-export type PetQueryServerRouteHandler = PetQueryServerHandler;
+export type PetQueryServerRouteHandler = (
+	args:json_t
+)=>Promise<json_t>;
+
+class PetQueryServerRouteContext{
+	private readonly _route:PetQueryServerRoute;
+	private readonly _req:PetQueryServerRequest;
+	private readonly _res:PetQueryServerResponse;
+	private readonly _next:PetQueryServerNext;
+	private readonly _errors:Array<utf8_t> = [];
+
+	constructor(
+		 route:PetQueryServerRoute
+		,req:PetQueryServerRequest
+		,res:PetQueryServerResponse
+		,next:PetQueryServerNext
+	){
+		this._route = route;
+		this._req = req;
+		this._res = res;
+		this._next = next;
+		this._errors = [];
+	}
+	getRoute():PetQueryServerRoute{
+		return this._route;
+	}
+	getRequest():PetQueryServerRequest{
+		return this._req;
+	}
+	getResponse():PetQueryServerResponse{
+		return this._res;
+	}
+	next():void{
+		this._next();
+	}
+	getServer():PetQueryServer{
+		return this._route.getServer();
+	}
+	getErrors():Array<utf8_t>{
+		return this._errors;
+	}
+	addError(error:utf8_t):void{
+		this._errors.push(error);
+	}
+}
+
+export enum PetQueryServerRouteAccessGroup{
+	User = 'user',
+	Admin = 'admin'
+};
 
 export abstract class PetQueryServerRoute{
 	private readonly _server:PetQueryServer;
@@ -56,68 +98,68 @@ export abstract class PetQueryServerRoute{
 		return req._authenticateAdmin(this.getServer()._getAuth(),res,next);
 	}
 
+	protected _getAccessGroupHandler(group:PetQueryServerRouteAccessGroup){
+		switch(group){
+			case PetQueryServerRouteAccessGroup.User:
+				return this._authenticateUser.bind(this);
+			case PetQueryServerRouteAccessGroup.Admin:
+				return this._authenticateAdmin.bind(this);
+			default:
+				throw new Error(`Unknown authentication group: ${group}`);
+		}
+	}
+
+	protected _wrap(
+		handler:PetQueryServerRouteHandler
+	):PetQueryServerHandler{
+		return async (req,res,next)=>{
+			const context = new PetQueryServerRouteContext(
+				this,
+				req,
+				res,
+				next
+			);
+			try{
+				const callback = handler.bind(context);
+				this._sendRouteResponse(
+					res,
+					200,
+					false,
+					context.getErrors(),
+					await callback(req.getHandlerArgs())
+				);
+			}
+			catch(error){
+				this._sendRouteResponse(
+					res,
+					400,
+					false,
+					[
+						 this._getErrorMessage(error)
+						,...context.getErrors()
+					],
+					null
+				);
+			}
+		};
+	}
+
+	protected _sendRouteResponse(
+		res:PetQueryServerResponse,
+		status:uint16_t,
+		success:boolean,
+		error:Array<utf8_t>,
+		data:json_t
+	):void{
+		res.set('Cache-Control','no-store');
+		res.status(status).json({
+			 success:success
+			,error:error
+			,data:data
+		});
+	}
+
 	protected _getErrorMessage(error:unknown):utf8_t{
 		return error instanceof Error ? error.message : String(error);
-	}
-
-	// Searches the plugins in pluginFilter, all if null. A circular query
-	// gets an unsuccessful result instead of being forwarded again.
-	protected async _handleSearch(
-		pluginFilter:Set<string>|null,
-		request:PetQuerySchemaSearchRequest
-	):Promise<PetQuerySchemaSearchResponse>{
-		const query = request.getPluginQuery(this._server._getUuid());
-
-		if(query.isCircularQuery()){
-			return PetQuerySchemaSearchResponse.fromResult(
-				200,
-				new PetQueryResult(
-					false,
-					['Circular query detected'],
-					new PetQueryResultData([])
-				)
-			);
-		}
-		const result = await this._query(query,pluginFilter);
-		result.getData().append(
-			new PetQueryResultData(
-				await this._server._getPetStore().search(request.getQuery())
-			)
-		);
-		return PetQuerySchemaSearchResponse.fromResult(200,result);
-	}
-
-	async _query(
-		 query:PetQueryPluginQuery
-		,pluginFilter:Set<string>|null
-	):Promise<PetQueryResult>{
-		const config = this._server.getConfig();
-		const promises = [];
-		for(const plugin of this._server.getPlugins(pluginFilter)){
-			promises.push(plugin.query(query));
-		}
-		const settled = await Promise.allSettled(promises);
-
-		let success = true;
-		const error:Array<json_string_t> = [];
-		const data:Array<PetQueryResultDataEntry> = [];
-		for(const item of settled){
-			if('rejected' === item.status){
-				error.push(util.inspect(item.reason));
-				continue;
-			}
-			success = success && item.value.isSuccess();
-			error.push(...item.value.getError());
-			data.push(...item.value.getData().getData().slice(
-				0,
-				config.max_results_per_module
-			));
-		}
-
-		return new PetQueryResult(
-			success,
-			error,
-			new PetQueryResultData(data.slice(0,config.max_results_total))
-		);
 	}
 };

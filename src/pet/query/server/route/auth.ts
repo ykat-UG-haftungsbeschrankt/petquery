@@ -6,17 +6,12 @@
  */
 
 import util from 'node:util';
-import {PetQueryServerRoute} from '#petquery/server/route.js';
+import {PetQueryServerRoute, PetQueryServerRouteAccessGroup	} from '#petquery/server/route.js';
 import type {PetQueryServerRequest} from
 	'#petquery/server/request.js';
 import type {PetQueryServerResponse} from
 	'#petquery/server/response.js';
 import type {PetQueryServerAuthGroup} from '#petquery/server/auth.js';
-
-type PetQueryServerRouteAuthHandler = (
-	req:PetQueryServerRequest,
-	res:PetQueryServerResponse
-)=>Promise<void>;
 
 export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 	register():void{
@@ -46,37 +41,24 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		);
 		this.getServer().get(
 			'/auth/users',
-			this._authenticateAdmin.bind(this),
+			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			this._wrap(this._handleListUsers.bind(this))
 		);
 		this.getServer().post(
 			'/auth/users',
-			this._authenticateAdmin.bind(this),
+			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			this._wrap(this._handleCreateUser.bind(this))
 		);
 		this.getServer().put(
 			'/auth/users/:username',
-			this._authenticateAdmin.bind(this),
+			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			this._wrap(this._handleUpdateUser.bind(this))
 		);
 		this.getServer().delete(
 			'/auth/users/:username',
-			this._authenticateAdmin.bind(this),
+			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			this._wrap(this._handleDeleteUser.bind(this))
 		);
-	}
-
-	protected _wrap(
-		handler:PetQueryServerRouteAuthHandler
-	):PetQueryServerRouteAuthHandler{
-		return async (req,res)=>{
-			try{
-				await handler(req,res);
-			}
-			catch(error){
-				this._sendError(res,400,[this._getErrorMessage(error)]);
-			}
-		};
 	}
 
 	protected async _handleMode(

@@ -1,0 +1,47 @@
+/*
+ * Copyright (c) 2026 ykat UG (haftungsbeschraenkt) - All Rights Reserved
+ *
+ * Permission for non-commercial use is hereby granted,
+ * free of charge, without warranty of any kind.
+ */
+
+import { open as LmdbOpen } from 'lmdb';
+import { PetQueryServerDatabaseConfig } from '#petquery/server/database/config.js';
+import { PetQueryDestructor } from '#petquery/destructor.js';
+import { PetQuerySchemaServerDatabaseConfigEntry, type PetQuerySchemaServerDatabaseConfigEntryType } from '#schema/server/database/config/entry.js';
+import { PetQueryAssert } from '#petquery/assert.js';
+
+export type PetQueryDatabaseLmdbConfig = {
+	path:filename_t;
+	name:utf8_t;
+};
+
+export class PetQueryDatabaseConfigLmdb
+extends PetQueryDestructor
+implements PetQueryServerDatabaseConfig{
+	protected readonly _db;
+
+	// Opens the named database inside the LMDB environment at path.
+	constructor(config:PetQueryDatabaseLmdbConfig){
+		super();
+		this._db = LmdbOpen<utf8_t,utf8_t>({
+			path:config.path,
+			name:config.name
+		});
+	}
+	protected async _destructor():Promise<void>{
+		await this._db.close();
+	}
+
+	async serverConfigSave(serverUid:uuid_t,value:PetQuerySchemaServerDatabaseConfigEntryType):Promise<void>{
+		this._assertNotDestroyed();
+		this._db.put('config/' + serverUid,JSON.stringify(value));
+	};
+	
+	async serverConfigLoad(serverUid:uuid_t):Promise<PetQuerySchemaServerDatabaseConfigEntryType>{
+		this._assertNotDestroyed();
+		const value = this._db.get('config/' + serverUid);
+		PetQueryAssert.notNull(value);
+		return PetQuerySchemaServerDatabaseConfigEntry.fromJson(JSON.parse(value));
+	}
+};

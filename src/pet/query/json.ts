@@ -6,39 +6,9 @@
  */
 
 import { PetQueryTypes } from "./types.js";
-import { PetQueryCast } from "./cast.js";
 
-export class PetQueryJson{
-	// PetQueryCast.object() strips unknown keys; this keeps arbitrary keys.
-	static readonly objectParser:PetQueryCast.Parser<json_object_t> = {
-		 type:'json_object_t'
-		,sampleValue:{}
-		,randomSample:PetQueryJson._sampleObject
-		,parse:PetQueryJson._parseObject
-	};
-
-	protected static _sampleObject():json_object_t{
-		return {};
-	}
-	protected static _parseObject(
-		input:unknown,
-		context:PetQueryCast.ParserContext = {}
-	):json_object_t{
-		if(!PetQueryTypes.isObject(input)){
-			throw new PetQueryCast.InvalidInputError({
-				 name:context.name
-				,typePrefix:context.typePrefix
-				,reasonSuffix:context.reasonSuffix
-				,expectedType:'json_object_t'
-				,reason:'got '+(
-					null === input ? 'null'
-					: PetQueryTypes.isArray(input) ? 'array'
-					: typeof input
-				)
-			});
-		}
-		return input as json_object_t;
-	}
+export class PetQueryJson implements Singleton{
+	private constructor(){}
 	static assertArray(value:unknown):asserts value is json_array_t{
 		if(!PetQueryTypes.isArray(value)){
 			throw new Error('Value is not an array');
@@ -54,6 +24,45 @@ export class PetQueryJson{
 			throw new Error('Value is not a string');
 		}
 	}
-	destructor():void{
+	static isArray(value:unknown):value is json_array_t{
+		return PetQueryTypes.isArray(value);
+	}
+	static isObject(value:unknown):value is json_object_t{
+		return PetQueryTypes.isObject(value);
+	}
+	static isString(value:unknown):value is json_string_t{
+		return PetQueryTypes.isString(value);
+	}
+	static isNumber(value:unknown):value is json_number_t{
+		return PetQueryTypes.isNumber(value);
+	}
+	static isBoolean(value:unknown):value is json_boolean_t{
+		return PetQueryTypes.isBoolean(value);
+	}
+	static isNull(value:unknown):value is json_null_t{
+		return value === null;
+	}
+	static match(obj:json_t,pattern:RegExp){
+		if(PetQueryJson.isArray(obj)){
+			for(const item of obj){
+				if(PetQueryJson.match(item,pattern)){
+					return true;
+				}
+			}
+		}else if(PetQueryJson.isObject(obj)){
+			for(const item of Object.values(obj)){
+				if(PetQueryJson.match(item,pattern)){
+					return true;
+				}
+			}
+		}else if(PetQueryJson.isString(obj)){
+			return pattern.test(obj);
+		}else if(PetQueryJson.isNumber(obj)
+		|| PetQueryJson.isBoolean(obj)
+		|| PetQueryJson.isNull(obj)){
+			return pattern.test(String(obj));
+		}else{
+			throw new Error('Unknown JSON type');
+		}
 	}
 };

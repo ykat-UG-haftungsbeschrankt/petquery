@@ -33,12 +33,12 @@ const schema = T.Object({
 	},{additionalProperties:false})
 },{title:'PUT /api/server/put/:uuid request'});
 
-export type PetQuerySchemaApiServerPutRequestValues =
+export type PetQuerySchemaApiServerPutRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // PUT /api/server/put/:uuid
 export class PetQuerySchemaApiServerPutRequest
-	extends PetQueryServerRequestSchema<PetQuerySchemaApiServerPutRequestValues>{
+	extends PetQueryServerRequestSchema<PetQuerySchemaApiServerPutRequestType>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);
 

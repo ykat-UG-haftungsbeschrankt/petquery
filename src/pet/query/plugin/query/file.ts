@@ -44,6 +44,8 @@ export class PetQueryPluginQueryFile{
 		this._data = obj.data;
 		this._md5 = obj.md5;
 	}
+	destructor():void{
+	}
 	getFilename():filename_t{
 		return this._filename;
 	}
@@ -83,7 +85,5 @@ export class PetQueryPluginQueryFile{
 		return new PetQueryPluginQueryFile(
 			PetQueryPluginQueryFile._parser.randomSample()
 		);
-	}
-	destructor():void{
 	}
 };

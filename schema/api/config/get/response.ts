@@ -17,9 +17,9 @@ const schema = T.Object({
 	success:T.Boolean(),
 	error:T.Array(T.String()),
 	data:T.Object({
-		// Values the server runs with.
+		// Type the server runs with.
 		active:PetQueryServerConfig.schema,
-		// Values in the config file, applied on restart; null if none.
+		// Type in the config file, applied on restart; null if none.
 		saved:T.Union([PetQueryServerConfig.schema,T.Null()]),
 		// Why the config file could not be read, if it could not.
 		saved_error:T.Union([T.String(),T.Null()]),
@@ -31,14 +31,14 @@ const schema = T.Object({
 	additionalProperties:false
 });
 
-export type PetQuerySchemaApiConfigGetResponseValues =
+export type PetQuerySchemaApiConfigGetResponseType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // Successful response of GET /api/config/get. Errors are sent as
 // PetQueryServerResponseSchemaError.
 export class PetQuerySchemaApiConfigGetResponse
 	extends PetQueryServerResponseSchema<
-		PetQuerySchemaApiConfigGetResponseValues
+		PetQuerySchemaApiConfigGetResponseType
 	>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);

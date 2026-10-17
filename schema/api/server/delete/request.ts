@@ -31,13 +31,13 @@ const schema = T.Object({
 	body:T.Object({})
 },{title:'DELETE /api/server/delete/:uuid request'});
 
-export type PetQuerySchemaApiServerDeleteRequestValues =
+export type PetQuerySchemaApiServerDeleteRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // DELETE /api/server/delete/:uuid
 export class PetQuerySchemaApiServerDeleteRequest
 	extends PetQueryServerRequestSchema<
-		PetQuerySchemaApiServerDeleteRequestValues
+		PetQuerySchemaApiServerDeleteRequestType
 	>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);

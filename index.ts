@@ -18,7 +18,7 @@ import {PetQuery3pPluginMysqlPlugin} from
 
 import {PetQuery3pPluginMysqlConfig} from
 	'#petquery/3p/plugin/mysql/config.js';
-import { PetQueryServerRouteJson } from '#petquery/server/route/json.js';
+import { PetQueryServerRouteJson } from '#petquery/server/route/.trash/json.js';
 import { PetQueryServerRouteApi } from '#petquery/server/route/api.js';
 import {PetQueryServerRouteDefault} from
 	'#petquery/server/route/default.js';
@@ -46,14 +46,14 @@ async function loadServerUuid(
 	await db.serverIndexPut('uuid',uuid);
 	return uuid;
 }
-
+const serverUuid = await loadServerUuid(settingsDatabase);
 const serverConfig = PetQueryConfig.getServerConfig();
 const indexConfig = serverConfig.index;
 const indexDatabase = indexConfig.database;
 const settingsDatabase = indexDatabase.createSettingsDatabase();
 const serverConfigFile = new PetQueryServerConfig(
-	settingsDatabase,
-	PetQueryConfig.getPluginNames()
+	serverUuid,
+	settingsDatabase
 );
 const savedServerConfig = await serverConfigFile.load();
 if(null !== savedServerConfig){
@@ -65,7 +65,7 @@ const authUserDatabase = indexDatabase.createSibling(
 const authSessionDatabase = indexDatabase.createSibling(
 	serverConfig.authenticate.lmdb.sessions_name
 );
-const serverUuid = await loadServerUuid(settingsDatabase);
+
 const auth = new PetQueryServerAuth(
 	serverConfig,
 	authUserDatabase,

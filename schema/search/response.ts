@@ -32,14 +32,14 @@ const schema = T.Object({
 	additionalProperties:false
 });
 
-export type PetQuerySchemaSearchResponseValues =
+export type PetQuerySchemaSearchResponseType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // Results of a search. Invalid requests and failed handlers are sent as
 // PetQueryServerResponseSchemaError.
 export class PetQuerySchemaSearchResponse
 	extends PetQueryServerResponseSchema<
-		PetQuerySchemaSearchResponseValues
+		PetQuerySchemaSearchResponseType
 	>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);
@@ -60,7 +60,7 @@ export class PetQuerySchemaSearchResponse
 		status:uint16_t,
 		result:PetQueryResult
 	):PetQuerySchemaSearchResponse{
-		const data:PetQuerySchemaSearchResponseValues['data'] = [];
+		const data:PetQuerySchemaSearchResponseType['data'] = [];
 
 		for(const entry of result.getData().getData()){
 			const source = entry.getSource();

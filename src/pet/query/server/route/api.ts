@@ -7,7 +7,7 @@
 
 import {PetQueryServerRoute} from '#petquery/server/route.js';
 import {PetQueryServerConfig} from '#petquery/server/config.js';
-import type {PetQueryServerConfigValues} from
+import type {PetQueryServerConfigType} from
 	'#petquery/server/config.js';
 import {PetQueryServerResponseSchemaError} from
 	'#petquery/server/response/schema.js';
@@ -36,6 +36,15 @@ import {PetQuerySchemaApiConfigPutRequest} from
 	'#schema/api/config/put/request.js';
 import {PetQuerySchemaApiConfigPutResponse} from
 	'#schema/api/config/put/response.js';
+
+import type {
+	PetQuerySchemaApiPingGetRequestType
+} from
+	'#schema/api/ping/get/request.js';
+import type {
+	PetQuerySchemaApiPingGetResponseType
+} from
+	'#schema/api/ping/get/response.js';
 
 export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	register():void{
@@ -102,13 +111,11 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	}
 
 	protected async _handlePing(
-		UNUSED_request:PetQuerySchemaApiPingGetRequest
-	):Promise<PetQuerySchemaApiPingGetResponse>{
-		return new PetQuerySchemaApiPingGetResponse(200,{
-			success:true,
-			error:[],
-			data:{uuid:this.getServer()._getUuid()}
-		});
+		UNUSED_request: PetQuerySchemaApiPingGetRequestType
+	): Promise<PetQuerySchemaApiPingGetResponseType>{
+		return {
+			
+		};
 	}
 
 	protected async _handleListServer(
@@ -164,7 +171,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		const active = PetQueryServerConfig.fromServerConfig(
 			this.getServer()._getConfig()
 		);
-		let saved:PetQueryServerConfigValues|null = null;
+		let saved:PetQueryServerConfigType|null = null;
 		let savedError:utf8_t|null = null;
 
 		try{
@@ -192,7 +199,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		|PetQueryServerResponseSchemaError
 	>{
 		const configFile = this.getServer()._getConfigFile();
-		let saved:PetQueryServerConfigValues;
+		let saved:PetQueryServerConfigType;
 
 		try{
 			saved = configFile.normalize(request.getConfig());

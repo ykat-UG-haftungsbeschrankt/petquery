@@ -5,7 +5,8 @@
  * free of charge, without warranty of any kind.
  */
 
-export class PetQueryTypes{
+export class PetQueryTypes implements Singleton{
+	private constructor(){}
 	static isArray(value:unknown):value is unknown[]{
 		return Array.isArray(value);
 	}
@@ -23,9 +24,16 @@ export class PetQueryTypes{
 	):value is T{
 		return value instanceof ctor;
 	}
+	static isNull(value:unknown):value is null{
+		return value === null;
+	}
+	static isNumber(value:unknown):value is number{
+		return 'number' === typeof value;
+	}
+	static isUndefined(value:unknown):value is undefined{
+		return value === undefined;
+	}
 	static isBoolean(value:unknown):value is boolean{
 		return 'boolean' === typeof value;
-	}
-	destructor():void{
 	}
 };

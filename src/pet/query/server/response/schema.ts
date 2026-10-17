@@ -5,66 +5,25 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQuerySchema} from '#petquery/schema.js';
+import {PetQuerySchema, PetQuerySchemaCheck, PetQuerySchemaType} from '#petquery/schema.js';
 
-const T = PetQuerySchema.type;
-
-// Fields every API response has.
-export type PetQueryServerResponseSchemaValues = {
-	success:boolean;
-	error:Array<utf8_t>;
-	data:unknown;
-};
-
-// Base of all API responses: the HTTP status and the JSON values.
-// Responses are built from typed values, so they are not validated again.
 export abstract class PetQueryServerResponseSchema<
-	T extends PetQueryServerResponseSchemaValues
+	T_RESPONSE
 >{
-	protected _status:uint16_t;
-	protected _values:T;
+	abstract getSchema():PetQuerySchemaType;
+	abstract getValidator():PetQuerySchemaCheck<T_RESPONSE>;
 
-	constructor(status:uint16_t,values:T){
-		this._status = status;
-		this._values = values;
+	fromJson(
+		json:json_t
+	):T_RESPONSE{
+		return PetQuerySchema.parse<
+			T_RESPONSE
+		>(this.getValidator(),json);
 	}
 
-	getStatus():uint16_t{
-		return this._status;
-	}
-
-	getValues():T{
-		return this._values;
-	}
-
-	toJson():T{
-		return this._values;
-	}
-
-	destructor():void{
-		try{
-			// Holds no resources; present for the lifecycle convention.
-		}
-		catch(UNUSED_e){
-		}
-	}
-};
-
-// {success:false,error,data} response for invalid requests and handlers.
-export class PetQueryServerResponseSchemaError
-	extends PetQueryServerResponseSchema<
-		PetQueryServerResponseSchemaValues
-	>{
-	static readonly schema = T.Object({
-		success:T.Literal(false),
-		error:T.Array(T.String()),
-		data:T.Array(T.Unknown())
-	},{
-		title:'Error response of every route',
-		additionalProperties:false
-	});
-
-	constructor(status:uint16_t,error:Array<utf8_t>){
-		super(status,{success:false,error,data:[]});
+	toJson(
+		params:T_RESPONSE
+	){
+		return params as json_t;
 	}
 };

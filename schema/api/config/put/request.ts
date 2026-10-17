@@ -20,7 +20,7 @@ import type {PetQueryServerResponse} from
 import type {PetQuerySchemaApiConfigPutResponse} from
 	'#schema/api/config/put/response.js';
 import {PetQueryServerConfig} from '#petquery/server/config.js';
-import type {PetQueryServerConfigValues} from
+import type {PetQueryServerConfigType} from
 	'#petquery/server/config.js';
 
 const T = PetQuerySchema.type;
@@ -32,12 +32,12 @@ const schema = T.Object({
 	body:PetQueryServerConfig.schema
 },{title:'PUT /api/config/put request'});
 
-export type PetQuerySchemaApiConfigPutRequestValues =
+export type PetQuerySchemaApiConfigPutRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // PUT /api/config/put
 export class PetQuerySchemaApiConfigPutRequest
-	extends PetQueryServerRequestSchema<PetQuerySchemaApiConfigPutRequestValues>{
+	extends PetQueryServerRequestSchema<PetQuerySchemaApiConfigPutRequestType>{
 	static readonly schema = schema;
 	static readonly _validator = PetQuerySchema.compile(schema);
 
@@ -70,7 +70,7 @@ export class PetQuerySchemaApiConfigPutRequest
 		);
 	}
 
-	getConfig():PetQueryServerConfigValues{
+	getConfig():PetQueryServerConfigType{
 		return this._values.body;
 	}
 };

@@ -7,75 +7,48 @@
 
 import {PetQuerySchema} from '#petquery/schema.js';
 import type {PetQuerySchemaStatic} from '#petquery/schema.js';
+import type {PetQuerySchemaApiPingGetResponseType} from
+	'#schema/api/ping/get/response.js';
 import {PetQueryServerRequestSchema} from
 	'#petquery/server/request/schema.js';
-import type {PetQueryServerRequestSchemaInput} from
-	'#petquery/server/request/schema.js';
-import type {PetQueryServerResponseSchemaError} from
-	'#petquery/server/response/schema.js';
-import type {PetQueryServerRequest} from
-	'#petquery/server/request.js';
-import type {PetQueryServerResponse} from
-	'#petquery/server/response.js';
 import {PetQuerySchemaApiPingGetResponse} from
 	'#schema/api/ping/get/response.js';
 
-const schema = PetQuerySchema.emptyRequest(
-	'GET /api/ping/get request'
-);
+const T = PetQuerySchema.type;
 
-export type PetQuerySchemaApiPingGetRequestValues =
+const schema = T.Null({
+	 title:'GET /api/ping/get request'
+	,additionalProperties:false
+});
+
+const validator = PetQuerySchema.compile(schema);
+
+export type PetQuerySchemaApiPingGetRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // GET /api/ping/get
-export class PetQuerySchemaApiPingGetRequest
-	extends PetQueryServerRequestSchema<PetQuerySchemaApiPingGetRequestValues>{
-	static readonly schema = schema;
-	static readonly _validator = PetQuerySchema.compile(schema);
-
-	static async fetch(
-		uri:uri_t,
-		timeout:milliseconds_t,
-		signal:AbortSignal
-	):Promise<PetQuerySchemaApiPingGetResponse>{
-		const result = await PetQueryServerRequestSchema._fetchJson(
-			uri,
-			'api/ping/get',
-			timeout,
-			signal
-		);
-		return PetQuerySchemaApiPingGetResponse.fromJson(
-			result.status,
-			result.json
-		);
+class PetQuerySchemaApiPingGetRequest extends PetQueryServerRequestSchema<
+	 PetQuerySchemaApiPingGetRequestType
+	,PetQuerySchemaApiPingGetResponseType
+>{
+	protected static _instance: PetQuerySchemaApiPingGetRequest | null = null;
+	public static getInstance():PetQuerySchemaApiPingGetRequest{
+		if(this._instance === null){
+			this._instance = new PetQuerySchemaApiPingGetRequest();
+		}
+		return this._instance;
 	}
-
-	// Throws an Error naming each invalid field.
-	static fromJson(
-		json:PetQueryServerRequestSchemaInput
-	):PetQuerySchemaApiPingGetRequest{
-		return new PetQuerySchemaApiPingGetRequest(
-			PetQuerySchema.parse(PetQuerySchemaApiPingGetRequest._validator,json)
-		);
+	getSchema(){
+		return schema;
 	}
-
-	// Express handler: validates the request, calls handler and sends its
-	// response. Use as PetQuerySchemaApiPingGetRequest._handle.bind(
-	// this,this._handleX.bind(this)).
-	static _handle(
-		handler:(
-			request:PetQuerySchemaApiPingGetRequest
-		)=>Promise<
-			PetQuerySchemaApiPingGetResponse|PetQueryServerResponseSchemaError
-		>,
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		return PetQueryServerRequestSchema._handleRequest(
-			PetQuerySchemaApiPingGetRequest.fromJson,
-			handler,
-			req,
-			res
-		);
+	getValidator(){
+		return validator;
 	}
+	getResponseSchema(){
+		return PetQuerySchemaApiPingGetResponse;
+	};
 };
+
+const petQuerySchemaApiPingGetRequest = PetQuerySchemaApiPingGetRequest.getInstance();
+
+export { petQuerySchemaApiPingGetRequest as PetQuerySchemaApiPingGetRequest };

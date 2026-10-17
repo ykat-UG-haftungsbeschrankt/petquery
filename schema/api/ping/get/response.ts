@@ -13,37 +13,38 @@ import {PetQueryServerResponseSchema} from
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	success:T.Boolean(),
-	error:T.Array(T.String()),
-	data:T.Object({
-		uuid:T.String({format:'uuid'})
-	},{additionalProperties:false})
+	 uid:T.String({format:'uuid'})
+	,uri:T.String({format:'uri'})
 },{
 	title:'GET /api/ping/get response',
 	additionalProperties:false
 });
 
-export type PetQuerySchemaApiPingGetResponseValues =
+const validator = PetQuerySchema.compile(schema);
+
+export type PetQuerySchemaApiPingGetResponseType =
 	PetQuerySchemaStatic<typeof schema>;
 
 // Successful response of GET /api/ping/get. Errors are sent as
 // PetQueryServerResponseSchemaError.
-export class PetQuerySchemaApiPingGetResponse
-	extends PetQueryServerResponseSchema<
-		PetQuerySchemaApiPingGetResponseValues
-	>{
-	static readonly schema = schema;
-	static readonly _validator = PetQuerySchema.compile(schema);
-
-	// For clients: validates a received response. Throws an Error naming
-	// each invalid field.
-	static fromJson(
-		status:uint16_t,
-		json:unknown
-	):PetQuerySchemaApiPingGetResponse{
-		return new PetQuerySchemaApiPingGetResponse(
-			status,
-			PetQuerySchema.parse(PetQuerySchemaApiPingGetResponse._validator,json)
-		);
+class PetQuerySchemaApiPingGetResponse extends PetQueryServerResponseSchema<
+	PetQuerySchemaApiPingGetResponseType
+>{
+	protected static _instance: PetQuerySchemaApiPingGetResponse | null = null;
+	public static getInstance():PetQuerySchemaApiPingGetResponse{
+		if(this._instance === null){
+			this._instance = new PetQuerySchemaApiPingGetResponse();
+		}
+		return this._instance;
+	}
+	getSchema(){
+		return schema;
+	}
+	getValidator(){
+		return validator;
 	}
 };
+
+const petQuerySchemaApiPingGetResponse = PetQuerySchemaApiPingGetResponse.getInstance();
+
+export { petQuerySchemaApiPingGetResponse as PetQuerySchemaApiPingGetResponse };
