@@ -48,6 +48,8 @@ export class PetQueryServerRouteGui extends PetQueryServerRoute{
 	):void{
 		res.setHeader('content-security-policy',[
 			"default-src 'self'",
+			"img-src 'self' http: https: data:",
+			"media-src 'self' http: https: data:",
 			"base-uri 'none'",
 			"form-action 'self'",
 			"frame-ancestors 'none'",

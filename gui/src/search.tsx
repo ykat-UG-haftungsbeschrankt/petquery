@@ -10,6 +10,7 @@ import type {ChangeEvent, FormEvent, ReactElement} from 'react';
 import {searchPets} from './api';
 import type {SearchResponse, SearchResult} from './api';
 import {useAction} from './action';
+import {Attachment} from './attachment';
 
 type SearchFeature = {
 	title:utf8_t;
@@ -182,11 +183,10 @@ function SearchResults(props:{response:SearchResponse}):ReactElement{
 		<section>
 			<div className="page-heading">
 				<div>
-					<h2>Results</h2>
-					<p className="muted">
-						{response.data.length} result
-						{1 === response.data.length ? '' : 's'} returned.
-					</p>
+					<h2>
+						Found {response.data.length} result
+						{1 === response.data.length ? '' : 's'}
+					</h2>
 				</div>
 				<span className={
 					response.success ? 'status status-ok' : 'status status-warn'
@@ -235,7 +235,14 @@ function SearchResultCard(props:{result:SearchResult}):ReactElement{
 
 	return (
 		<article className="result-card">
-			<h3>{result.name}</h3>
+			{'' !== result.preview && (
+				<img
+					className="result-preview"
+					src={result.preview}
+					alt={`Preview from ${result.source.name}`}
+					loading="lazy"
+				/>
+			)}<h3>{result.name}</h3>
 			<p>{result.species} - <code>{result.petId}</code></p>
 			{'' !== result.owner_contact && <p>{result.owner_contact}</p>}
 			{'' !== result.notes && <p>{result.notes}</p>}
@@ -249,27 +256,14 @@ function SearchResultCard(props:{result:SearchResult}):ReactElement{
 				)}
 				{source}
 			</div>
-			{'' !== result.preview && (
-				<img
-					className="result-preview"
-					src={result.preview}
-					alt={`Preview from ${result.source.name}`}
-					loading="lazy"
-				/>
-			)}
+			
 			<pre className="result-attributes">{attributes}</pre>
 			{0 < result.files.length && (
 				<ul className="result-files">
 					{result.files.map((file,index)=>{
 						return (
 							<li key={`${file}-${index}`}>
-								<a
-									href={file}
-									target="_blank"
-									rel="noreferrer"
-								>
-									Attached file {index + 1}
-								</a>
+								<Attachment file={file} index={index}/>
 							</li>
 						);
 					})}

@@ -1,7 +1,9 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
-	"required": ["query"],
+	"required": [
+		"query"
+	],
 	"properties": {
 		"query": {
 			"type": "string",
@@ -12,21 +14,41 @@
 			"type": "array",
 			"items": {
 				"type": "object",
-				"required": ["filename", "mime", "size", "data", "md5"],
+				"required": [
+					"filename",
+					"mime",
+					"size",
+					"data",
+					"md5"
+				],
 				"properties": {
-					"filename": {"type": "string"},
-					"mime": {"type": "string"},
-					"size": {"type": "number", "min": 0},
-					"data": {"type": "string"},
-					"md5": {"type": "string"}
+					"filename": {
+						"type": "string"
+					},
+					"mime": {
+						"type": "string"
+					},
+					"size": {
+						"type": "number",
+						"min": 0
+					},
+					"data": {
+						"type": "string"
+					},
+					"md5": {
+						"type": "string"
+					}
 				},
-				"additionalProperties": false,
-				"title": "GET /api/config/get File"
+				"title": "GET /api/config/get File",
+				"additionalProperties": false
 			}
 		},
 		"tracerouteUuid": {
 			"type": "array",
-			"items": {"type": "string", "format": "uuid"}
+			"items": {
+				"type": "string",
+				"format": "uuid"
+			}
 		}
 	},
 	"title": "POST /api/pets/search request",

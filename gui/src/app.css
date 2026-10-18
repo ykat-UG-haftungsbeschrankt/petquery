@@ -84,7 +84,6 @@ nav a{
 }
 nav a[aria-current="page"]{
 	background:#135c63;
-	color:white;
 }
 .auth-controls{
 	margin-left:auto;
@@ -406,8 +405,28 @@ nav a[aria-current="page"]{
 }
 .result-files{
 	clear:both;
+	display:grid;
+	grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));
+	gap:14px;
 	margin:10px 0 0;
-	padding-left:21px;
+	padding:0;
+	list-style:none;
+}
+.result-files li{
+	min-width:0;
+}
+.attachment{
+	display:grid;
+	gap:7px;
+	overflow-wrap:anywhere;
+}
+.attachment-preview{
+	display:block;
+	width:100%;
+	max-height:320px;
+	object-fit:contain;
+	border-radius:5px;
+	background:#f1f5f9;
 }
 .field{
 	display:flex;

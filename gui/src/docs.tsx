@@ -17,13 +17,9 @@ export function Docs():ReactElement{
 
 	return (
 		<section className="docs-page">
-			<div className="eyebrow">Reference</div>
 			<div className="page-heading">
 				<div>
 					<h2>Documentation</h2>
-					<p className="muted">
-						Browse the documentation and HTTP API reference.
-					</p>
 				</div>
 				<a
 					className="button-link"
