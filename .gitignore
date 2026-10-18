@@ -1,6 +1,5 @@
 /dist/
-/node_modules/
-/gui/node_modules/
+node_modules/
 /docs/
 /var/
 /aisearch/data.json
