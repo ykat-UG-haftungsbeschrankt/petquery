@@ -50,8 +50,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			'/api/pets',
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(accessGroup),
-			PetQuerySchemaApiPetGetRequest._handle.bind(
-				this,
+			PetQuerySchemaApiPetGetRequest.getHandle(
 				this._handleList.bind(this)
 			)
 		);
@@ -59,8 +58,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			'/api/pets',
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(accessGroup),
-			PetQuerySchemaApiPetPostRequest._handle.bind(
-				this,
+			PetQuerySchemaApiPetPostRequest.getHandle(
 				this._handleCreate.bind(this)
 			)
 		);
@@ -68,8 +66,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			'/api/pets/:pet_id',
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(accessGroup),
-			PetQuerySchemaApiPetGetEntryRequest._handle.bind(
-				this,
+			PetQuerySchemaApiPetGetEntryRequest.getHandle(
 				this._handleGet.bind(this)
 			)
 		);
@@ -77,8 +74,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			'/api/pets/:pet_id',
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(accessGroup),
-			PetQuerySchemaApiPetPutRequest._handle.bind(
-				this,
+			PetQuerySchemaApiPetPutRequest.getHandle(
 				this._handleUpdate.bind(this)
 			)
 		);
@@ -86,8 +82,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			'/api/pets/:pet_id',
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(accessGroup),
-			PetQuerySchemaApiPetDeleteRequest._handle.bind(
-				this,
+			PetQuerySchemaApiPetDeleteRequest.getHandle(
 				this._handleDelete.bind(this)
 			)
 		);

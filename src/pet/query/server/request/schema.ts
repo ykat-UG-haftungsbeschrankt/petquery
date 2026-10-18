@@ -40,17 +40,6 @@ export abstract class PetQueryServerRequestSchema<
 		>(this.getValidator(),json);
 	}
 
-	protected _parseRequest(json:json_t):T_REQUEST{
-		if(null !== json
-		&& 'object' === typeof json
-		&& false === Array.isArray(json)
-		&& 0 === Object.keys(json).length
-		&& this.getValidator().Check(null)){
-			return this.fromJson(null);
-		}
-		return this.fromJson(json);
-	}
-
 	toJson(
 		params:T_REQUEST
 	){
@@ -76,37 +65,32 @@ export abstract class PetQueryServerRequestSchema<
 		>(this.getResponseSchema().getValidator(),result);
 	}
 
-	_handle(
+	getHandle(
 		handler:(
 			request:T_REQUEST,
 			req:PetQueryServerRequest,
 			res:PetQueryServerResponse
-		)=>Promise<T_RESPONSE|void>,
+		)=>Promise<T_RESPONSE>
+	):(
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
-	):Promise<void>{
-		return this._handleRequest(
-			this._parseRequest.bind(this),
-			handler,
-			req,
-			res
-		);
+	)=>Promise<void>{
+		return this._handleRequest.bind(this,handler);
 	}
 
 	protected async _handleRequest(
-		parse:(json:json_t)=>T_REQUEST,
 		handler:(
 			request:T_REQUEST,
 			req:PetQueryServerRequest,
 			res:PetQueryServerResponse
-		)=>Promise<T_RESPONSE|void>,
+		)=>Promise<T_RESPONSE>,
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
 		try{
 			try{
 				const data = await handler(
-					parse(req.getHandlerArgs()),
+					this.fromJson(req.getHandlerArgs()),
 					req,
 					res
 				);

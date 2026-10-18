@@ -74,48 +74,42 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		this.getServer().get(
 			'/auth/mode',
 			this._disableCache.bind(this),
-			PetQuerySchemaApiAuthModeGetRequest._handle.bind(
-				PetQuerySchemaApiAuthModeGetRequest,
+			PetQuerySchemaApiAuthModeGetRequest.getHandle(
 				this._handleMode.bind(this)
 			)
 		);
 		this.getServer().get(
 			'/auth/session',
 			this._disableCache.bind(this),
-			PetQuerySchemaApiAuthSessionGetRequest._handle.bind(
-				PetQuerySchemaApiAuthSessionGetRequest,
+			PetQuerySchemaApiAuthSessionGetRequest.getHandle(
 				this._handleSession.bind(this)
 			)
 		);
 		this.getServer().post(
 			'/auth/login',
 			this._disableCache.bind(this),
-			PetQuerySchemaApiAuthLoginPostRequest._handle.bind(
-				PetQuerySchemaApiAuthLoginPostRequest,
+			PetQuerySchemaApiAuthLoginPostRequest.getHandle(
 				this._handleLogin.bind(this)
 			)
 		);
 		this.getServer().post(
 			'/auth/logout',
 			this._disableCache.bind(this),
-			PetQuerySchemaApiAuthLogoutPostRequest._handle.bind(
-				PetQuerySchemaApiAuthLogoutPostRequest,
+			PetQuerySchemaApiAuthLogoutPostRequest.getHandle(
 				this._handleLogout.bind(this)
 			)
 		);
 		this.getServer().get(
 			'/auth/oidc/login',
 			this._disableCache.bind(this),
-			PetQuerySchemaApiAuthOidcLoginGetRequest._handle.bind(
-				PetQuerySchemaApiAuthOidcLoginGetRequest,
+			PetQuerySchemaApiAuthOidcLoginGetRequest.getHandle(
 				this._handleOidcLogin.bind(this)
 			)
 		);
 		this.getServer().get(
 			'/auth/oidc/callback',
 			this._disableCache.bind(this),
-			PetQuerySchemaApiAuthOidcCallbackGetRequest._handle.bind(
-				PetQuerySchemaApiAuthOidcCallbackGetRequest,
+			PetQuerySchemaApiAuthOidcCallbackGetRequest.getHandle(
 				this._handleOidcCallback.bind(this)
 			)
 		);
@@ -123,8 +117,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			'/auth/users',
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
-			PetQuerySchemaApiAuthUsersGetRequest._handle.bind(
-				PetQuerySchemaApiAuthUsersGetRequest,
+			PetQuerySchemaApiAuthUsersGetRequest.getHandle(
 				this._handleListUsers.bind(this)
 			)
 		);
@@ -133,8 +126,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			this._requireWritableUsers.bind(this),
-			PetQuerySchemaApiAuthUsersPostRequest._handle.bind(
-				PetQuerySchemaApiAuthUsersPostRequest,
+			PetQuerySchemaApiAuthUsersPostRequest.getHandle(
 				this._handleCreateUser.bind(this)
 			)
 		);
@@ -143,8 +135,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			this._requireWritableUsers.bind(this),
-			PetQuerySchemaApiAuthUsersPutRequest._handle.bind(
-				PetQuerySchemaApiAuthUsersPutRequest,
+			PetQuerySchemaApiAuthUsersPutRequest.getHandle(
 				this._handleUpdateUser.bind(this)
 			)
 		);
@@ -153,8 +144,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			this._requireWritableUsers.bind(this),
-			PetQuerySchemaApiAuthUsersDeleteRequest._handle.bind(
-				PetQuerySchemaApiAuthUsersDeleteRequest,
+			PetQuerySchemaApiAuthUsersDeleteRequest.getHandle(
 				this._handleDeleteUser.bind(this)
 			)
 		);

@@ -81,48 +81,42 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 
 		this.getServer().get(
 			'/api/ping/get',
-			PetQuerySchemaApiPingGetRequest._handle.bind(
-				this,
+			PetQuerySchemaApiPingGetRequest.getHandle(
 				this._handlePing.bind(this)
 			)
 		);
 		// Public so that peers can sync their server index.
 		this.getServer().get(
 			'/api/server/get',
-			PetQuerySchemaApiServerGetRequest._handle.bind(
-				this,
+			PetQuerySchemaApiServerGetRequest.getHandle(
 				this._handleListServer.bind(this)
 			)
 		);
 		this.getServer().put(
 			'/api/server/put/:uuid',
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
-			PetQuerySchemaApiServerPutRequest._handle.bind(
-				this,
+			PetQuerySchemaApiServerPutRequest.getHandle(
 				this._handleAddServer.bind(this)
 			)
 		);
 		this.getServer().delete(
 			'/api/server/delete/:uuid',
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
-			PetQuerySchemaApiServerDeleteRequest._handle.bind(
-				this,
+			PetQuerySchemaApiServerDeleteRequest.getHandle(
 				this._handleDeleteServer.bind(this)
 			)
 		);
 		this.getServer().get(
 			'/api/config/get',
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
-			PetQuerySchemaApiConfigGetRequest._handle.bind(
-				this,
+			PetQuerySchemaApiConfigGetRequest.getHandle(
 				this._handleGetConfig.bind(this)
 			)
 		);
 		this.getServer().put(
 			'/api/config/put',
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
-			PetQuerySchemaApiConfigPutRequest._handle.bind(
-				this,
+			PetQuerySchemaApiConfigPutRequest.getHandle(
 				this._handlePutConfig.bind(this)
 			)
 		);
