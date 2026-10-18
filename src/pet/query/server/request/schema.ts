@@ -40,6 +40,17 @@ export abstract class PetQueryServerRequestSchema<
 		>(this.getValidator(),json);
 	}
 
+	protected _parseRequest(json:json_t):T_REQUEST{
+		if(null !== json
+		&& 'object' === typeof json
+		&& false === Array.isArray(json)
+		&& 0 === Object.keys(json).length
+		&& this.getValidator().Check(null)){
+			return this.fromJson(null);
+		}
+		return this.fromJson(json);
+	}
+
 	toJson(
 		params:T_REQUEST
 	){
@@ -75,7 +86,7 @@ export abstract class PetQueryServerRequestSchema<
 		res:PetQueryServerResponse
 	):Promise<void>{
 		return this._handleRequest(
-			this.fromJson.bind(this),
+			this._parseRequest.bind(this),
 			handler,
 			req,
 			res

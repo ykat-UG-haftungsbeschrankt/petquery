@@ -16,8 +16,9 @@ import type {PetQueryServerDatabasePet} from
 import type {PetQueryServerDatabaseSession} from
 	'#petquery/server/database/session.js';
 import { PetQueryAssert } from './assert.js';
+import { PetQueryDestructor } from './destructor.js';
 
-export class PetQueryDatabase{
+export class PetQueryDatabase extends PetQueryDestructor{
 	protected readonly _dbAuth:PetQueryServerDatabaseAuth|null;
 	protected readonly _dbConfig:PetQueryServerDatabaseConfig|null;
 	protected readonly _dbIndex:PetQueryServerDatabaseIndex|null;
@@ -31,11 +32,32 @@ export class PetQueryDatabase{
 		dbPet:PetQueryServerDatabasePet|null,
 		dbSession:PetQueryServerDatabaseSession|null
 	}){
+		super();
 		this._dbAuth = obj.dbAuth;
 		this._dbConfig = obj.dbConfig;
 		this._dbIndex = obj.dbIndex;
 		this._dbPet = obj.dbPet;
 		this._dbSession = obj.dbSession;
+	}
+
+	async _destructor(){
+		const cleanups:Array<Promise<void>> = [];
+		if(null !== this._dbAuth){
+			cleanups.push(this._dbAuth.destructor());
+		}
+		if(null !== this._dbConfig){
+			cleanups.push(this._dbConfig.destructor());
+		}
+		if(null !== this._dbIndex){
+			cleanups.push(this._dbIndex.destructor());
+		}
+		if(null !== this._dbPet){
+			cleanups.push(this._dbPet.destructor());
+		}
+		if(null !== this._dbSession){
+			cleanups.push(this._dbSession.destructor());
+		}
+		await Promise.allSettled(cleanups);
 	}
 
 	getDbAuth():PetQueryServerDatabaseAuth{

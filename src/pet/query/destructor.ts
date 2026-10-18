@@ -19,7 +19,7 @@ export abstract class PetQueryDestructor{
 			}catch(UNUSED_e){
 			}
 		}
-		return this._destructorPromise;
+		return this._destructorPromise ?? new Promise<void>((resolve)=>resolve());
 	}
 	protected _isDestroyed():boolean{
 		return null !== this._destructorPromise;

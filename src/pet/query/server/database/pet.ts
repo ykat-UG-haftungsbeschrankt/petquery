@@ -5,17 +5,17 @@
  * free of charge, without warranty of any kind.
  */
 
+import { PetQueryDestructor } from "#petquery/destructor.js";
 import { PetQuerySchemaServerDatabasePetEntryType } from "#schema/server/database/pet/entry.js";
-//import type { PetQueryServerFile } from "#petquery/server/file.js";
 
-export interface PetQueryServerDatabasePet{
-	serverPetAdd(value:PetQuerySchemaServerDatabasePetEntryType):Promise<void>;
-	serverPetGet(key:utf8_t):Promise<PetQuerySchemaServerDatabasePetEntryType>;
-	serverPetRemove(key:utf8_t):Promise<void>;
-	serverPetGetEntries():Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>;
-	serverPetSearch(query:utf8_t):Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>;
-/*
-	serverPetSearchByFile(
+export abstract class PetQueryServerDatabasePet extends PetQueryDestructor{
+	abstract serverPetAdd(value:PetQuerySchemaServerDatabasePetEntryType):Promise<void>;
+	abstract serverPetGet(key:utf8_t):Promise<PetQuerySchemaServerDatabasePetEntryType>;
+	abstract serverPetRemove(key:utf8_t):Promise<void>;
+	abstract serverPetGetEntries():Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>;
+	abstract serverPetSearch(query:utf8_t):Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>;
+	/*
+	abstract serverPetSearchByFile(
 		files:Array<PetQueryServerFile>
 	):Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>;
 */

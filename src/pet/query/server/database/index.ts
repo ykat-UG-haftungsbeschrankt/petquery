@@ -5,13 +5,16 @@
  * free of charge, without warranty of any kind.
  */
 
+import { PetQueryDestructor } from "#petquery/destructor.js";
 import { PetQuerySchemaServerDatabaseIndexEntryType } from "#schema/server/database/index/entry.js";
 
-export interface PetQueryServerDatabaseIndex{
-	serverIndexAddServer(value:PetQuerySchemaServerDatabaseIndexEntryType):Promise<void>;
-	serverIndexGetServer(key:utf8_t):Promise<PetQuerySchemaServerDatabaseIndexEntryType>;
+export abstract class PetQueryServerDatabaseIndex extends PetQueryDestructor{
+	abstract serverIndexGetServerUid():Promise<uuid_t|undefined>;
+	abstract serverIndexSetServerUid(uid:uuid_t):Promise<void>;
+	abstract serverIndexAddServer(value:PetQuerySchemaServerDatabaseIndexEntryType):Promise<void>;
+	abstract serverIndexGetServer(key:utf8_t):Promise<PetQuerySchemaServerDatabaseIndexEntryType>;
 
-	serverIndexRemoveServer(key:utf8_t):Promise<void>;
+	abstract serverIndexRemoveServer(key:utf8_t):Promise<void>;
 
-	serverIndexGetServerList():Promise<Array<PetQuerySchemaServerDatabaseIndexEntryType>>;
+	abstract serverIndexGetServerList():Promise<Array<PetQuerySchemaServerDatabaseIndexEntryType>>;
 };

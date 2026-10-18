@@ -50,7 +50,8 @@ async function loadServerUuid(
 }
 const serverConfig = PetQueryConfig.getServerConfig();
 const indexConfig = serverConfig.index;
-const serverUuid = await loadServerUuid(indexDatabase.getDbIndex());
+const database = serverConfig.database;
+const serverUuid = await loadServerUuid(database.getDbIndex());
 const serverServerConfig = new PetQueryServerConfig(
 	serverUuid,
 	serverConfig.database
@@ -62,19 +63,18 @@ if(null !== savedServerConfig){
 
 const auth = new PetQueryServerAuth(
 	serverConfig,
-	serverConfig.database
+	database
 );
-const petStore = serverConfig.settings.database;
 const server = new PetQueryServer(
 	serverConfig,
-	serverConfig.database,
+	database,
 	serverUuid,
 	serverServerConfig,
 	auth,
-	petStore
+	database
 );
 const serverIndexSync = new PetQueryServerIndexSync(
-	serverConfig.database,
+	database,
 	serverUuid,
 	indexConfig.sync.interval,
 	indexConfig.sync.timeout,
@@ -83,17 +83,14 @@ const serverIndexSync = new PetQueryServerIndexSync(
 
 async function shutdown():Promise<void>{
 	await Promise.allSettled([
-		Promise.resolve(petStore.destructor()),
-		Promise.resolve(auth.destructor()),
 		serverIndexSync.destructor(),
-		server.destructor(),
-		serverConfig.settings.database.destructor(),
-		authSessionDatabase.destructor(),
-		authUserDatabase.destructor(),
-		indexDatabase.destructor(),
-		settingsDatabase.destructor(),
+		server.destructor()
+	]);
+	await Promise.allSettled([
+		auth.destructor(),
 		serverServerConfig.destructor()
 	]);
+	await database.destructor();
 	process.exit(0);
 }
 

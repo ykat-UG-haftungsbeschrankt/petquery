@@ -33,6 +33,14 @@ implements PetQueryServerDatabaseIndex{
 		await this._db.close();
 	}
 
+	async serverIndexGetServerUid():Promise<uuid_t|undefined>{
+		this._assertNotDestroyed();
+		return this._db.get('server/uid');
+	}
+	async serverIndexSetServerUid(uid:uuid_t):Promise<void>{
+		this._assertNotDestroyed();
+		await this._db.put('server/uid',uid);
+	}
 	async serverIndexAddServer(value:PetQuerySchemaServerDatabaseIndexEntryType){
 		this._assertNotDestroyed();
 		this._db.put('index/' + value.uid,JSON.stringify(value));
