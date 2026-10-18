@@ -14,14 +14,14 @@ import {useAction} from './action';
 export function Servers(props:{token:utf8_t}):ReactElement{
 	const token = props.token;
 	const {busy,error,run} = useAction();
-	const [ownUuid,setOwnUuid] = useState<uuid_t|null>(null);
+	const [ownUid,setOwnUid] = useState<uuid_t|null>(null);
 	const [servers,setServers] = useState<Array<ServerEntry>>([]);
-	const [formUuid,setFormUuid] = useState<utf8_t>('');
+	const [formUid,setFormUid] = useState<utf8_t>('');
 	const [formUri,setFormUri] = useState<utf8_t>('');
 
 	const refresh = useCallback(async ():Promise<void>=>{
-		const [uuid,list] = await Promise.all([ping(),listServers()]);
-		setOwnUuid(uuid);
+		const [uid,list] = await Promise.all([ping(),listServers()]);
+		setOwnUid(uid);
 		setServers(list);
 	},[]);
 
@@ -31,27 +31,27 @@ export function Servers(props:{token:utf8_t}):ReactElement{
 
 	function onSubmit(event:FormEvent<HTMLFormElement>):void{
 		event.preventDefault();
-		const uuid = formUuid.trim();
+		const uid = formUid.trim();
 		const uri = formUri.trim();
 		run(async ()=>{
-			await addServer(token,uuid,uri);
-			setFormUuid('');
+			await addServer(token,uid,uri);
+			setFormUid('');
 			setFormUri('');
 			await refresh();
 		});
 	}
 
 	function onEdit(server:ServerEntry):void{
-		setFormUuid(server.uuid);
+		setFormUid(server.uid);
 		setFormUri(server.uri);
 	}
 
 	function onDelete(server:ServerEntry):void{
-		if(!window.confirm(`Delete server ${server.uuid}?`)){
+		if(!window.confirm(`Delete server ${server.uid}?`)){
 			return;
 		}
 		run(async ()=>{
-			await deleteServer(token,server.uuid);
+			await deleteServer(token,server.uid);
 			await refresh();
 		});
 	}
@@ -61,7 +61,7 @@ export function Servers(props:{token:utf8_t}):ReactElement{
 	return (
 		<>
 			<p className="muted">
-				This server: <code>{ownUuid ?? '…'}</code>
+				This server: <code>{ownUid ?? '…'}</code>
 			</p>
 
 			{null !== error && <pre className="error">{error}</pre>}
@@ -81,13 +81,13 @@ export function Servers(props:{token:utf8_t}):ReactElement{
 					? <p className="muted">No servers known.</p>
 					: <table>
 						<thead>
-							<tr><th>UUID</th><th>URI</th><th></th></tr>
+							<tr><th>UID</th><th>URI</th><th></th></tr>
 						</thead>
 						<tbody>
 							{servers.map((server)=>{
 								return (
-									<tr key={server.uuid}>
-										<td><code>{server.uuid}</code></td>
+									<tr key={server.uid}>
+										<td><code>{server.uid}</code></td>
 										<td>
 											<a
 												href={server.uri}
@@ -129,10 +129,10 @@ export function Servers(props:{token:utf8_t}):ReactElement{
 				<form onSubmit={onSubmit}>
 					<input
 						required
-						placeholder="UUID"
-						value={formUuid}
+						placeholder="UID"
+						value={formUid}
 						onChange={(event)=>{
-							setFormUuid(event.target.value);
+							setFormUid(event.target.value);
 						}}
 					/>
 					<input

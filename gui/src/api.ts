@@ -9,7 +9,7 @@
 // served by the same origin as the API.
 
 export type ServerEntry = {
-	uuid:uuid_t;
+	uid:uuid_t;
 	uri:uri_t;
 };
 
@@ -33,11 +33,14 @@ export type ManagedUser = AuthUser & {
 };
 
 export type PetRecord = {
-	pet_id:utf8_t;
+	petId:utf8_t;
 	name:utf8_t;
 	species:utf8_t;
 	owner_contact:utf8_t;
 	notes:utf8_t;
+	source:SearchResult['source'];
+	preview:uri_t;
+	attributes:Array<{key:utf8_t;value:utf8_t}>;
 	files:Array<uri_t>;
 };
 
@@ -49,7 +52,7 @@ export type SearchResult = {
 	};
 	preview:uri_t;
 	files:Array<uri_t>;
-	attributes:Record<utf8_t,unknown>;
+	attributes:Array<{key:utf8_t;value:utf8_t}>;
 };
 
 export type SearchResponse = {
@@ -258,8 +261,7 @@ export async function deletePet(
 
 export async function ping():Promise<uuid_t>{
 	const data = await request('GET','/api/ping/get','',undefined);
-	const uuid = readStringFromRecord(data,'uuid');
-	return uuid;
+	return readStringFromRecord(data,'uid');
 }
 
 export async function listServers():Promise<Array<ServerEntry>>{
@@ -270,11 +272,11 @@ export async function listServers():Promise<Array<ServerEntry>>{
 	const ret:Array<ServerEntry> = [];
 	for(const entry of data){
 		if(!isRecord(entry)
-		|| 'string' !== typeof entry.uuid
+		|| 'string' !== typeof entry.uid
 		|| 'string' !== typeof entry.uri){
 			throw new Error('Invalid server list entry');
 		}
-		ret.push({uuid:entry.uuid,uri:entry.uri});
+		ret.push({uid:entry.uid,uri:entry.uri});
 	}
 	return ret;
 }
@@ -288,14 +290,14 @@ export async function searchPets(
 	if(0 < files.length){
 		const formData = new FormData();
 		formData.set('query',query);
-		for(const file of files){
-			formData.append('files',file,file.name);
+		for(const [index,file] of files.entries()){
+			formData.append(`file_${index}`,file,file.name);
 		}
 		body = formData;
 	}
 	const envelope = await requestEnvelope(
 		'POST',
-		'/json',
+		'/api/pets/search',
 		token,
 		body
 	);
@@ -317,21 +319,22 @@ export async function searchPets(
 // Adds the server, or replaces its URI if the UUID already exists.
 export async function addServer(
 	token:utf8_t,
-	uuid:uuid_t,
+	uid:uuid_t,
 	uri:uri_t
 ):Promise<void>{
-	await request('PUT',serverPath('put',uuid),token,{uri});
+	await request('PUT',serverPath('put',uid),token,{uri});
 }
 
 export async function deleteServer(
 	token:utf8_t,
-	uuid:uuid_t
+	uid:uuid_t
 ):Promise<void>{
-	await request('DELETE',serverPath('delete',uuid),token,undefined);
+	await request('DELETE',serverPath('delete',uid),token,undefined);
 }
 
 // Mirrors PetQueryServerConfigValues in src/pet/query/server/config.ts.
 export type ConfigValues = {
+	serverUid:uuid_t;
 	http:{port:uint16_t};
 	authenticate:{
 		mode:utf8_t;
@@ -439,15 +442,15 @@ export async function saveConfig(
 	if(!isRecord(data)){
 		throw new Error('Invalid save response');
 	}
-	const saved = normalizeConfigValues(data.saved);
+	const saved = normalizeConfigValues(data);
 	if(null === saved){
 		throw new Error('Invalid save response');
 	}
 	return saved;
 }
 
-function serverPath(action:utf8_t,uuid:uuid_t):utf8_t{
-	return `/api/server/${action}/${encodeURIComponent(uuid)}`;
+function serverPath(action:utf8_t,uid:uuid_t):utf8_t{
+	return `/api/server/${action}/${encodeURIComponent(uid)}`;
 }
 
 // Sends a request and returns the response's data field.
@@ -555,7 +558,7 @@ function readManagedUser(value:unknown):ManagedUser{
 
 function readPetRecord(value:unknown):PetRecord{
 	if(!isRecord(value)
-	|| 'string' !== typeof value.pet_id
+	|| 'string' !== typeof value.petId
 	|| 'string' !== typeof value.name
 	|| 'string' !== typeof value.species
 	|| 'string' !== typeof value.owner_contact
@@ -565,7 +568,8 @@ function readPetRecord(value:unknown):PetRecord{
 		throw new Error('Invalid pet response');
 	}
 	return {
-		pet_id:value.pet_id,
+		...readSearchResult(value),
+		petId:value.petId,
 		name:value.name,
 		species:value.species,
 		owner_contact:value.owner_contact,
@@ -595,6 +599,19 @@ function readSearchResult(value:unknown):SearchResult{
 		throw new Error('Invalid search result');
 	}
 	const source = value.source;
+	if(!Array.isArray(value.attributes)){
+		throw new Error('Invalid result attributes');
+	}
+	const attributes:Array<{key:utf8_t;value:utf8_t}> = [];
+	for(const attribute of value.attributes){
+		if(!isRecord(attribute)){
+			throw new Error('Invalid result attribute');
+		}
+		attributes.push({
+			key:readString(attribute.key,'attribute key'),
+			value:readString(attribute.value,'attribute value')
+		});
+	}
 	return {
 		source:{
 			favicon:readString(source.favicon,'result favicon'),
@@ -603,7 +620,7 @@ function readSearchResult(value:unknown):SearchResult{
 		},
 		preview:readString(value.preview,'result preview'),
 		files:readStringArray(value.files,'result files'),
-		attributes:readRecord(value.attributes,'result attributes')
+		attributes
 	};
 }
 
@@ -636,16 +653,6 @@ function readStringArray(
 		ret.push(readString(item,label));
 	}
 	return ret;
-}
-
-function readRecord(
-	value:unknown,
-	label:utf8_t
-):Record<utf8_t,unknown>{
-	if(!isRecord(value)){
-		throw new Error(`Invalid ${label}`);
-	}
-	return value;
 }
 
 function readErrorMessage(value:unknown):utf8_t{
@@ -685,6 +692,7 @@ function normalizeConfigValues(value:unknown):ConfigValues|null{
 
 function isConfigValues(value:unknown):value is ConfigValuesInput{
 	if(!isRecord(value)
+	|| !isNonEmptyString(value.serverUid)
 	|| !isRecord(value.http)
 	|| !isRecord(value.authenticate)
 	|| !isRecord(value.authenticate.session)

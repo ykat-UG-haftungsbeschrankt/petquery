@@ -93,14 +93,14 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 			)
 		);
 		this.getServer().put(
-			'/api/server/put/:uuid',
+			'/api/server/put/:uid',
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			PetQuerySchemaApiServerPutRequest.getHandle(
 				this._handleAddServer.bind(this)
 			)
 		);
 		this.getServer().delete(
-			'/api/server/delete/:uuid',
+			'/api/server/delete/:uid',
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			PetQuerySchemaApiServerDeleteRequest.getHandle(
 				this._handleDeleteServer.bind(this)
@@ -151,7 +151,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 			._getDatabase()
 			.getDbIndex()
 			.serverIndexAddServer({
-				uid:request.uuid,
+				uid:request.uid,
 				uri:request.uri
 			});
 		return [];
@@ -163,7 +163,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		await this.getServer()
 			._getDatabase()
 			.getDbIndex()
-			.serverIndexRemoveServer(request.uuid);
+			.serverIndexRemoveServer(request.uid);
 		return [];
 	}
 

@@ -17,13 +17,19 @@ import type {PetRecord} from './api';
 import {useAction} from './action';
 
 const EMPTY_PET:PetRecord = {
-	pet_id:'',
+	petId:'',
 	name:'',
 	species:'',
 	owner_contact:'',
 	notes:'',
+	source:{favicon:'',url:'',name:''},
+	preview:'',
+	attributes:[],
 	files:[]
 };
+const SOURCE_FIELDS:Array<keyof PetRecord['source']> = [
+	'favicon','url','name'
+];
 
 export function Pets(props:{token:utf8_t}):ReactElement{
 	const {busy,error,run} = useAction();
@@ -47,13 +53,13 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 	}
 
 	function editPet(pet:PetRecord):void{
-		setEditing(pet.pet_id);
+		setEditing(pet.petId);
 		setForm(structuredClone(pet));
 		setFilesText(pet.files.join('\n'));
 	}
 
 	function setField(
-		field:'pet_id'|'name'|'species'|'owner_contact'|'notes',
+		field:'petId'|'name'|'species'|'owner_contact'|'notes'|'preview',
 		value:utf8_t
 	):void{
 		setForm((current)=>{
@@ -61,11 +67,44 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 		});
 	}
 
+	function setAttribute(
+		index:size_t,
+		field:'key'|'value',
+		value:utf8_t
+	):void{
+		setForm((current)=>{
+			const attributes = current.attributes.map((attribute,position)=>{
+				return position === index
+					? {...attribute,[field]:value}
+					: attribute;
+			});
+			return {...current,attributes};
+		});
+	}
+
+	function addAttribute():void{
+		setForm((current)=>{
+			return {
+				...current,
+				attributes:[...current.attributes,{key:'',value:''}]
+			};
+		});
+	}
+
+	function removeAttribute(index:size_t):void{
+		setForm((current)=>{
+			const attributes = current.attributes.filter((UNUSED_value,i)=>{
+				return i !== index;
+			});
+			return {...current,attributes};
+		});
+	}
+
 	function onSubmit(event:FormEvent<HTMLFormElement>):void{
 		event.preventDefault();
 		const values:PetRecord = {
 			...form,
-			pet_id:form.pet_id.trim(),
+			petId:form.petId.trim(),
 			name:form.name.trim(),
 			species:form.species.trim(),
 			owner_contact:form.owner_contact.trim(),
@@ -90,12 +129,12 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 	}
 
 	function onDelete(pet:PetRecord):void{
-		if(!window.confirm(`Delete pet ${pet.pet_id}?`)){
+		if(!window.confirm(`Delete pet ${pet.petId}?`)){
 			return;
 		}
 		run(async ()=>{
-			await deletePet(props.token,pet.pet_id);
-			if(editing === pet.pet_id){
+			await deletePet(props.token,pet.petId);
+			if(editing === pet.petId){
 				resetForm();
 			}
 			await refresh();
@@ -138,8 +177,8 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						<tbody>
 							{pets.map((pet)=>{
 								return (
-									<tr key={pet.pet_id}>
-										<td><code>{pet.pet_id}</code></td>
+									<tr key={pet.petId}>
+										<td><code>{pet.petId}</code></td>
 										<td>{pet.name}</td>
 										<td>{pet.species}</td>
 										<td>{pet.owner_contact}</td>
@@ -178,9 +217,9 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						<input
 							required
 							disabled={null !== editing}
-							value={form.pet_id}
+							value={form.petId}
 							onChange={(event)=>{
-								setField('pet_id',event.target.value);
+								setField('petId',event.target.value);
 							}}
 						/>
 					</label>
@@ -188,6 +227,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						<span>Name</span>
 						<input
 							required
+							maxLength={256}
 							value={form.name}
 							onChange={(event)=>{
 								setField('name',event.target.value);
@@ -198,6 +238,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						<span>Species</span>
 						<input
 							required
+							maxLength={256}
 							value={form.species}
 							onChange={(event)=>{
 								setField('species',event.target.value);
@@ -207,7 +248,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 					<label className="field">
 						<span>Owner contact</span>
 						<input
-							required
+							maxLength={4096}
 							value={form.owner_contact}
 							onChange={(event)=>{
 								setField(
@@ -220,13 +261,85 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 					<label className="field field-wide">
 						<span>Notes</span>
 						<textarea
-							required
+							maxLength={65536}
 							value={form.notes}
 							onChange={(event)=>{
 								setField('notes',event.target.value);
 							}}
 						/>
 					</label>
+					<label className="field field-wide">
+						<span>Preview URI</span>
+						<input
+							value={form.preview}
+							onChange={(event)=>{
+								setField('preview',event.target.value);
+							}}
+						/>
+					</label>
+					{SOURCE_FIELDS.map((field)=>{
+						return (
+							<label className="field" key={field}>
+								<span>Source {field}</span>
+								<input
+									value={form.source[field]}
+									onChange={(event)=>{
+										const value = event.target.value;
+										setForm((current)=>{
+											return {
+												...current,
+												source:{
+													...current.source,
+													[field]:value
+												}
+											};
+										});
+									}}
+								/>
+							</label>
+						);
+					})}
+					<fieldset>
+						<legend>Attributes</legend>
+						{form.attributes.map((attribute,index)=>{
+							return (
+								<div className="row" key={index}>
+									<input
+										aria-label={`Attribute ${index + 1} key`}
+										value={attribute.key}
+										onChange={(event)=>{
+											const value = event.target.value;
+											setAttribute(index,'key',value);
+										}}
+									/>
+									<input
+										aria-label={`Attribute ${index + 1} value`}
+										value={attribute.value}
+										onChange={(event)=>{
+											const value = event.target.value;
+											setAttribute(index,'value',value);
+										}}
+									/>
+									<button
+										type="button"
+										disabled={busy}
+										onClick={()=>{
+											removeAttribute(index);
+										}}
+									>
+										Remove
+									</button>
+								</div>
+							);
+						})}
+						<button
+							type="button"
+							disabled={busy}
+							onClick={addAttribute}
+						>
+							Add attribute
+						</button>
+					</fieldset>
 					<label className="field field-wide">
 						<span>Files (one URI per line)</span>
 						<textarea

@@ -63,7 +63,7 @@ paths:
         "500":
           $ref: "#/components/responses/ServerError"
 
-  /api/server/put/{uuid}:
+  /api/server/put/{uid}:
     put:
       tags: [API]
       summary: Add or update an indexed server
@@ -73,7 +73,7 @@ paths:
         - bearerAuth: []
         - sessionCookie: []
       parameters:
-        - name: uuid
+        - name: uid
           in: path
           required: true
           description: UUID of the server to index.
@@ -106,7 +106,7 @@ paths:
         "500":
           $ref: "#/components/responses/ServerError"
 
-  /api/server/delete/{uuid}:
+  /api/server/delete/{uid}:
     delete:
       tags: [API]
       summary: Remove an indexed server
@@ -116,7 +116,7 @@ paths:
         - bearerAuth: []
         - sessionCookie: []
       parameters:
-        - name: uuid
+        - name: uid
           in: path
           required: true
           schema:
@@ -266,9 +266,77 @@ paths:
         "500":
           $ref: "#/components/responses/ServerError"
 
-  /api/pets/{pet_id}:
+  /api/pets/search:
+    post:
+      tags: [Pets]
+      summary: Search local pets and enabled plugins
+      operationId: searchPets
+      description: |
+        Public lookup. Results are limited by max_results_per_module and
+        max_results_total. Plugin or database failures produce partial results
+        with success false and error messages, using HTTP 200.
+        Multipart uploads use distinct field names, for example file_0 and
+        file_1, so all supporting files reach the plugins.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  minLength: 1
+                  pattern: '\S'
+                files:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/SearchFile"
+                tracerouteUuid:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+          multipart/form-data:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  minLength: 1
+                file_0:
+                  type: string
+                  format: binary
+              additionalProperties:
+                type: string
+                format: binary
+      responses:
+        "200":
+          description: Complete or partial search results.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, error, data]
+                properties:
+                  success:
+                    type: boolean
+                  error:
+                    type: array
+                    items:
+                      type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Pet"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/pets/{petId}:
     parameters:
-      - name: pet_id
+      - name: petId
         in: path
         required: true
         description: Pet identifier.
@@ -304,7 +372,7 @@ paths:
       tags: [Pets]
       summary: Replace a pet record
       operationId: replacePet
-      description: The `petId` field in the body must match the path value.
+      description: The petId path parameter determines the record to update.
       security:
         - bearerAuth: []
         - sessionCookie: []
@@ -836,7 +904,7 @@ components:
       type: object
       required: [uri]
       properties:
-        uuid:
+        uid:
           type: string
           format: uuid
           description: The path parameter supplies this value.
@@ -919,10 +987,6 @@ components:
       properties:
         petId:
           type: string
-          description: Must match the pet_id path parameter.
-        pet_id:
-          type: string
-          minLength: 1
           description: The path parameter supplies this value.
         name:
           type: string
@@ -966,6 +1030,22 @@ components:
               value:
                 type: string
             additionalProperties: false
+      additionalProperties: false
+    SearchFile:
+      type: object
+      required: [filename, mime, size, data, md5]
+      properties:
+        filename:
+          type: string
+        mime:
+          type: string
+        size:
+          type: number
+        data:
+          type: string
+          description: Base64-encoded file contents.
+        md5:
+          type: string
       additionalProperties: false
     AuthMode:
       type: object

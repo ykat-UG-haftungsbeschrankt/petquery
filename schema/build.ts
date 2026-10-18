@@ -95,9 +95,15 @@ import {PetQuerySchemaApiPetDeleteRequest} from
 	'#schema/api/pet/delete/request.js';
 import {PetQuerySchemaApiPetDeleteResponse} from
 	'#schema/api/pet/delete/response.js';
+import {PetQuerySchemaApiPetSearchRequest} from
+	'#schema/api/pet/search/request.js';
 
 // Error responses of every route are described by schema/error.json.
 const schemas:Array<[utf8_t,PetQuerySchemaType]> = [
+	[
+		'schema/api/pet/search/request.json',
+		PetQuerySchemaApiPetSearchRequest.getSchema()
+	],
 	[
 		'schema/api/auth/mode/get/request.json',
 		PetQuerySchemaApiAuthModeGetRequest.getSchema()
