@@ -11,7 +11,7 @@ import {PetQueryServerResponseSchema} from
 	'#petquery/server/response/schema.js';
 
 const schema = PetQuerySchema.type.Null({
-	title:'DELETE /api/pets/:pet_id response'
+	title:'DELETE /api/pets/:petId response'
 });
 const validator = PetQuerySchema.compile(schema);
 

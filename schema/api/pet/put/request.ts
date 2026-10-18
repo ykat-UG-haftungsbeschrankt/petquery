@@ -19,9 +19,9 @@ import {
 const T = PetQuerySchema.type;
 const schema = T.Object({
 	...PetQuerySchemaServerDatabasePetEntry.getSchema().properties,
-	pet_id:T.String({minLength:1})
+	petId:T.String({minLength:1})
 },{
-	title:'PUT /api/pets/:pet_id request',
+	title:'PUT /api/pets/:petId request',
 	additionalProperties:false
 });
 const validator = PetQuerySchema.compile(schema);

@@ -13,7 +13,7 @@ import {PetQueryServerResponseSchema} from
 const T = PetQuerySchema.type;
 
 const schema = T.Array(T.Unknown(),{
-	title:'DELETE /api/server/delete/:uuid response',
+	title:'DELETE /api/server/delete/:uid response',
 	additionalProperties:false
 });
 
@@ -22,7 +22,7 @@ const validator = PetQuerySchema.compile(schema);
 export type PetQuerySchemaApiServerDeleteResponseType =
 	PetQuerySchemaStatic<typeof schema>;
 
-// Successful response of DELETE /api/server/delete/:uuid. Errors are sent as
+// Successful response of DELETE /api/server/delete/:uid. Errors are sent as
 // PetQueryServerResponseSchemaError.
 class PetQuerySchemaApiServerDeleteResponse extends
 	PetQueryServerResponseSchema<

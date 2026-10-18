@@ -14,7 +14,7 @@ import {PetQuerySchemaServerDatabasePetEntry} from
 
 const schema = {
 	...PetQuerySchemaServerDatabasePetEntry.getSchema(),
-	title:'PUT /api/pets/:pet_id response'
+	title:'PUT /api/pets/:petId response'
 };
 const validator = PetQuerySchema.compile(schema);
 

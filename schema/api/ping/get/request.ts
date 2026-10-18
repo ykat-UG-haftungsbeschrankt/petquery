@@ -16,7 +16,7 @@ import {PetQuerySchemaApiPingGetResponse} from
 
 const T = PetQuerySchema.type;
 
-const schema = T.Null({
+const schema = T.Object({},{
 	 title:'GET /api/ping/get request'
 	,additionalProperties:false
 });

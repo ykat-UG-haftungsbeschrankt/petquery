@@ -40,10 +40,14 @@ import {
 	PetQuerySchemaApiAuthOidcLoginGetRequest,
 	type PetQuerySchemaApiAuthOidcLoginGetRequestType
 } from '#schema/api/auth/oidc/login/get/request.js';
+import type {PetQuerySchemaApiAuthOidcLoginGetResponseType} from
+	'#schema/api/auth/oidc/login/get/response.js';
 import {
 	PetQuerySchemaApiAuthOidcCallbackGetRequest,
 	type PetQuerySchemaApiAuthOidcCallbackGetRequestType
 } from '#schema/api/auth/oidc/callback/get/request.js';
+import type {PetQuerySchemaApiAuthOidcCallbackGetResponseType} from
+	'#schema/api/auth/oidc/callback/get/response.js';
 import {
 	PetQuerySchemaApiAuthUsersGetRequest,
 	type PetQuerySchemaApiAuthUsersGetRequestType
@@ -81,6 +85,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		this.getServer().get(
 			'/auth/session',
 			this._disableCache.bind(this),
+			this._authenticateUser.bind(this),
 			PetQuerySchemaApiAuthSessionGetRequest.getHandle(
 				this._handleSession.bind(this)
 			)
@@ -188,13 +193,11 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 
 	protected async _handleSession(
 		UNUSED_request:PetQuerySchemaApiAuthSessionGetRequestType,
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<PetQuerySchemaApiAuthSessionGetResponseType|void>{
-		const user = await this.getServer().getAuth().authenticate(req);
-		if(null === user){
-			res.sendAuthUnauthorizedError('Authentication required');
-			return;
+		req:PetQueryServerRequest
+	):Promise<PetQuerySchemaApiAuthSessionGetResponseType>{
+		const user = req.petQueryUser;
+		if(undefined === user){
+			throw new Error('Authenticated session user is missing');
 		}
 		return {user};
 	}
@@ -224,27 +227,29 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		UNUSED_request:PetQuerySchemaApiAuthOidcLoginGetRequestType,
 		UNUSED_req:PetQueryServerRequest,
 		res:PetQueryServerResponse
-	):Promise<void>{
+	):Promise<PetQuerySchemaApiAuthOidcLoginGetResponseType>{
 		if(!this.getServer().getAuth().hasProvider('oidc')){
 			res.sendAuthUnauthorizedError('OpenID Connect is not enabled');
-			return;
+			return null;
 		}
 		res.redirectUrl(
 			(await this.getServer().getAuth().getOidcLoginUrl()).href
 		);
+		return null;
 	}
 
 	protected async _handleOidcCallback(
 		UNUSED_request:PetQuerySchemaApiAuthOidcCallbackGetRequestType,
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
-	):Promise<void>{
+	):Promise<PetQuerySchemaApiAuthOidcCallbackGetResponseType>{
 		const user = await this.getServer().getAuth().handleOidcCallback(
 			req,
 			res
 		);
 		const section = 'admin' === user.group ? 'config' : 'pets';
 		res.redirectUrl(`/gui/admin/${section}`);
+		return null;
 	}
 
 	protected async _handleListUsers(

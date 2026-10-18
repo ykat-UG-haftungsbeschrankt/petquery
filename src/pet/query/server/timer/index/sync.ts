@@ -64,7 +64,7 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 			try{
 				const remoteServerList = await PetQuerySchemaApiServerGetRequest.fetch(
 					server.uri,
-					null,
+					{},
 					this._abortController.getTimeoutSignal(this._timeout)
 				);
 				for(const remoteServer of remoteServerList){
@@ -77,7 +77,7 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 					try{
 						const data = await PetQuerySchemaApiPingGetRequest.fetch(
 							remoteServer.uri,
-							null,
+							{},
 							this._abortController.getTimeoutSignal(this._timeout)
 						);
 						if(remoteServer.uid !== data.uid){

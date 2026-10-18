@@ -16,7 +16,7 @@ import {PetQuerySchemaApiConfigGetResponse} from
 
 const T = PetQuerySchema.type;
 
-const schema = T.Null({
+const schema = T.Object({},{
 	 title:'GET /api/config/get request'
 	,additionalProperties:false
 });

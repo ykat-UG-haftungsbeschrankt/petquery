@@ -16,9 +16,9 @@ import {
 
 const T = PetQuerySchema.type;
 const schema = T.Object({
-	pet_id:T.String({minLength:1})
+	petId:T.String({minLength:1})
 },{
-	title:'DELETE /api/pets/:pet_id request',
+	title:'DELETE /api/pets/:petId request',
 	additionalProperties:false
 });
 const validator = PetQuerySchema.compile(schema);

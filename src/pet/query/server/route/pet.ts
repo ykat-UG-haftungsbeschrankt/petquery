@@ -39,6 +39,18 @@ import {
 } from '#schema/api/pet/delete/request.js';
 import type {PetQuerySchemaApiPetDeleteResponseType} from
 	'#schema/api/pet/delete/response.js';
+import {setTimeout as delay} from 'node:timers/promises';
+import type {PetQueryPlugin} from '#petquery/plugin.js';
+import {PetQuerySchema} from '#petquery/schema.js';
+import type {PetQueryServerRequest} from '#petquery/server/request.js';
+import type {PetQueryServerResponse} from '#petquery/server/response.js';
+import {
+	PetQuerySchemaApiPetSearchRequest,
+	type PetQuerySchemaApiPetSearchRequestType
+} from '#schema/api/pet/search/request.js';
+import type {PetQuerySchemaPluginRequestType} from
+	'#schema/plugin/request.js';
+import {PetQuerySchemaPluginResponse} from '#schema/plugin/response.js';
 
 export class PetQueryServerRoutePet extends PetQueryServerRoute{
 	register():void{
@@ -46,6 +58,13 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			return;
 		}
 		const accessGroup = PetQueryServerRouteAccessGroup.User;
+		this.getServer().post(
+			'/api/pets/search',
+			this._disableCache.bind(this),
+			PetQuerySchemaApiPetSearchRequest.getHandle(
+				this._handleSearch.bind(this)
+			)
+		);
 		this.getServer().get(
 			'/api/pets',
 			this._disableCache.bind(this),
@@ -63,7 +82,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			)
 		);
 		this.getServer().get(
-			'/api/pets/:pet_id',
+			'/api/pets/:petId',
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(accessGroup),
 			PetQuerySchemaApiPetGetEntryRequest.getHandle(
@@ -71,7 +90,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			)
 		);
 		this.getServer().put(
-			'/api/pets/:pet_id',
+			'/api/pets/:petId',
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(accessGroup),
 			PetQuerySchemaApiPetPutRequest.getHandle(
@@ -79,7 +98,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			)
 		);
 		this.getServer().delete(
-			'/api/pets/:pet_id',
+			'/api/pets/:petId',
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(accessGroup),
 			PetQuerySchemaApiPetDeleteRequest.getHandle(
@@ -99,7 +118,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		request:PetQuerySchemaApiPetGetEntryRequestType
 	):Promise<PetQuerySchemaApiPetGetEntryResponseType>{
 		const database = this.getServer()._getDatabase().getDbPet();
-		return database.serverPetGet(request.pet_id);
+		return database.serverPetGet(request.petId);
 	}
 
 	protected async _handleCreate(
@@ -111,91 +130,105 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 	}
 
 	protected async _handleUpdate(
-		request:PetQuerySchemaApiPetPutRequestType
+		request:PetQuerySchemaApiPetPutRequestType,
+		req:PetQueryServerRequest
 	):Promise<PetQuerySchemaApiPetPutResponseType>{
-		const {pet_id:petId,...pet} = request;
-		if(petId !== pet.petId){
-			throw new Error('petId must match the pet_id URL parameter');
+		const body:unknown = req.body;
+		if(null !== body && 'object' === typeof body
+		&& 'petId' in body && request.petId !== body.petId){
+			throw new Error('petId must match the petId URL parameter');
 		}
 		const database = this.getServer()._getDatabase().getDbPet();
-		await database.serverPetGet(petId);
-		await database.serverPetAdd(pet);
-		return pet;
+		await database.serverPetGet(request.petId);
+		await database.serverPetAdd(request);
+		return request;
 	}
 
 	protected async _handleDelete(
 		request:PetQuerySchemaApiPetDeleteRequestType
 	):Promise<PetQuerySchemaApiPetDeleteResponseType>{
 		const database = this.getServer()._getDatabase().getDbPet();
-		await database.serverPetRemove(request.pet_id);
+		await database.serverPetRemove(request.petId);
 		return null;
 	}
-/*
-	protected override _getErrorMessage(error:unknown):utf8_t{
-		return error instanceof Error ? error.message : util.inspect(error);
+	protected async _handleSearch(
+		request:PetQuerySchemaApiPetSearchRequestType,
+		req:PetQueryServerRequest,
+		res:PetQueryServerResponse
+	):Promise<PetQuerySchemaApiPetGetResponseType>{
+		const server = this.getServer();
+		const config = server._getConfig();
+		const trace = request.tracerouteUuid ?? [];
+		if(trace.includes(server._getUuid())){
+			res.json({
+				success:false,
+				error:['Circular query detected'],
+				data:[]
+			});
+			return [];
+		}
+		const query:PetQuerySchemaPluginRequestType = {
+			query:request.query,
+			bearer:'',
+			files:[
+				...(request.files ?? []),
+				...req._getFiles().values()
+			],
+			serverUuid:server._getUuid(),
+			tracerouteUuid:[...trace,server._getUuid()]
+		};
+		const plugins = server.getPlugins(config.route.api.plugins);
+		const tasks:Array<Promise<PetQuerySchemaApiPetGetResponseType>> = [];
+		for(const plugin of plugins){
+			tasks.push(this._queryPlugin(plugin,query));
+		}
+		tasks.push(
+			server._getDatabase().getDbPet().serverPetSearch(request.query)
+		);
+		const results = await Promise.allSettled(tasks);
+		const data:PetQuerySchemaApiPetGetResponseType = [];
+		const error:Array<utf8_t> = [];
+		for(const result of results){
+			if('rejected' === result.status){
+				error.push(this._getErrorMessage(result.reason));
+			}else{
+				data.push(...result.value.slice(
+					0,config.max_results_per_module
+				));
+			}
+		}
+		const limited = data.slice(0,config.max_results_total);
+		//res.json({success:0 === error.length,error,data:limited});
+		return limited;
 	}
 
-
-
-	// Searches the plugins in pluginFilter, all if null. A circular query
-	// gets an unsuccessful result instead of being forwarded again.
-	protected async _handleSearch(
-		pluginFilter:Set<string>|null,
-		request:PetQuerySchemaSearchRequest
-	):Promise<PetQuerySchemaSearchResponse>{
-		const query = request.getPluginQuery(this._server._getUuid());
-
-		if(query.isCircularQuery()){
-			return PetQuerySchemaSearchResponse.fromResult(
-				200,
-				new PetQueryResult(
-					false,
-					['Circular query detected'],
-					new PetQueryResultData([])
+	protected async _queryPlugin(
+		plugin:PetQueryPlugin,
+		query:PetQuerySchemaPluginRequestType
+	):Promise<PetQuerySchemaApiPetGetResponseType>{
+		const controller = new AbortController();
+		try{
+			const result = await Promise.race([
+				plugin.query(query),
+				this._pluginTimeout(
+					plugin.getName(),plugin.getTimeout(),controller.signal
 				)
+			]);
+			return PetQuerySchema.parse(
+				PetQuerySchemaPluginResponse.getValidator(),result
 			);
 		}
-		const result = await this._query(query,pluginFilter);
-		result.getData().append(
-			new PetQueryResultData(
-				await this._server._getPetStore().search(request.getQuery())
-			)
-		);
-		return PetQuerySchemaSearchResponse.fromResult(200,result);
+		finally{
+			controller.abort();
+		}
 	}
 
-	async _query(
-		 query:PetQueryPluginQuery
-		,pluginFilter:Set<string>|null
-	):Promise<PetQueryResult>{
-		const config = this._server.getConfig();
-		const promises = [];
-		for(const plugin of this._server.getPlugins(pluginFilter)){
-			promises.push(plugin.query(query));
-		}
-		const settled = await Promise.allSettled(promises);
-
-		let success = true;
-		const error:Array<json_string_t> = [];
-		const data:Array<PetQueryResultDataEntry> = [];
-		for(const item of settled){
-			if('rejected' === item.status){
-				error.push(util.inspect(item.reason));
-				continue;
-			}
-			success = success && item.value.isSuccess();
-			error.push(...item.value.getError());
-			data.push(...item.value.getData().getData().slice(
-				0,
-				config.max_results_per_module
-			));
-		}
-
-		return new PetQueryResult(
-			success,
-			error,
-			new PetQueryResultData(data.slice(0,config.max_results_total))
-		);
+	protected async _pluginTimeout(
+		name:utf8_t,
+		timeout:milliseconds_t,
+		signal:AbortSignal
+	):Promise<never>{
+		await delay(timeout,undefined,{signal});
+		throw new Error(`Plugin "${name}" search timed out`);
 	}
-		*/
 };

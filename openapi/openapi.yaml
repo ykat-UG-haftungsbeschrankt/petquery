@@ -372,7 +372,9 @@ paths:
       tags: [Pets]
       summary: Replace a pet record
       operationId: replacePet
-      description: The petId path parameter determines the record to update.
+      description: |
+        The petId path parameter determines the record to update.
+        If petId is also supplied in the body, it must match the path.
       security:
         - bearerAuth: []
         - sessionCookie: []
@@ -975,7 +977,6 @@ components:
     ReplacePetRequest:
       type: object
       required:
-        - petId
         - name
         - species
         - owner_contact
@@ -987,6 +988,7 @@ components:
       properties:
         petId:
           type: string
+          minLength: 1
           description: The path parameter supplies this value.
         name:
           type: string

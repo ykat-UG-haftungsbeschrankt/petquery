@@ -2,13 +2,13 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"required": [
-		"uuid"
+		"uid"
 	],
 	"properties": {
-		"uuid": {
+		"uid": {
 			"type": "string",
 			"format": "uuid"
 		}
 	},
-	"title": "DELETE /api/server/delete/:uuid request"
+	"title": "DELETE /api/server/delete/:uid request"
 }

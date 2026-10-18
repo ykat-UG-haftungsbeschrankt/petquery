@@ -235,6 +235,10 @@ function SearchResultCard(props:{result:SearchResult}):ReactElement{
 
 	return (
 		<article className="result-card">
+			<h3>{result.name}</h3>
+			<p>{result.species} - <code>{result.petId}</code></p>
+			{'' !== result.owner_contact && <p>{result.owner_contact}</p>}
+			{'' !== result.notes && <p>{result.notes}</p>}
 			<div className="result-source">
 				{'' !== result.source.favicon && (
 					<img

@@ -17,16 +17,16 @@ import {PetQuerySchemaApiServerPutResponse} from
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	uuid:T.String({format:'uuid'}),
+	uid:T.String({format:'uuid'}),
 	uri:T.String({format:'uri',maxLength:2048})
-},{title:'PUT /api/server/put/:uuid request'});
+},{title:'PUT /api/server/put/:uid request'});
 
 const validator = PetQuerySchema.compile(schema);
 
 export type PetQuerySchemaApiServerPutRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
-// PUT /api/server/put/:uuid
+// PUT /api/server/put/:uid
 class PetQuerySchemaApiServerPutRequest extends
 	PetQueryServerRequestSchema<
 		 PetQuerySchemaApiServerPutRequestType

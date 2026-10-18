@@ -84,6 +84,6 @@
 			}
 		}
 	},
-	"title": "PUT /api/pets/:pet_id response",
+	"title": "PUT /api/pets/:petId response",
 	"additionalProperties": false
 }

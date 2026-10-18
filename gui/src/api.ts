@@ -38,22 +38,17 @@ export type PetRecord = {
 	species:utf8_t;
 	owner_contact:utf8_t;
 	notes:utf8_t;
-	source:SearchResult['source'];
-	preview:uri_t;
-	attributes:Array<{key:utf8_t;value:utf8_t}>;
-	files:Array<uri_t>;
-};
-
-export type SearchResult = {
 	source:{
 		favicon:uri_t;
 		url:uri_t;
 		name:utf8_t;
 	};
 	preview:uri_t;
-	files:Array<uri_t>;
 	attributes:Array<{key:utf8_t;value:utf8_t}>;
+	files:Array<uri_t>;
 };
+
+export type SearchResult = PetRecord;
 
 export type SearchResponse = {
 	success:bool_t;
@@ -222,7 +217,7 @@ export async function listPets(token:utf8_t):Promise<Array<PetRecord>>{
 	if(!Array.isArray(data)){
 		throw new Error('Invalid pet list response');
 	}
-	return data.map(readPetRecord);
+	return data.map(readSearchResult);
 }
 
 export async function createPet(
@@ -230,7 +225,7 @@ export async function createPet(
 	pet:PetRecord
 ):Promise<PetRecord>{
 	const data = await request('POST','/api/pets',token,pet);
-	return readPetRecord(data);
+	return readSearchResult(data);
 }
 
 export async function updatePet(
@@ -244,7 +239,7 @@ export async function updatePet(
 		token,
 		pet
 	);
-	return readPetRecord(data);
+	return readSearchResult(data);
 }
 
 export async function deletePet(
@@ -556,28 +551,6 @@ function readManagedUser(value:unknown):ManagedUser{
 	};
 }
 
-function readPetRecord(value:unknown):PetRecord{
-	if(!isRecord(value)
-	|| 'string' !== typeof value.petId
-	|| 'string' !== typeof value.name
-	|| 'string' !== typeof value.species
-	|| 'string' !== typeof value.owner_contact
-	|| 'string' !== typeof value.notes
-	|| !Array.isArray(value.files)
-	|| !value.files.every(isString)){
-		throw new Error('Invalid pet response');
-	}
-	return {
-		...readSearchResult(value),
-		petId:value.petId,
-		name:value.name,
-		species:value.species,
-		owner_contact:value.owner_contact,
-		notes:value.notes,
-		files:value.files
-	};
-}
-
 function isAuthMode(value:unknown):value is AuthMode{
 	return isNonEmptyString(value);
 }
@@ -613,6 +586,11 @@ function readSearchResult(value:unknown):SearchResult{
 		});
 	}
 	return {
+		petId:readString(value.petId,'pet ID'),
+		name:readString(value.name,'pet name'),
+		species:readString(value.species,'pet species'),
+		owner_contact:readString(value.owner_contact,'owner contact'),
+		notes:readString(value.notes,'pet notes'),
 		source:{
 			favicon:readString(source.favicon,'result favicon'),
 			url:readString(source.url,'result URL'),

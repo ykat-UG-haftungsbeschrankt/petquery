@@ -10,13 +10,12 @@
 		"source",
 		"preview",
 		"files",
-		"attributes",
-		"pet_id"
+		"attributes"
 	],
 	"properties": {
 		"petId": {
 			"type": "string",
-			"petId": "uuid"
+			"minLength": 1
 		},
 		"name": {
 			"type": "string",
@@ -83,12 +82,8 @@
 				},
 				"additionalProperties": false
 			}
-		},
-		"pet_id": {
-			"type": "string",
-			"minLength": 1
 		}
 	},
-	"title": "PUT /api/pets/:pet_id request",
+	"title": "PUT /api/pets/:petId request",
 	"additionalProperties": false
 }

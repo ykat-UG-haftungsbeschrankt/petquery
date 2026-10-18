@@ -2,11 +2,11 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"required": [
-		"uuid",
+		"uid",
 		"uri"
 	],
 	"properties": {
-		"uuid": {
+		"uid": {
 			"type": "string",
 			"format": "uuid"
 		},
@@ -16,5 +16,5 @@
 			"maxLength": 2048
 		}
 	},
-	"title": "PUT /api/server/put/:uuid request"
+	"title": "PUT /api/server/put/:uid request"
 }
