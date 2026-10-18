@@ -1,0 +1,40 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"required": [
+		"username",
+		"displayName",
+		"group",
+		"provider",
+		"createdAt"
+	],
+	"properties": {
+		"username": {
+			"type": "string"
+		},
+		"displayName": {
+			"type": "string"
+		},
+		"group": {
+			"anyOf": [
+				{
+					"type": "string",
+					"const": "admin"
+				},
+				{
+					"type": "string",
+					"const": "user"
+				}
+			]
+		},
+		"provider": {
+			"type": "string",
+			"minLength": 1
+		},
+		"createdAt": {
+			"type": "string"
+		}
+	},
+	"additionalProperties": false,
+	"title": "PUT /auth/users/:username response"
+}

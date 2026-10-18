@@ -1,0 +1,39 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"required": [
+		"username",
+		"displayName",
+		"password",
+		"group"
+	],
+	"properties": {
+		"provider": {
+			"type": "string",
+			"minLength": 1
+		},
+		"username": {
+			"type": "string"
+		},
+		"displayName": {
+			"type": "string"
+		},
+		"password": {
+			"type": "string"
+		},
+		"group": {
+			"anyOf": [
+				{
+					"type": "string",
+					"const": "admin"
+				},
+				{
+					"type": "string",
+					"const": "user"
+				}
+			]
+		}
+	},
+	"title": "POST /auth/users request",
+	"additionalProperties": true
+}

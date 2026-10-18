@@ -42,24 +42,22 @@
 			],
 			"properties": {
 				"mode": {
-					"anyOf": [
-						{
-							"type": "string",
-							"const": "bearer"
-						},
-						{
-							"type": "string",
-							"const": "lmdb"
-						},
-						{
-							"type": "string",
-							"const": "ldap"
-						},
-						{
-							"type": "string",
-							"const": "oidc"
-						}
-					]
+					"type": "string",
+					"minLength": 1
+				},
+				"providers": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"minLength": 1
+					},
+					"maxItems": 1000
+				},
+				"plugin_options": {
+					"type": "object",
+					"patternProperties": {
+						"^.*$": {}
+					}
 				},
 				"bearer": {
 					"type": "array",

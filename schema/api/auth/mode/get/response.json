@@ -1,0 +1,52 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"required": [
+		"mode",
+		"providers"
+	],
+	"properties": {
+		"mode": {
+			"type": "string"
+		},
+		"providers": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": [
+					"name",
+					"login",
+					"userManagement"
+				],
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1
+					},
+					"login": {
+						"anyOf": [
+							{
+								"type": "string",
+								"const": "bearer"
+							},
+							{
+								"type": "string",
+								"const": "password"
+							},
+							{
+								"type": "string",
+								"const": "redirect"
+							}
+						]
+					},
+					"userManagement": {
+						"type": "boolean"
+					}
+				},
+				"additionalProperties": false
+			}
+		}
+	},
+	"title": "GET /auth/mode response",
+	"additionalProperties": false
+}

@@ -1,0 +1,89 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"required": [
+		"petId",
+		"name",
+		"species",
+		"owner_contact",
+		"notes",
+		"source",
+		"preview",
+		"files",
+		"attributes"
+	],
+	"properties": {
+		"petId": {
+			"type": "string",
+			"petId": "uuid"
+		},
+		"name": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 256
+		},
+		"species": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 256
+		},
+		"owner_contact": {
+			"type": "string",
+			"maxLength": 4096
+		},
+		"notes": {
+			"type": "string",
+			"maxLength": 65536
+		},
+		"source": {
+			"type": "object",
+			"required": [
+				"favicon",
+				"url",
+				"name"
+			],
+			"properties": {
+				"favicon": {
+					"type": "string"
+				},
+				"url": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				}
+			},
+			"additionalProperties": false
+		},
+		"preview": {
+			"type": "string"
+		},
+		"files": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"attributes": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": [
+					"key",
+					"value"
+				],
+				"properties": {
+					"key": {
+						"type": "string"
+					},
+					"value": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false
+			}
+		}
+	},
+	"title": "PUT /api/pets/:pet_id response",
+	"additionalProperties": false
+}
