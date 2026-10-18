@@ -9,6 +9,7 @@ import {PetQueryConfig} from '#petquery/config.js';
 import {PetQueryServer} from '#petquery/server.js';
 import type {PetQueryServerDatabaseIndex} from
 	'#petquery/server/database/index.js';
+/*
 import {PetQuery3pPluginAnimalidConfig} from
 	'#petquery/3p/plugin/animalid/config.js';
 import {PetQuery3pPluginAnimalidPlugin} from
@@ -18,7 +19,7 @@ import {PetQuery3pPluginMysqlPlugin} from
 
 import {PetQuery3pPluginMysqlConfig} from
 	'#petquery/3p/plugin/mysql/config.js';
-import { PetQueryServerRouteJson } from '#petquery/server/route/.trash/json.js';
+*/
 import { PetQueryServerRouteApi } from '#petquery/server/route/api.js';
 import {PetQueryServerRouteDefault} from
 	'#petquery/server/route/default.js';
@@ -49,40 +50,31 @@ async function loadServerUuid(
 }
 const serverConfig = PetQueryConfig.getServerConfig();
 const indexConfig = serverConfig.index;
-const indexDatabase = indexConfig.database;
-const settingsDatabase = indexDatabase.createSettingsDatabase();
 const serverUuid = await loadServerUuid(indexDatabase.getDbIndex());
 const serverServerConfig = new PetQueryServerConfig(
 	serverUuid,
-	settingsDatabase
+	serverConfig.database
 );
 const savedServerConfig = await serverServerConfig.load();
 if(null !== savedServerConfig){
 	serverServerConfig.applyToServerConfig(serverConfig,savedServerConfig);
 }
-const authUserDatabase = indexDatabase.createSibling(
-	serverConfig.authenticate.lmdb.users_name
-);
-const authSessionDatabase = indexDatabase.createSibling(
-	serverConfig.authenticate.lmdb.sessions_name
-);
 
 const auth = new PetQueryServerAuth(
 	serverConfig,
-	authUserDatabase,
-	authSessionDatabase
+	serverConfig.database
 );
 const petStore = serverConfig.settings.database;
 const server = new PetQueryServer(
 	serverConfig,
-	indexDatabase,
+	serverConfig.database,
 	serverUuid,
 	serverServerConfig,
 	auth,
 	petStore
 );
 const serverIndexSync = new PetQueryServerIndexSync(
-	indexDatabase,
+	serverConfig.database,
 	serverUuid,
 	indexConfig.sync.interval,
 	indexConfig.sync.timeout,
@@ -116,7 +108,7 @@ function onShutdownError(error:unknown):void{
 
 process.once('SIGINT',onSignal);
 process.once('SIGTERM',onSignal);
-
+/*
 server.addPlugin(
 	new PetQuery3pPluginAnimalidPlugin(PetQueryConfig.getPluginConfig(
 		 PetQuery3pPluginAnimalidConfig
@@ -129,8 +121,8 @@ server.addPlugin(
 		,'mysql'
 	))
 );
+*/
 server.registerRoutes([
-	new PetQueryServerRouteJson(server),
 	new PetQueryServerRouteApi(server),
 	new PetQueryServerRoutePet(server),
 	new PetQueryServerRouteAuth(server),
