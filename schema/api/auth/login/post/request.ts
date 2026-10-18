@@ -7,7 +7,7 @@
 
 import { PetQuerySchema } from '#petquery/schema.js';
 import { PetQuerySchemaApiAuthLoginPostResponse } from '#schema/api/auth/login/post/response.js';
-import { PetQueryServerRequestSchemaAuth } from '#petquery/server/request/schema/auth.js';
+import { PetQueryServerRequestSchema } from '#petquery/server/request/schema.js';
 
 import type { PetQuerySchemaApiAuthLoginPostResponseType } from '#schema/api/auth/login/post/response.js';
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
@@ -27,7 +27,7 @@ export type PetQuerySchemaApiAuthLoginPostRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 class PetQuerySchemaApiAuthLoginPostRequest extends
-	PetQueryServerRequestSchemaAuth<
+	PetQueryServerRequestSchema<
 		PetQuerySchemaApiAuthLoginPostRequestType,
 		PetQuerySchemaApiAuthLoginPostResponseType
 	>{

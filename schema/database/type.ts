@@ -13,7 +13,8 @@ import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 const T = PetQuerySchema.type;
 
 const schema = T.Enum([
-		'lmdb'
+		'lmdb',
+		'postgresql'
 	]
 	,{
 	 title:'GET /api/config/get File'

@@ -14,19 +14,15 @@ import { PetQueryServerDatabasePet } from '#petquery/server/database/pet.js';
 import { open as LmdbOpen } from 'lmdb';
 
 import type { PetQuerySchemaServerDatabasePetEntryType } from '#schema/server/database/pet/entry.js';
-
-export type PetQueryDatabaseLmdbConfig = {
-	path:filename_t;
-	name:utf8_t;
-};
-
+import { PetQuerySchemaDatabaseConfigLmdbType } from '#schema/database/config/lmdb.js';
+	
 export class PetQueryDatabasePetLmdb
 extends PetQueryDestructor
 implements PetQueryServerDatabasePet{
 	protected readonly _db;
 
 	// Opens the named database inside the LMDB environment at path.
-	constructor(config:PetQueryDatabaseLmdbConfig){
+	constructor(config:PetQuerySchemaDatabaseConfigLmdbType){
 		super();
 		this._db = LmdbOpen<utf8_t,utf8_t>({
 			path:config.path,

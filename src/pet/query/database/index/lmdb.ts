@@ -12,11 +12,7 @@ import { PetQueryServerDatabaseIndex } from '#petquery/server/database/index.js'
 import { open as LmdbOpen } from 'lmdb';
 
 import type { PetQuerySchemaServerDatabaseIndexEntryType } from '#schema/server/database/index/entry.js';
-
-export type PetQueryDatabaseLmdbConfig = {
-	path:filename_t;
-	name:utf8_t;
-};
+import { PetQuerySchemaDatabaseConfigLmdbType } from '#schema/database/config/lmdb.js';
 
 export class PetQueryDatabaseIndexLmdb
 extends PetQueryDestructor
@@ -24,7 +20,7 @@ implements PetQueryServerDatabaseIndex{
 	protected readonly _db;
 
 	// Opens the named database inside the LMDB environment at path.
-	constructor(config:PetQueryDatabaseLmdbConfig){
+	constructor(config:PetQuerySchemaDatabaseConfigLmdbType){
 		super();
 		this._db = LmdbOpen<utf8_t,utf8_t>({
 			path:config.path,
@@ -35,9 +31,11 @@ implements PetQueryServerDatabaseIndex{
 		await this._db.close();
 	}
 
-	async serverIndexGetServerUid():Promise<uuid_t|undefined>{
+	async serverIndexGetServerUid():Promise<uuid_t>{
 		this._assertNotDestroyed();
-		return this._db.get('server/uid');
+		const value = this._db.get('server/uid');
+		PetQueryAssert.notNull(value);
+		return value;
 	}
 	async serverIndexSetServerUid(uid:uuid_t):Promise<void>{
 		this._assertNotDestroyed();

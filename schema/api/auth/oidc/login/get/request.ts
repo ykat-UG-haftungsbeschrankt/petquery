@@ -7,7 +7,7 @@
 
 import { PetQuerySchema } from '#petquery/schema.js';
 import { PetQuerySchemaApiAuthOidcLoginGetResponse } from '#schema/api/auth/oidc/login/get/response.js';
-import { PetQueryServerRequestSchemaAuth } from '#petquery/server/request/schema/auth.js';
+import { PetQueryServerRequestSchema } from '#petquery/server/request/schema.js';
 
 import type { PetQuerySchemaApiAuthOidcLoginGetResponseType } from '#schema/api/auth/oidc/login/get/response.js';
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
@@ -22,7 +22,7 @@ export type PetQuerySchemaApiAuthOidcLoginGetRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 class PetQuerySchemaApiAuthOidcLoginGetRequest extends
-	PetQueryServerRequestSchemaAuth<
+	PetQueryServerRequestSchema<
 		PetQuerySchemaApiAuthOidcLoginGetRequestType,
 		PetQuerySchemaApiAuthOidcLoginGetResponseType
 	>{

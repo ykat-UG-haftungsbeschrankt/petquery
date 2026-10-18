@@ -223,22 +223,27 @@ const settings:PetQueryConfigType = {
 		}
 		,database:new PetQueryDatabase({
 			dbAuth:new PetQueryDatabaseAuthLmdb({
+				type:'lmdb',
 				path:'./var/lmdb',
 				name:'auth',
 			}),
 			dbConfig:new PetQueryDatabaseConfigLmdb({
+				type:'lmdb',
 				path:'./var/lmdb',
 				name:'config',
 			}),
 			dbIndex:new PetQueryDatabaseIndexLmdb({
+				type:'lmdb',
 				path:'./var/lmdb',
 				name:'index',
 			}),
 			dbPet:new PetQueryDatabasePetLmdb({
+				type:'lmdb',
 				path:'./var/lmdb',
 				name:'pet',
 			}),
 			dbSession:new PetQueryDatabaseSessionLmdb({
+				type:'lmdb',
 				path:'./var/lmdb',
 				name:'session',
 			}),

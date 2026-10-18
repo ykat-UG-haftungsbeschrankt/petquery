@@ -7,7 +7,7 @@
 
 import { PetQuerySchema } from '#petquery/schema.js';
 import { PetQuerySchemaApiAuthUsersDeleteResponse } from '#schema/api/auth/users/delete/response.js';
-import { PetQueryServerRequestSchemaAuth } from '#petquery/server/request/schema/auth.js';
+import { PetQueryServerRequestSchema } from '#petquery/server/request/schema.js';
 
 import type { PetQuerySchemaApiAuthUsersDeleteResponseType } from '#schema/api/auth/users/delete/response.js';
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
@@ -27,7 +27,7 @@ export type PetQuerySchemaApiAuthUsersDeleteRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 class PetQuerySchemaApiAuthUsersDeleteRequest extends
-	PetQueryServerRequestSchemaAuth<
+	PetQueryServerRequestSchema<
 		PetQuerySchemaApiAuthUsersDeleteRequestType,
 		PetQuerySchemaApiAuthUsersDeleteResponseType
 	>{

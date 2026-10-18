@@ -8,7 +8,7 @@
 import { PetQuerySchema } from '#petquery/schema.js';
 import { PetQuerySchemaApiAuthGroup } from '#schema/api/auth/user.js';
 import { PetQuerySchemaApiAuthUsersPostResponse } from '#schema/api/auth/users/post/response.js';
-import { PetQueryServerRequestSchemaAuth } from '#petquery/server/request/schema/auth.js';
+import { PetQueryServerRequestSchema } from '#petquery/server/request/schema.js';
 
 import type { PetQuerySchemaApiAuthUsersPostResponseType } from '#schema/api/auth/users/post/response.js';
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
@@ -30,7 +30,7 @@ export type PetQuerySchemaApiAuthUsersPostRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
 class PetQuerySchemaApiAuthUsersPostRequest extends
-	PetQueryServerRequestSchemaAuth<
+	PetQueryServerRequestSchema<
 		PetQuerySchemaApiAuthUsersPostRequestType,
 		PetQuerySchemaApiAuthUsersPostResponseType
 	>{
