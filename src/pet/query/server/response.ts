@@ -94,6 +94,30 @@ export class PetQueryServerResponse{
 		);
 	}
 
+	sendAuthUnauthorizedError(error:unknown):void{
+		this._sendApi(
+			 PetQueryHttpStatusCode.UNAUTHORIZED
+			,false
+			,(error instanceof Error
+				? error.message.split('\n')
+				: [NodeUtilInspect(error)]
+			)
+			,null
+		);
+	}
+
+	sendAuthForbiddenError(error:unknown):void{
+		this._sendApi(
+			 PetQueryHttpStatusCode.UNAUTHORIZED
+			,false
+			,(error instanceof Error
+				? error.message.split('\n')
+				: [NodeUtilInspect(error)]
+			)
+			,null
+		);
+	}
+
 	status(code:uint_t):PetQueryServerResponse{
 		this._response.status(code);
 		return this;

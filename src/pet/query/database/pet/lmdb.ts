@@ -36,7 +36,7 @@ implements PetQueryServerDatabasePet{
 
 	async serverPetAdd(value:PetQuerySchemaServerDatabasePetEntryType){
 		this._assertNotDestroyed();
-		this._db.put('pet/' + value.petId,JSON.stringify(value));
+		await this._db.put('pet/' + value.petId,JSON.stringify(value));
 	};
 	async serverPetGet(petId:utf8_t):Promise<PetQuerySchemaServerDatabasePetEntryType>{
 		this._assertNotDestroyed();

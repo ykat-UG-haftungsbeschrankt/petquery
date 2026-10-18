@@ -5,23 +5,51 @@
  * free of charge, without warranty of any kind.
  */
 
-import util from 'node:util';
-import {PetQueryServerRoute, PetQueryServerRouteAccessGroup} from '#petquery/server/route.js';
-import type {PetQueryServerRequest} from
-	'#petquery/server/request.js';
-import type {PetQueryServerResponse} from
-	'#petquery/server/response.js';
-
-import type {PetQuerySchemaApiPetGetRequest} from '#schema/api/pet/get/request.js';
+import {
+	PetQueryServerRoute,
+	PetQueryServerRouteAccessGroup
+} from '#petquery/server/route.js';
+import {
+	PetQuerySchemaApiPetGetRequest,
+	type PetQuerySchemaApiPetGetRequestType
+} from '#schema/api/pet/get/request.js';
+import type {PetQuerySchemaApiPetGetResponseType} from
+	'#schema/api/pet/get/response.js';
+import {
+	PetQuerySchemaApiPetGetEntryRequest,
+	type PetQuerySchemaApiPetGetEntryRequestType
+} from '#schema/api/pet/get/entry/request.js';
+import type {PetQuerySchemaApiPetGetEntryResponseType} from
+	'#schema/api/pet/get/entry/response.js';
+import {
+	PetQuerySchemaApiPetPostRequest,
+	type PetQuerySchemaApiPetPostRequestType
+} from '#schema/api/pet/post/request.js';
+import type {PetQuerySchemaApiPetPostResponseType} from
+	'#schema/api/pet/post/response.js';
+import {
+	PetQuerySchemaApiPetPutRequest,
+	type PetQuerySchemaApiPetPutRequestType
+} from '#schema/api/pet/put/request.js';
+import type {PetQuerySchemaApiPetPutResponseType} from
+	'#schema/api/pet/put/response.js';
+import {
+	PetQuerySchemaApiPetDeleteRequest,
+	type PetQuerySchemaApiPetDeleteRequestType
+} from '#schema/api/pet/delete/request.js';
+import type {PetQuerySchemaApiPetDeleteResponseType} from
+	'#schema/api/pet/delete/response.js';
 
 export class PetQueryServerRoutePet extends PetQueryServerRoute{
 	register():void{
 		if(true !== this.getServer()._getConfig().route.api.enabled){
 			return;
 		}
+		const accessGroup = PetQueryServerRouteAccessGroup.User;
 		this.getServer().get(
 			'/api/pets',
-			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.User),
+			this._disableCache.bind(this),
+			this._getAccessGroupHandler(accessGroup),
 			PetQuerySchemaApiPetGetRequest._handle.bind(
 				this,
 				this._handleList.bind(this)
@@ -29,106 +57,85 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		);
 		this.getServer().post(
 			'/api/pets',
-			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.User),
-			this._wrap(this._handleCreate.bind(this))
+			this._disableCache.bind(this),
+			this._getAccessGroupHandler(accessGroup),
+			PetQuerySchemaApiPetPostRequest._handle.bind(
+				this,
+				this._handleCreate.bind(this)
+			)
 		);
 		this.getServer().get(
 			'/api/pets/:pet_id',
-			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.User),
-			this._wrap(this._handleGet.bind(this))
+			this._disableCache.bind(this),
+			this._getAccessGroupHandler(accessGroup),
+			PetQuerySchemaApiPetGetEntryRequest._handle.bind(
+				this,
+				this._handleGet.bind(this)
+			)
 		);
 		this.getServer().put(
 			'/api/pets/:pet_id',
-			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.User),
-			this._wrap(this._handleUpdate.bind(this))
+			this._disableCache.bind(this),
+			this._getAccessGroupHandler(accessGroup),
+			PetQuerySchemaApiPetPutRequest._handle.bind(
+				this,
+				this._handleUpdate.bind(this)
+			)
 		);
 		this.getServer().delete(
 			'/api/pets/:pet_id',
-			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.User),
-			this._wrap(this._handleDelete.bind(this))
+			this._disableCache.bind(this),
+			this._getAccessGroupHandler(accessGroup),
+			PetQuerySchemaApiPetDeleteRequest._handle.bind(
+				this,
+				this._handleDelete.bind(this)
+			)
 		);
 	}
 
 	protected async _handleList(
-		UNUSED_req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		this._sendSuccess(res,await this.getServer()._getPetStore().list());
+		UNUSED_request:PetQuerySchemaApiPetGetRequestType
+	):Promise<PetQuerySchemaApiPetGetResponseType>{
+		const database = this.getServer()._getDatabase().getDbPet();
+		return database.serverPetGetEntries();
 	}
 
 	protected async _handleGet(
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		const pet = await this.getServer()._getPetStore().get(
-			this._getParam(req,'pet_id')
-		);
-		if(null === pet){
-			this._sendError(res,404,['Pet not found']);
-			return;
-		}
-		this._sendSuccess(res,pet);
+		request:PetQuerySchemaApiPetGetEntryRequestType
+	):Promise<PetQuerySchemaApiPetGetEntryResponseType>{
+		const database = this.getServer()._getDatabase().getDbPet();
+		return database.serverPetGet(request.pet_id);
 	}
 
 	protected async _handleCreate(
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		const pet = await this.getServer()._getPetStore().create(
-			this.getServer()._getPetStore().parse(req.body)
-		);
-		this._sendSuccess(res,pet);
+		request:PetQuerySchemaApiPetPostRequestType
+	):Promise<PetQuerySchemaApiPetPostResponseType>{
+		const database = this.getServer()._getDatabase().getDbPet();
+		await database.serverPetAdd(request);
+		return request;
 	}
 
 	protected async _handleUpdate(
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		const pet = await this.getServer()._getPetStore().update(
-			this._getParam(req,'pet_id'),
-			this.getServer()._getPetStore().parse(req.body)
-		);
-		this._sendSuccess(res,pet);
+		request:PetQuerySchemaApiPetPutRequestType
+	):Promise<PetQuerySchemaApiPetPutResponseType>{
+		const {pet_id:petId,...pet} = request;
+		if(petId !== pet.petId){
+			throw new Error('petId must match the pet_id URL parameter');
+		}
+		const database = this.getServer()._getDatabase().getDbPet();
+		await database.serverPetGet(petId);
+		await database.serverPetAdd(pet);
+		return pet;
 	}
 
 	protected async _handleDelete(
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse
-	):Promise<void>{
-		await this.getServer()._getPetStore().remove(
-			this._getParam(req,'pet_id')
-		);
-		this._sendSuccess(res,null);
+		request:PetQuerySchemaApiPetDeleteRequestType
+	):Promise<PetQuerySchemaApiPetDeleteResponseType>{
+		const database = this.getServer()._getDatabase().getDbPet();
+		await database.serverPetRemove(request.pet_id);
+		return null;
 	}
-
-	protected _getParam(
-		req:PetQueryServerRequest,
-		name:utf8_t
-	):utf8_t{
-		const value = req.params[name];
-		if('string' !== typeof value || '' === value){
-			throw new Error(`${name} is required`);
-		}
-		return value;
-	}
-
-	protected _sendSuccess(
-		res:PetQueryServerResponse,
-		data:unknown
-	):void{
-		res.set('Cache-Control','no-store');
-		res.status(200).json({success:true,error:[],data});
-	}
-
-	protected _sendError(
-		res:PetQueryServerResponse,
-		status:uint16_t,
-		error:Array<utf8_t>
-	):void{
-		res.set('Cache-Control','no-store');
-		res.status(status).json({success:false,error,data:[]});
-	}
-
+/*
 	protected override _getErrorMessage(error:unknown):utf8_t{
 		return error instanceof Error ? error.message : util.inspect(error);
 	}
@@ -195,4 +202,5 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			new PetQueryResultData(data.slice(0,config.max_results_total))
 		);
 	}
+		*/
 };

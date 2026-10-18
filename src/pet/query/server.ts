@@ -166,7 +166,7 @@ export class PetQueryServer extends PetQueryDestructor{
 		return this._configFile;
 	}
 
-	_getAuth():PetQueryServerAuth{
+	getAuth():PetQueryServerAuth{
 		return this._auth;
 	}
 

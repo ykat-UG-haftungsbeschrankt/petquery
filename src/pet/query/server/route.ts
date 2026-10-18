@@ -82,12 +82,21 @@ export abstract class PetQueryServerRoute{
 		return this._server;
 	}
 
+	protected _disableCache(
+		UNUSED_req:PetQueryServerRequest,
+		res:PetQueryServerResponse,
+		next:PetQueryServerNext
+	):void{
+		res.setHeader('Cache-Control','no-store');
+		next();
+	}
+
 	protected _authenticateUser(
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse,
 		next:PetQueryServerNext
 	):Promise<void>{
-		return req._authenticateUser(this.getServer()._getAuth(),res,next);
+		return req._authenticateUser(this.getServer().getAuth(),res,next);
 	}
 
 	protected _authenticateAdmin(
@@ -95,7 +104,7 @@ export abstract class PetQueryServerRoute{
 		res:PetQueryServerResponse,
 		next:PetQueryServerNext
 	):Promise<void>{
-		return req._authenticateAdmin(this.getServer()._getAuth(),res,next);
+		return req._authenticateAdmin(this.getServer().getAuth(),res,next);
 	}
 
 	protected _getAccessGroupHandler(group:PetQueryServerRouteAccessGroup){

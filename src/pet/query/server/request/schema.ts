@@ -67,8 +67,10 @@ export abstract class PetQueryServerRequestSchema<
 
 	_handle(
 		handler:(
-			request:T_REQUEST
-		)=>Promise<T_RESPONSE>,
+			request:T_REQUEST,
+			req:PetQueryServerRequest,
+			res:PetQueryServerResponse
+		)=>Promise<T_RESPONSE|void>,
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
@@ -82,19 +84,42 @@ export abstract class PetQueryServerRequestSchema<
 
 	protected async _handleRequest(
 		parse:(json:json_t)=>T_REQUEST,
-		handler:(request:T_REQUEST)=>Promise<T_RESPONSE>,
+		handler:(
+			request:T_REQUEST,
+			req:PetQueryServerRequest,
+			res:PetQueryServerResponse
+		)=>Promise<T_RESPONSE|void>,
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
 		try{
 			try{
-				const data = await handler(parse(req.getHandlerArgs()));
-				res.sendApiSuccess(data);
+				const data = await handler(
+					parse(req.getHandlerArgs()),
+					req,
+					res
+				);
+				if(!res.getHeadersSent()){
+					if(undefined === data){
+						throw new Error('Handler did not produce a response');
+					}
+					res.sendApiSuccess(data);
+				}
 			}catch(error){
-				res.sendApiError(error);
+				if(res.getHeadersSent()){
+					throw error;
+				}
+				this._sendRequestError(res,error);
 			}
 		}catch(error){
 			console.error(`Sending the response failed: ${util.inspect(error)}`);
 		}
+	}
+
+	protected _sendRequestError(
+		res:PetQueryServerResponse,
+		error:unknown
+	):void{
+		res.sendApiError(error);
 	}
 };

@@ -45,7 +45,7 @@ export class PetQueryServerRequest{
 	):Promise<void>{
 		const user = await auth.authenticate(this);
 		if(null === user){
-			res._sendAuthError(401,'Authentication required');
+			res.sendAuthUnauthorizedError('Authentication required');
 			return;
 		}
 		this.petQueryUser = user;
@@ -59,11 +59,11 @@ export class PetQueryServerRequest{
 	):Promise<void>{
 		const user = await auth.authenticate(this);
 		if(null === user){
-			res._sendAuthError(401,'Authentication required');
+			res.sendAuthUnauthorizedError('Authentication required');
 			return;
 		}
 		if('admin' !== user.group){
-			res._sendAuthError(403,'Admin access required');
+			res.sendAuthForbiddenError('Admin access required');
 			return;
 		}
 		this.petQueryUser = user;

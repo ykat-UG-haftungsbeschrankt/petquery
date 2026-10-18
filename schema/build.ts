@@ -11,6 +11,46 @@
 
 import fs from 'node:fs/promises';
 import type {PetQuerySchemaType} from '#petquery/schema.js';
+import {PetQuerySchemaApiAuthModeGetRequest} from
+	'#schema/api/auth/mode/get/request.js';
+import {PetQuerySchemaApiAuthModeGetResponse} from
+	'#schema/api/auth/mode/get/response.js';
+import {PetQuerySchemaApiAuthSessionGetRequest} from
+	'#schema/api/auth/session/get/request.js';
+import {PetQuerySchemaApiAuthSessionGetResponse} from
+	'#schema/api/auth/session/get/response.js';
+import {PetQuerySchemaApiAuthLoginPostRequest} from
+	'#schema/api/auth/login/post/request.js';
+import {PetQuerySchemaApiAuthLoginPostResponse} from
+	'#schema/api/auth/login/post/response.js';
+import {PetQuerySchemaApiAuthLogoutPostRequest} from
+	'#schema/api/auth/logout/post/request.js';
+import {PetQuerySchemaApiAuthLogoutPostResponse} from
+	'#schema/api/auth/logout/post/response.js';
+import {PetQuerySchemaApiAuthOidcLoginGetRequest} from
+	'#schema/api/auth/oidc/login/get/request.js';
+import {PetQuerySchemaApiAuthOidcLoginGetResponse} from
+	'#schema/api/auth/oidc/login/get/response.js';
+import {PetQuerySchemaApiAuthOidcCallbackGetRequest} from
+	'#schema/api/auth/oidc/callback/get/request.js';
+import {PetQuerySchemaApiAuthOidcCallbackGetResponse} from
+	'#schema/api/auth/oidc/callback/get/response.js';
+import {PetQuerySchemaApiAuthUsersGetRequest} from
+	'#schema/api/auth/users/get/request.js';
+import {PetQuerySchemaApiAuthUsersGetResponse} from
+	'#schema/api/auth/users/get/response.js';
+import {PetQuerySchemaApiAuthUsersPostRequest} from
+	'#schema/api/auth/users/post/request.js';
+import {PetQuerySchemaApiAuthUsersPostResponse} from
+	'#schema/api/auth/users/post/response.js';
+import {PetQuerySchemaApiAuthUsersPutRequest} from
+	'#schema/api/auth/users/put/request.js';
+import {PetQuerySchemaApiAuthUsersPutResponse} from
+	'#schema/api/auth/users/put/response.js';
+import {PetQuerySchemaApiAuthUsersDeleteRequest} from
+	'#schema/api/auth/users/delete/request.js';
+import {PetQuerySchemaApiAuthUsersDeleteResponse} from
+	'#schema/api/auth/users/delete/response.js';
 import {PetQuerySchemaApiPingGetRequest} from
 	'#schema/api/ping/get/request.js';
 import {PetQuerySchemaApiPingGetResponse} from
@@ -35,6 +75,26 @@ import {PetQuerySchemaApiConfigPutRequest} from
 	'#schema/api/config/put/request.js';
 import {PetQuerySchemaApiConfigPutResponse} from
 	'#schema/api/config/put/response.js';
+import {PetQuerySchemaApiPetGetRequest} from
+	'#schema/api/pet/get/request.js';
+import {PetQuerySchemaApiPetGetResponse} from
+	'#schema/api/pet/get/response.js';
+import {PetQuerySchemaApiPetGetEntryRequest} from
+	'#schema/api/pet/get/entry/request.js';
+import {PetQuerySchemaApiPetGetEntryResponse} from
+	'#schema/api/pet/get/entry/response.js';
+import {PetQuerySchemaApiPetPostRequest} from
+	'#schema/api/pet/post/request.js';
+import {PetQuerySchemaApiPetPostResponse} from
+	'#schema/api/pet/post/response.js';
+import {PetQuerySchemaApiPetPutRequest} from
+	'#schema/api/pet/put/request.js';
+import {PetQuerySchemaApiPetPutResponse} from
+	'#schema/api/pet/put/response.js';
+import {PetQuerySchemaApiPetDeleteRequest} from
+	'#schema/api/pet/delete/request.js';
+import {PetQuerySchemaApiPetDeleteResponse} from
+	'#schema/api/pet/delete/response.js';
 import {PetQuerySchemaSearchRequest} from
 	'#schema/search/request.js';
 import {PetQuerySchemaSearchResponse} from
@@ -42,6 +102,86 @@ import {PetQuerySchemaSearchResponse} from
 
 // Error responses of every route are described by schema/error.json.
 const schemas:Array<[utf8_t,PetQuerySchemaType]> = [
+	[
+		'schema/api/auth/mode/get/request.json',
+		PetQuerySchemaApiAuthModeGetRequest.getSchema()
+	],
+	[
+		'schema/api/auth/mode/get/response.json',
+		PetQuerySchemaApiAuthModeGetResponse.getSchema()
+	],
+	[
+		'schema/api/auth/session/get/request.json',
+		PetQuerySchemaApiAuthSessionGetRequest.getSchema()
+	],
+	[
+		'schema/api/auth/session/get/response.json',
+		PetQuerySchemaApiAuthSessionGetResponse.getSchema()
+	],
+	[
+		'schema/api/auth/login/post/request.json',
+		PetQuerySchemaApiAuthLoginPostRequest.getSchema()
+	],
+	[
+		'schema/api/auth/login/post/response.json',
+		PetQuerySchemaApiAuthLoginPostResponse.getSchema()
+	],
+	[
+		'schema/api/auth/logout/post/request.json',
+		PetQuerySchemaApiAuthLogoutPostRequest.getSchema()
+	],
+	[
+		'schema/api/auth/logout/post/response.json',
+		PetQuerySchemaApiAuthLogoutPostResponse.getSchema()
+	],
+	[
+		'schema/api/auth/oidc/login/get/request.json',
+		PetQuerySchemaApiAuthOidcLoginGetRequest.getSchema()
+	],
+	[
+		'schema/api/auth/oidc/login/get/response.json',
+		PetQuerySchemaApiAuthOidcLoginGetResponse.getSchema()
+	],
+	[
+		'schema/api/auth/oidc/callback/get/request.json',
+		PetQuerySchemaApiAuthOidcCallbackGetRequest.getSchema()
+	],
+	[
+		'schema/api/auth/oidc/callback/get/response.json',
+		PetQuerySchemaApiAuthOidcCallbackGetResponse.getSchema()
+	],
+	[
+		'schema/api/auth/users/get/request.json',
+		PetQuerySchemaApiAuthUsersGetRequest.getSchema()
+	],
+	[
+		'schema/api/auth/users/get/response.json',
+		PetQuerySchemaApiAuthUsersGetResponse.getSchema()
+	],
+	[
+		'schema/api/auth/users/post/request.json',
+		PetQuerySchemaApiAuthUsersPostRequest.getSchema()
+	],
+	[
+		'schema/api/auth/users/post/response.json',
+		PetQuerySchemaApiAuthUsersPostResponse.getSchema()
+	],
+	[
+		'schema/api/auth/users/put/request.json',
+		PetQuerySchemaApiAuthUsersPutRequest.getSchema()
+	],
+	[
+		'schema/api/auth/users/put/response.json',
+		PetQuerySchemaApiAuthUsersPutResponse.getSchema()
+	],
+	[
+		'schema/api/auth/users/delete/request.json',
+		PetQuerySchemaApiAuthUsersDeleteRequest.getSchema()
+	],
+	[
+		'schema/api/auth/users/delete/response.json',
+		PetQuerySchemaApiAuthUsersDeleteResponse.getSchema()
+	],
 	[
 		'schema/api/ping/get/request.json',
 		PetQuerySchemaApiPingGetRequest.getSchema()
@@ -89,6 +229,46 @@ const schemas:Array<[utf8_t,PetQuerySchemaType]> = [
 	[
 		'schema/api/config/put/response.json',
 		PetQuerySchemaApiConfigPutResponse.getSchema()
+	],
+	[
+		'schema/api/pet/get/request.json',
+		PetQuerySchemaApiPetGetRequest.getSchema()
+	],
+	[
+		'schema/api/pet/get/response.json',
+		PetQuerySchemaApiPetGetResponse.getSchema()
+	],
+	[
+		'schema/api/pet/get/entry/request.json',
+		PetQuerySchemaApiPetGetEntryRequest.getSchema()
+	],
+	[
+		'schema/api/pet/get/entry/response.json',
+		PetQuerySchemaApiPetGetEntryResponse.getSchema()
+	],
+	[
+		'schema/api/pet/post/request.json',
+		PetQuerySchemaApiPetPostRequest.getSchema()
+	],
+	[
+		'schema/api/pet/post/response.json',
+		PetQuerySchemaApiPetPostResponse.getSchema()
+	],
+	[
+		'schema/api/pet/put/request.json',
+		PetQuerySchemaApiPetPutRequest.getSchema()
+	],
+	[
+		'schema/api/pet/put/response.json',
+		PetQuerySchemaApiPetPutResponse.getSchema()
+	],
+	[
+		'schema/api/pet/delete/request.json',
+		PetQuerySchemaApiPetDeleteRequest.getSchema()
+	],
+	[
+		'schema/api/pet/delete/response.json',
+		PetQuerySchemaApiPetDeleteResponse.getSchema()
 	],
 	[
 		'schema/search/request.json',

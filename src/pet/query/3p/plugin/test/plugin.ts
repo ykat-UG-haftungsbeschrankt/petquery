@@ -7,7 +7,7 @@
 
 import {PetQueryPlugin} from '#petquery/plugin.js';
 import {PetQuerySchemaPluginRequestType} from '#schema/plugin/request.js';
-import {PetQuerySchemaPluginResponseType} from '#schema/plugin/response.js';
+import {PetQuerySchemaPluginResponse, PetQuerySchemaPluginResponseType} from '#schema/plugin/response.js';
 import {PetQuery3pPluginTestConfig} from
 	'#petquery/3p/plugin/test/config.js';
 
@@ -18,7 +18,7 @@ export class PetQuery3pPluginTestPlugin extends PetQueryPlugin{
 	override async query(
 		UNUSED_query:PetQuerySchemaPluginRequestType
 	):Promise<PetQuerySchemaPluginResponseType>{
-		return new PetQuerySchemaPluginResponseType(true,[],PetQueryResultData.fromJson([{
+		return PetQuerySchemaPluginResponse.fromJson([{
 			source: {
 				favicon: 'https://animalid.by/favicon.ico'
 				, url: 'https://animalid.by'
@@ -32,6 +32,6 @@ export class PetQuery3pPluginTestPlugin extends PetQueryPlugin{
 					last: "Smith",
 				}
 			}
-		}]));
+		}]);
 	}
 };
