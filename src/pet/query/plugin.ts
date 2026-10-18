@@ -14,11 +14,7 @@ export class PetQueryPluginConfig{
 	private _enabled:boolean;
 	private _timeout:milliseconds_t;
 	private _source:PetQuerySchemaPluginDataSourceType;
-	constructor(obj:{
-		 enabled:boolean
-		,timeout:milliseconds_t
-		,source:PetQuerySchemaPluginDataSourceType
-	}){
+	constructor(obj:PetQuerySchemaPluginConfigType){
 		this._enabled = obj.enabled;
 		this._timeout = obj.timeout;
 		this._source = obj.source;

@@ -5,23 +5,17 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQueryPlugin} from '#petquery/plugin.js';
+import {PetQueryPlugin, PetQueryPluginConfig} from '#petquery/plugin.js';
 import {PetQuerySchemaPluginRequestType} from '#schema/plugin/request.js';
 import {PetQuerySchemaPluginResponseType} from '#schema/plugin/response.js';
-import {PetQuery3pPluginErrorConfig} from
-	'#petquery/3p/plugin/error/config.js';
 
 export class PetQuery3pPluginErrorPlugin extends PetQueryPlugin{
-	constructor(cfg:PetQuery3pPluginErrorConfig){
+	constructor(cfg:ConstructorParameters<typeof PetQueryPluginConfig>[0]){
 		super('error',cfg);
 	}
 	override async query(UNUSED_query:PetQuerySchemaPluginRequestType):Promise<PetQuerySchemaPluginResponseType>{
 
 		//throw new Error("1234");
-		return new PetQuerySchemaPluginResponseType(
-			true,
-			[],
-			new PetQueryResultData([])
-		);
+		return [];
 	}
 };

@@ -5,9 +5,6 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQueryPluginQuery} from '#petquery/plugin/query.js';
-import {PetQueryPluginQueryFile} from
-	'#petquery/plugin/query/file.js';
 import type {
 	PetQueryServerAuth,
 	PetQueryServerAuthUser
@@ -16,6 +13,7 @@ import type {PetQueryServerResponse} from
 	'#petquery/server/response.js';
 import type {UploadedFile} from 'express-fileupload';
 import type {default as Express} from 'express';
+import type {PetQuerySchemaPluginFileType} from '#schema/plugin/file.js';
 
 export class PetQueryServerRequest{
 	protected readonly _request:Express.Request;
@@ -27,7 +25,6 @@ export class PetQueryServerRequest{
 	readonly headers:Express.Request['headers'];
 	readonly path:utf8_t;
 	readonly originalUrl:utf8_t;
-	petQueryPluginQuery?:PetQueryPluginQuery;
 	petQueryUser?:PetQueryServerAuthUser;
 
 	constructor(request:Express.Request){
@@ -76,7 +73,7 @@ export class PetQueryServerRequest{
 	getHandlerArgs():json_t{
 		const files:json_object_t = {};
 		for(const [key, file] of this._getFiles()){
-			files[key] = file.toJson();
+			files[key] = file;
 		}
 		return {
 			...files,
@@ -86,8 +83,8 @@ export class PetQueryServerRequest{
 		};
 	}
 
-	_getFiles():Map<string, PetQueryPluginQueryFile>{
-		const files = new Map<string, PetQueryPluginQueryFile>();
+	_getFiles():Map<string, PetQuerySchemaPluginFileType>{
+		const files = new Map<string, PetQuerySchemaPluginFileType>();
 		for(const key of Object.keys(this._request.files ?? {})){
 			const file = this._request.files?.[key];
 			if(undefined === file){
@@ -96,13 +93,13 @@ export class PetQueryServerRequest{
 			const fileArray:Array<UploadedFile> =
 				Array.isArray(file) ? file : [file];
 			for(const value of fileArray){
-				files.set(key, new PetQueryPluginQueryFile({
+				files.set(key,{
 					filename:value.name,
 					mime:value.mimetype,
 					data:value.data.toString('base64'),
 					size:value.size,
 					md5:value.md5
-				}));
+				});
 			}
 		}
 		return files;

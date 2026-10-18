@@ -14,7 +14,4 @@ export interface PetQueryServerDatabaseIndex{
 	serverIndexRemoveServer(key:utf8_t):Promise<void>;
 
 	serverIndexGetServerList():Promise<Array<PetQuerySchemaServerDatabaseIndexEntryType>>;
-
-	serverIndexSetServerUid(uid:uuid_t):Promise<void>;
-	serverIndexGetServerUid():Promise<uuid_t>;
 };

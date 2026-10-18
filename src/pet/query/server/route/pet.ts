@@ -12,6 +12,8 @@ import type {PetQueryServerRequest} from
 import type {PetQueryServerResponse} from
 	'#petquery/server/response.js';
 
+import type {PetQuerySchemaApiPetGetRequest} from '#schema/api/pet/get/request.js';
+
 export class PetQueryServerRoutePet extends PetQueryServerRoute{
 	register():void{
 		if(true !== this.getServer()._getConfig().route.api.enabled){
@@ -20,7 +22,10 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		this.getServer().get(
 			'/api/pets',
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.User),
-			this._wrap(this._handleList.bind(this))
+			PetQuerySchemaApiPetGetRequest._handle.bind(
+				this,
+				this._handleList.bind(this)
+			)
 		);
 		this.getServer().post(
 			'/api/pets',

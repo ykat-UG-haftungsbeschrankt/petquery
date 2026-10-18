@@ -15,11 +15,9 @@ import { PetQuerySchemaServerDatabasePetEntry } from '#schema/server/database/pe
 
 const T = PetQuerySchema.type;
 
-const schema = T.Object({
-	 serverUuid:T.String({format:'uuid'})
-	,tracerouteUuid:T.Array(T.String({format:'uuid'}))
-	,data:T.Array(PetQuerySchemaServerDatabasePetEntry.getSchema())
-},{
+const schema = T.Array(
+	PetQuerySchemaServerDatabasePetEntry.getSchema()
+	,{
 	 title:'GET /api/config/get Response'
 	,additionalProperties:false
 });

@@ -5,27 +5,18 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQueryPlugin} from '#petquery/plugin.js';
+import {PetQueryPlugin, PetQueryPluginConfig} from '#petquery/plugin.js';
 import {PetQuerySchemaPluginRequestType} from '#schema/plugin/request.js';
 import {PetQuerySchemaPluginResponseType} from '#schema/plugin/response.js';
-import {PetQueryResultDataEntry} from '#petquery/result/data/entry.js';
-import {PetQuery3pPluginAnimalidConfig} from
-	'#petquery/3p/plugin/animalid/config.js';
 
 export class PetQuery3pPluginAnimalidPlugin extends PetQueryPlugin{
-	protected _cfg:PetQuery3pPluginAnimalidConfig;
-	constructor(cfg:PetQuery3pPluginAnimalidConfig){
+	constructor(cfg:ConstructorParameters<typeof PetQueryPluginConfig>[0]){
 		super('animalid.by',cfg);
-		this._cfg = cfg;
 	}
 	override async query(query:PetQuerySchemaPluginRequestType):Promise<PetQuerySchemaPluginResponseType>{
-		const queryId = String(query.getQuery()).replace(/[^0-9]/g,'');
+		const queryId = query.query.replace(/[^0-9]/g,'');
 		if(queryId === ''){
-			return new PetQuerySchemaPluginResponseType(
-				true,
-				[],
-				new PetQueryResultData([])
-			);
+			return [];
 		}
 
 		const ret = [];
@@ -62,18 +53,15 @@ export class PetQuery3pPluginAnimalidPlugin extends PetQueryPlugin{
 				obj[row[1].replace(/<[^>]+(>|$)/g, "")] = row[2].replace(/<[^>]+(>|$)/g, "");
 			}
 
-			ret.push(new PetQueryResultDataEntry({
-				 source:this.getSource()
+			ret.push({
+				 petId:''
+				,source:this.getSource()
 				,preview:preview
 				,files:files
 				,attributes:obj
-			}));
+			});
 		}
 
-		return new PetQuerySchemaPluginResponseType(
-			true,
-			[],
-			new PetQueryResultData(ret)
-		);
+		return ret;
 	}
 };

@@ -3,3 +3,6 @@
 /gui/node_modules/
 /docs/
 /var/
+/aisearch/data.json
+/aisearch/*.tmp
+__pycache__/

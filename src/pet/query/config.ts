@@ -25,6 +25,7 @@ import {PetQuery3pPluginAnimalidConfig} from
 import fileUpload from 'express-fileupload';
 import type {ServerOptions} from 'node:https';
 import type {PetQueryPluginConfig} from '#petquery/plugin.js';
+import { PetQueryDatabase } from '#petquery/database.js';
 
 export type PetQueryConfigAuthMode =
 	'bearer'|'lmdb'|'ldap'|'oidc';
@@ -84,7 +85,7 @@ export type PetQueryConfigServerType = {
 		max_results_per_module:uint_t;
 		max_results_total:uint_t;
 		index:{
-			database:PetQueryDatabaseLmdb;
+			database:PetQueryDatabase;
 			sync:{
 				enabled:bool_t;
 				interval:milliseconds_t;
@@ -93,7 +94,7 @@ export type PetQueryConfigServerType = {
 			};
 		};
 		settings:{
-			database:PetQueryDatabaseLmdb;
+			database:PetQueryDatabase;
 		};
 		route:{
 			api:{

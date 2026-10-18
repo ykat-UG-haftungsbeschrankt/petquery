@@ -136,6 +136,10 @@ export class PetQueryServerResponse{
 		this._response.redirect(status,url);
 	}
 
+	redirectUrl(url:uri_t):void{
+		this._response.redirect(url);
+	}
+
 	cookie(
 		name:utf8_t,
 		value:utf8_t,

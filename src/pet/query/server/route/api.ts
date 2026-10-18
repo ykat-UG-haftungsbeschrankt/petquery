@@ -214,6 +214,6 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		const configFile = this.getServer()._getConfigFile();
 		const saved = configFile.parse(request);
 		await configFile.save(saved);
-		return {saved};
+		return saved;
 	}
 };
