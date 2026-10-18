@@ -5,7 +5,7 @@
  * free of charge, without warranty of any kind.
  */
 
-import { PetQueryTypes } from "./types.js";
+import { PetQueryTypes } from '#petquery/types.js';
 
 export class PetQueryAssert implements Singleton{
 	private constructor(){}

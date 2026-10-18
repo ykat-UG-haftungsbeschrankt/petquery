@@ -5,11 +5,18 @@
  * free of charge, without warranty of any kind.
  */
 
-import {useCallback, useEffect, useState} from 'react';
-import type {ChangeEvent, FormEvent, ReactElement} from 'react';
-import {getConfig, saveConfig} from './api';
-import type {ConfigState, ConfigValues} from './api';
-import {useAction} from './action';
+import { getConfig } from '#gui/api';
+import { saveConfig } from '#gui/api';
+import { useAction } from '#gui/action';
+import { useCallback } from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
+
+import type { ChangeEvent } from 'react';
+import type { ConfigState } from '#gui/api';
+import type { ConfigValues } from '#gui/api';
+import type { FormEvent } from 'react';
+import type { ReactElement } from 'react';
 
 // setTimeout() fires immediately for delays above 2^31-1 ms.
 const MAX_TIMER_MS = 2147483647;

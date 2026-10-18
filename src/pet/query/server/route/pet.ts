@@ -5,52 +5,33 @@
  * free of charge, without warranty of any kind.
  */
 
-import {
-	PetQueryServerRoute,
-	PetQueryServerRouteAccessGroup
-} from '#petquery/server/route.js';
-import {
-	PetQuerySchemaApiPetGetRequest,
-	type PetQuerySchemaApiPetGetRequestType
-} from '#schema/api/pet/get/request.js';
-import type {PetQuerySchemaApiPetGetResponseType} from
-	'#schema/api/pet/get/response.js';
-import {
-	PetQuerySchemaApiPetGetEntryRequest,
-	type PetQuerySchemaApiPetGetEntryRequestType
-} from '#schema/api/pet/get/entry/request.js';
-import type {PetQuerySchemaApiPetGetEntryResponseType} from
-	'#schema/api/pet/get/entry/response.js';
-import {
-	PetQuerySchemaApiPetPostRequest,
-	type PetQuerySchemaApiPetPostRequestType
-} from '#schema/api/pet/post/request.js';
-import type {PetQuerySchemaApiPetPostResponseType} from
-	'#schema/api/pet/post/response.js';
-import {
-	PetQuerySchemaApiPetPutRequest,
-	type PetQuerySchemaApiPetPutRequestType
-} from '#schema/api/pet/put/request.js';
-import type {PetQuerySchemaApiPetPutResponseType} from
-	'#schema/api/pet/put/response.js';
-import {
-	PetQuerySchemaApiPetDeleteRequest,
-	type PetQuerySchemaApiPetDeleteRequestType
-} from '#schema/api/pet/delete/request.js';
-import type {PetQuerySchemaApiPetDeleteResponseType} from
-	'#schema/api/pet/delete/response.js';
-import {setTimeout as delay} from 'node:timers/promises';
-import type {PetQueryPlugin} from '#petquery/plugin.js';
-import {PetQuerySchema} from '#petquery/schema.js';
-import type {PetQueryServerRequest} from '#petquery/server/request.js';
-import type {PetQueryServerResponse} from '#petquery/server/response.js';
-import {
-	PetQuerySchemaApiPetSearchRequest,
-	type PetQuerySchemaApiPetSearchRequestType
-} from '#schema/api/pet/search/request.js';
-import type {PetQuerySchemaPluginRequestType} from
-	'#schema/plugin/request.js';
-import {PetQuerySchemaPluginResponse} from '#schema/plugin/response.js';
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaApiPetDeleteRequest } from '#schema/api/pet/delete/request.js';
+import { PetQuerySchemaApiPetGetEntryRequest } from '#schema/api/pet/get/entry/request.js';
+import { PetQuerySchemaApiPetGetRequest } from '#schema/api/pet/get/request.js';
+import { PetQuerySchemaApiPetPostRequest } from '#schema/api/pet/post/request.js';
+import { PetQuerySchemaApiPetPutRequest } from '#schema/api/pet/put/request.js';
+import { PetQuerySchemaApiPetSearchRequest } from '#schema/api/pet/search/request.js';
+import { PetQuerySchemaPluginResponse } from '#schema/plugin/response.js';
+import { PetQueryServerRoute } from '#petquery/server/route.js';
+import { PetQueryServerRouteAccessGroup } from '#petquery/server/route.js';
+import { setTimeout as delay } from 'node:timers/promises';
+
+import type { PetQueryPlugin } from '#petquery/plugin.js';
+import type { PetQuerySchemaApiPetDeleteRequestType } from '#schema/api/pet/delete/request.js';
+import type { PetQuerySchemaApiPetDeleteResponseType } from '#schema/api/pet/delete/response.js';
+import type { PetQuerySchemaApiPetGetEntryRequestType } from '#schema/api/pet/get/entry/request.js';
+import type { PetQuerySchemaApiPetGetEntryResponseType } from '#schema/api/pet/get/entry/response.js';
+import type { PetQuerySchemaApiPetGetRequestType } from '#schema/api/pet/get/request.js';
+import type { PetQuerySchemaApiPetGetResponseType } from '#schema/api/pet/get/response.js';
+import type { PetQuerySchemaApiPetPostRequestType } from '#schema/api/pet/post/request.js';
+import type { PetQuerySchemaApiPetPostResponseType } from '#schema/api/pet/post/response.js';
+import type { PetQuerySchemaApiPetPutRequestType } from '#schema/api/pet/put/request.js';
+import type { PetQuerySchemaApiPetPutResponseType } from '#schema/api/pet/put/response.js';
+import type { PetQuerySchemaApiPetSearchRequestType } from '#schema/api/pet/search/request.js';
+import type { PetQuerySchemaPluginRequestType } from '#schema/plugin/request.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
+import type { PetQueryServerResponse } from '#petquery/server/response.js';
 
 export class PetQueryServerRoutePet extends PetQueryServerRoute{
 	register():void{

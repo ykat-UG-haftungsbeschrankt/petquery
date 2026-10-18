@@ -6,8 +6,8 @@
  */
 
 import { PetQueryDestructor } from '#petquery/destructor.js';
-import type {PetQuerySchemaServerDatabaseSessionEntryType} from
-	'#schema/server/database/session/entry.js';
+
+import type { PetQuerySchemaServerDatabaseSessionEntryType } from '#schema/server/database/session/entry.js';
 
 export abstract class PetQueryServerDatabaseSession extends PetQueryDestructor{
 	abstract serverSessionGet(

@@ -5,10 +5,11 @@
  * free of charge, without warranty of any kind.
  */
 
-import {default as Express} from 'express';
+import { PetQueryServerRoute } from '#petquery/server/route.js';
+import { default as Express } from 'express';
 import path from 'node:path';
-import type {PetQueryServer} from '#petquery/server.js';
-import {PetQueryServerRoute} from '#petquery/server/route.js';
+
+import type { PetQueryServer } from '#petquery/server.js';
 
 // Serves the generated TypeDoc site at /docs.
 export class PetQueryServerRouteDocs extends PetQueryServerRoute{

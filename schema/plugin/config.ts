@@ -5,9 +5,11 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQuerySchema, PetQuerySchemaAbstract} from '#petquery/schema.js';
-import type {PetQuerySchemaStatic} from '#petquery/schema.js';
-import { PetQuerySchemaPluginDataSource } from './data/source.js';
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaAbstract } from '#petquery/schema.js';
+import { PetQuerySchemaPluginDataSource } from '#schema/plugin/data/source.js';
+
+import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const T = PetQuerySchema.type;
 

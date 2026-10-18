@@ -5,18 +5,17 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {
-	AuthorizationCodeGrantChecks,
-	Configuration
-} from 'openid-client';
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQueryServerAuthPlugin } from '#petquery/server/auth/plugin.js';
+import { PetQueryServerAuthStore } from '#petquery/server/auth/store.js';
 import * as oidc from 'openid-client';
-import type {PetQueryConfigServerType} from '#petquery/config.js';
-import type {PetQueryDatabase} from '#petquery/database.js';
-import {PetQuerySchema} from '#petquery/schema.js';
-import type {PetQueryServerAuthUser} from '#petquery/server/auth.js';
-import {PetQueryServerAuthPlugin} from '#petquery/server/auth/plugin.js';
-import {PetQueryServerAuthStore} from '#petquery/server/auth/store.js';
-import type {PetQueryServerRequest} from '#petquery/server/request.js';
+
+import type { AuthorizationCodeGrantChecks } from 'openid-client';
+import type { Configuration } from 'openid-client';
+import type { PetQueryConfigServerType } from '#petquery/config.js';
+import type { PetQueryDatabase } from '#petquery/database.js';
+import type { PetQueryServerAuthUser } from '#petquery/server/auth.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
 
 type PetQueryServerAuthOidcPending = {
 	state:utf8_t;

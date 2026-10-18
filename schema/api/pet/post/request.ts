@@ -5,16 +5,13 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQuerySchema} from '#petquery/schema.js';
-import type {PetQuerySchemaStatic} from '#petquery/schema.js';
-import {PetQueryServerRequestSchema} from
-	'#petquery/server/request/schema.js';
-import {PetQuerySchemaServerDatabasePetEntry} from
-	'#schema/server/database/pet/entry.js';
-import {
-	PetQuerySchemaApiPetPostResponse,
-	type PetQuerySchemaApiPetPostResponseType
-} from '#schema/api/pet/post/response.js';
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaApiPetPostResponse } from '#schema/api/pet/post/response.js';
+import { PetQuerySchemaServerDatabasePetEntry } from '#schema/server/database/pet/entry.js';
+import { PetQueryServerRequestSchema } from '#petquery/server/request/schema.js';
+
+import type { PetQuerySchemaApiPetPostResponseType } from '#schema/api/pet/post/response.js';
+import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const schema = {
 	...PetQuerySchemaServerDatabasePetEntry.getSchema(),

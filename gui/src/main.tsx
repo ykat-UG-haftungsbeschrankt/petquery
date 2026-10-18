@@ -7,10 +7,11 @@
 
 /// <reference path="../../types/index.d.ts" />
 
-import {StrictMode} from 'react';
-import {createRoot} from 'react-dom/client';
-import {App} from './app';
-import './app.css';
+import '#gui/app.css';
+
+import { App } from '#gui/app';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 
 const root = document.getElementById('root');
 if(null === root){

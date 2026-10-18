@@ -5,14 +5,12 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQuerySchema} from '#petquery/schema.js';
-import type {PetQuerySchemaStatic} from '#petquery/schema.js';
-import {PetQueryServerRequestSchemaAuth} from
-	'#petquery/server/request/schema/auth.js';
-import {
-	PetQuerySchemaApiAuthLogoutPostResponse,
-	type PetQuerySchemaApiAuthLogoutPostResponseType
-} from '#schema/api/auth/logout/post/response.js';
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaApiAuthLogoutPostResponse } from '#schema/api/auth/logout/post/response.js';
+import { PetQueryServerRequestSchemaAuth } from '#petquery/server/request/schema/auth.js';
+
+import type { PetQuerySchemaApiAuthLogoutPostResponseType } from '#schema/api/auth/logout/post/response.js';
+import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const schema = PetQuerySchema.type.Object({},{
 	title:'POST /auth/logout request',

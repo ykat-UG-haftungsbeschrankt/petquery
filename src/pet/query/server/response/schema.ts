@@ -5,7 +5,10 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQuerySchema, PetQuerySchemaCheck, PetQuerySchemaType} from '#petquery/schema.js';
+import { PetQuerySchema } from '#petquery/schema.js';
+
+import type { PetQuerySchemaCheck } from '#petquery/schema.js';
+import type { PetQuerySchemaType } from '#petquery/schema.js';
 
 export abstract class PetQueryServerResponseSchema<
 	T_RESPONSE

@@ -5,19 +5,21 @@
  * free of charge, without warranty of any kind.
  */
 
-import {useEffect, useState} from 'react';
-import type {MouseEvent, ReactElement} from 'react';
-import {
-	getAuthProviders,
-	getSession,
-	loginUser,
-	logout
-} from './api';
-import type {AuthProvider, AuthUser} from './api';
-import {Admin} from './admin';
-import {Docs} from './docs';
-import {Login} from './login';
-import {Search} from './search';
+import { Admin } from '#gui/admin';
+import { Docs } from '#gui/docs';
+import { Login } from '#gui/login';
+import { Search } from '#gui/search';
+import { getAuthProviders } from '#gui/api';
+import { getSession } from '#gui/api';
+import { loginUser } from '#gui/api';
+import { logout } from '#gui/api';
+import { useEffect } from 'react';
+import { useState } from 'react';
+
+import type { AuthProvider } from '#gui/api';
+import type { AuthUser } from '#gui/api';
+import type { MouseEvent } from 'react';
+import type { ReactElement } from 'react';
 
 const TOKEN_KEY = 'petquery.admin.token';
 const PROVIDER_KEY = 'petquery.admin.provider';

@@ -5,7 +5,7 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQuerySchema} from '#petquery/schema.js';
+import { PetQuerySchema } from '#petquery/schema.js';
 
 export type PetQueryServerResponseSchemaValues = {
 	success:bool_t;

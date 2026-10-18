@@ -5,19 +5,18 @@
  * free of charge, without warranty of any kind.
  */
 
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaApiAuthUser } from '#schema/api/auth/user.js';
+import { PetQueryServerAuthStore } from '#petquery/server/auth/store.js';
 import crypto from 'node:crypto';
-import type {PetQueryConfigServerType} from '#petquery/config.js';
-import type {PetQueryDatabase} from '#petquery/database.js';
-import {PetQuerySchema} from '#petquery/schema.js';
-import type {PetQuerySchemaStatic} from '#petquery/schema.js';
-import type {
-	PetQueryServerAuthUser,
-	PetQueryServerAuthManagedUser
-} from '#petquery/server/auth.js';
-import {PetQueryServerAuthStore} from '#petquery/server/auth/store.js';
-import type {PetQueryServerRequest} from '#petquery/server/request.js';
-import type {PetQueryServerResponse} from '#petquery/server/response.js';
-import {PetQuerySchemaApiAuthUser} from '#schema/api/auth/user.js';
+
+import type { PetQueryConfigServerType } from '#petquery/config.js';
+import type { PetQueryDatabase } from '#petquery/database.js';
+import type { PetQuerySchemaStatic } from '#petquery/schema.js';
+import type { PetQueryServerAuthManagedUser } from '#petquery/server/auth.js';
+import type { PetQueryServerAuthUser } from '#petquery/server/auth.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
+import type { PetQueryServerResponse } from '#petquery/server/response.js';
 
 const T = PetQuerySchema.type;
 const schema = T.Object({

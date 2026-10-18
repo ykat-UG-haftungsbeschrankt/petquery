@@ -5,8 +5,9 @@
  * free of charge, without warranty of any kind.
  */
 
-import { PetQueryDestructor } from "#petquery/destructor.js";
-import { PetQuerySchemaServerDatabasePetEntryType } from "#schema/server/database/pet/entry.js";
+import { PetQueryDestructor } from '#petquery/destructor.js';
+
+import type { PetQuerySchemaServerDatabasePetEntryType } from '#schema/server/database/pet/entry.js';
 
 export abstract class PetQueryServerDatabasePet extends PetQueryDestructor{
 	abstract serverPetAdd(value:PetQuerySchemaServerDatabasePetEntryType):Promise<void>;

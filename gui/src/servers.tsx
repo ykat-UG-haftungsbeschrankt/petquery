@@ -5,11 +5,18 @@
  * free of charge, without warranty of any kind.
  */
 
-import {useCallback, useEffect, useState} from 'react';
-import type {FormEvent, ReactElement} from 'react';
-import {addServer, deleteServer, listServers, ping} from './api';
-import type {ServerEntry} from './api';
-import {useAction} from './action';
+import { addServer } from '#gui/api';
+import { deleteServer } from '#gui/api';
+import { listServers } from '#gui/api';
+import { ping } from '#gui/api';
+import { useAction } from '#gui/action';
+import { useCallback } from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
+
+import type { FormEvent } from 'react';
+import type { ReactElement } from 'react';
+import type { ServerEntry } from '#gui/api';
 
 export function Servers(props:{token:utf8_t}):ReactElement{
 	const token = props.token;

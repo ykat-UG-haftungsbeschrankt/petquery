@@ -5,7 +5,7 @@
  * free of charge, without warranty of any kind.
  */
 
-import { PetQueryDestructor } from "#petquery/destructor.js";
+import { PetQueryDestructor } from '#petquery/destructor.js';
 
 export abstract class PetQueryServerDatabaseAuth extends PetQueryDestructor{
 	abstract serverAuthGet(key:utf8_t):Promise<utf8_t|undefined>;

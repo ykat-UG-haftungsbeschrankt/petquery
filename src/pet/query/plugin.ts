@@ -5,10 +5,10 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {PetQuerySchemaPluginConfigType} from '#schema/plugin/config.js';
-import type {PetQuerySchemaPluginDataSourceType} from '#schema/plugin/data/source.js';
-import type {PetQuerySchemaPluginRequestType} from '#schema/plugin/request.js';
-import type {PetQuerySchemaPluginResponseType} from '#schema/plugin/response.js';
+import type { PetQuerySchemaPluginConfigType } from '#schema/plugin/config.js';
+import type { PetQuerySchemaPluginDataSourceType } from '#schema/plugin/data/source.js';
+import type { PetQuerySchemaPluginRequestType } from '#schema/plugin/request.js';
+import type { PetQuerySchemaPluginResponseType } from '#schema/plugin/response.js';
 
 export class PetQueryPluginConfig{
 	private _enabled:boolean;

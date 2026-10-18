@@ -5,14 +5,12 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQuerySchema} from '#petquery/schema.js';
-import type {PetQuerySchemaStatic} from '#petquery/schema.js';
-import {PetQueryServerRequestSchemaAuth} from
-	'#petquery/server/request/schema/auth.js';
-import {
-	PetQuerySchemaApiAuthSessionGetResponse,
-	type PetQuerySchemaApiAuthSessionGetResponseType
-} from '#schema/api/auth/session/get/response.js';
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaApiAuthSessionGetResponse } from '#schema/api/auth/session/get/response.js';
+import { PetQueryServerRequestSchemaAuth } from '#petquery/server/request/schema/auth.js';
+
+import type { PetQuerySchemaApiAuthSessionGetResponseType } from '#schema/api/auth/session/get/response.js';
+import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const schema = PetQuerySchema.type.Object({},{
 	title:'GET /auth/session request',

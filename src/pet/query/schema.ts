@@ -5,18 +5,14 @@
  * free of charge, without warranty of any kind.
  */
 
-import Type from 'typebox';
-import {Static} from 'typebox';
 import Compile from 'typebox/compile';
 import Format from 'typebox/format';
+import Type from 'typebox';
 import Value from 'typebox/value';
-import type {
-	TLocalizedValidationError as PetQuerySchemaValidationError
-} from 'typebox/error';
 
-import type {
-	TSchema as PetQuerySchemaType
-} from 'typebox';
+import type { Static } from 'typebox';
+import type { TLocalizedValidationError as PetQuerySchemaValidationError } from 'typebox/error';
+import type { TSchema as PetQuerySchemaType } from 'typebox';
 
 export type {
 	Static as PetQuerySchemaStatic,

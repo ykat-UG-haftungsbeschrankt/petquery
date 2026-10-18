@@ -5,11 +5,19 @@
  * free of charge, without warranty of any kind.
  */
 
-import { PetQueryTypes } from './types.js';
-import type {PetQueryServerRequest} from
-	'#petquery/server/request.js';
-import type {PetQueryServerResponse} from
-	'#petquery/server/response.js';
+import { PetQueryDatabase } from '#petquery/database.js';
+import { PetQueryDatabaseAuthLmdb } from '#petquery/database/auth/lmdb.js';
+import { PetQueryDatabaseConfigLmdb } from '#petquery/database/config/lmdb.js';
+import { PetQueryDatabaseIndexLmdb } from '#petquery/database/index/lmdb.js';
+import { PetQueryDatabasePetLmdb } from '#petquery/database/pet/lmdb.js';
+import { PetQueryDatabaseSessionLmdb } from '#petquery/database/session/lmdb.js';
+import { PetQueryTypes } from '#petquery/types.js';
+import fileUpload from 'express-fileupload';
+
+import type { PetQueryPluginConfig } from '#petquery/plugin.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
+import type { PetQueryServerResponse } from '#petquery/server/response.js';
+import type { ServerOptions } from 'node:https';
 /*
 import {PetQuery3pPluginMongodbConfig} from
 	'#petquery/3p/plugin/mongodb/config.js';
@@ -24,15 +32,7 @@ import {PetQuery3pPluginTestConfig} from
 import {PetQuery3pPluginAnimalidConfig} from
 	'#petquery/3p/plugin/animalid/config.js';
 */
-import fileUpload from 'express-fileupload';
-import type {ServerOptions} from 'node:https';
-import type {PetQueryPluginConfig} from '#petquery/plugin.js';
-import { PetQueryDatabase } from '#petquery/database.js';
-import { PetQueryDatabaseAuthLmdb } from '#petquery/database/auth/lmdb.js';
-import { PetQueryDatabasePetLmdb } from '#petquery/database/pet/lmdb.js';
-import { PetQueryDatabaseConfigLmdb } from '#petquery/database/config/lmdb.js';
-import { PetQueryDatabaseIndexLmdb } from '#petquery/database/index/lmdb.js';
-import { PetQueryDatabaseSessionLmdb } from '#petquery/database/session/lmdb.js';
+
 
 export type PetQueryConfigAuthenticate = (
 	req:PetQueryServerRequest,

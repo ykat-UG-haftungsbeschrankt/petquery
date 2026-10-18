@@ -5,16 +5,21 @@
  * free of charge, without warranty of any kind.
  */
 
-import {useCallback, useEffect, useMemo, useState} from 'react';
-import type {ChangeEvent, FormEvent, ReactElement} from 'react';
-import {
-	createUser,
-	deleteUser,
-	listUsers,
-	updateUser
-} from './api';
-import type {AuthProvider, ManagedUser} from './api';
-import {useAction} from './action';
+import { createUser } from '#gui/api';
+import { deleteUser } from '#gui/api';
+import { listUsers } from '#gui/api';
+import { updateUser } from '#gui/api';
+import { useAction } from '#gui/action';
+import { useCallback } from 'react';
+import { useEffect } from 'react';
+import { useMemo } from 'react';
+import { useState } from 'react';
+
+import type { AuthProvider } from '#gui/api';
+import type { ChangeEvent } from 'react';
+import type { FormEvent } from 'react';
+import type { ManagedUser } from '#gui/api';
+import type { ReactElement } from 'react';
 
 type UserGroup = 'admin'|'user';
 

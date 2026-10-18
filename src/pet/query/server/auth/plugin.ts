@@ -5,13 +5,11 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {
-	PetQueryServerAuthCreateUser,
-	PetQueryServerAuthManagedUser,
-	PetQueryServerAuthUpdateUser,
-	PetQueryServerAuthUser
-} from '#petquery/server/auth.js';
-import type {PetQueryServerRequest} from '#petquery/server/request.js';
+import type { PetQueryServerAuthCreateUser } from '#petquery/server/auth.js';
+import type { PetQueryServerAuthManagedUser } from '#petquery/server/auth.js';
+import type { PetQueryServerAuthUpdateUser } from '#petquery/server/auth.js';
+import type { PetQueryServerAuthUser } from '#petquery/server/auth.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
 
 export abstract class PetQueryServerAuthPlugin{
 	protected _destroyed:bool_t;

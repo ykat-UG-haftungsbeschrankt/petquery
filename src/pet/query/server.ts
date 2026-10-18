@@ -5,23 +5,21 @@
  * free of charge, without warranty of any kind.
  */
 
-import {default as Express} from 'express';
-import fileUpload from 'express-fileupload';
-import https from 'node:https';
-import type {Server as HttpServer} from 'node:http';
-import {PetQueryPlugin} from '#petquery/plugin.js';
-import type {PetQueryConfigServerType} from '#petquery/config.js';
-import type {PetQueryServerRoute} from '#petquery/server/route.js';
-import type {PetQueryServerHandler} from
-	'#petquery/server/route.js';
-import type {PetQueryServerConfig} from '#petquery/server/config.js';
-import type {PetQueryServerAuth} from '#petquery/server/auth.js';
-import type {PetQueryDatabase} from '#petquery/database.js';
-import {PetQueryServerRequest} from
-	'#petquery/server/request.js';
-import {PetQueryServerResponse} from
-	'#petquery/server/response.js';
-import { PetQueryDestructor } from './destructor.js';
+import { PetQueryDestructor } from '#petquery/destructor.js';
+import { PetQueryPlugin } from '#petquery/plugin.js';
+import { PetQueryServerRequest } from '#petquery/server/request.js';
+import { PetQueryServerResponse } from '#petquery/server/response.js';
+import { default as Express } from 'express';
+import { default as ExpressFileUpload } from 'express-fileupload';
+import { default as NodeHttps } from 'node:https';
+
+import type { PetQueryConfigServerType } from '#petquery/config.js';
+import type { PetQueryDatabase } from '#petquery/database.js';
+import type { PetQueryServerAuth } from '#petquery/server/auth.js';
+import type { PetQueryServerConfig } from '#petquery/server/config.js';
+import type { PetQueryServerHandler } from '#petquery/server/route.js';
+import type { PetQueryServerRoute } from '#petquery/server/route.js';
+import type { Server as NodeHttpServer } from 'node:http';
 
 export class PetQueryServer extends PetQueryDestructor{
 	protected readonly _config:PetQueryConfigServerType;
@@ -37,8 +35,8 @@ export class PetQueryServer extends PetQueryDestructor{
 	protected readonly _auth:PetQueryServerAuth;
 	// Borrowed; its owner must call its destructor.
 	protected readonly _petStore:PetQueryDatabase;
-	protected _httpServer:HttpServer|null;
-	protected _httpsServer:HttpServer|null;
+	protected _httpServer:NodeHttpServer|null;
+	protected _httpsServer:NodeHttpServer|null;
 
 	// uuid is this server's persistent identity, answered by /api/ping/get.
 	// configFile stores the values editable in the admin GUI.
@@ -62,7 +60,7 @@ export class PetQueryServer extends PetQueryDestructor{
 		this._app.use(Express.json());
 		this._app.use(Express.urlencoded());
 		if(upload.enabled){
-			this._app.use(fileUpload({
+			this._app.use(ExpressFileUpload({
 				...upload.options,
 				limits:{
 					...upload.options.limits,
@@ -84,7 +82,7 @@ export class PetQueryServer extends PetQueryDestructor{
 		this._httpsServer = null;
 		await Promise.allSettled(
 			servers
-				.filter((server):server is HttpServer => null !== server)
+				.filter((server):server is NodeHttpServer => null !== server)
 				.map((server)=>this._closeServer(server))
 		);
 		const plugins = Array.from(this._plugins.values());
@@ -140,7 +138,7 @@ export class PetQueryServer extends PetQueryDestructor{
 		}
 
 		if(this._config.https.enabled){
-			this._httpsServer = https.createServer(
+			this._httpsServer = NodeHttps.createServer(
 				this._config.https.certificate
 			)
 				.listen(
@@ -174,7 +172,7 @@ export class PetQueryServer extends PetQueryDestructor{
 		return this._plugins.get(name);
 	}
 
-	protected _closeServer(server:HttpServer):Promise<void>{
+	protected _closeServer(server:NodeHttpServer):Promise<void>{
 		return new Promise((resolve,reject)=>{
 			server.close((error)=>{
 				if(undefined === error){

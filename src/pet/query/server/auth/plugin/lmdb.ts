@@ -5,19 +5,18 @@
  * free of charge, without warranty of any kind.
  */
 
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQueryServerAuthPlugin } from '#petquery/server/auth/plugin.js';
 import crypto from 'node:crypto';
-import {promisify} from 'node:util';
-import type {PetQueryConfigServerType} from '#petquery/config.js';
-import type {PetQueryDatabase} from '#petquery/database.js';
-import {PetQuerySchema} from '#petquery/schema.js';
-import type {
-	PetQueryServerAuthCreateUser,
-	PetQueryServerAuthManagedUser,
-	PetQueryServerAuthUpdateUser,
-	PetQueryServerAuthUser
-} from '#petquery/server/auth.js';
-import {PetQueryServerAuthPlugin} from '#petquery/server/auth/plugin.js';
-import type {PetQueryServerRequest} from '#petquery/server/request.js';
+import { promisify } from 'node:util';
+
+import type { PetQueryConfigServerType } from '#petquery/config.js';
+import type { PetQueryDatabase } from '#petquery/database.js';
+import type { PetQueryServerAuthCreateUser } from '#petquery/server/auth.js';
+import type { PetQueryServerAuthManagedUser } from '#petquery/server/auth.js';
+import type { PetQueryServerAuthUpdateUser } from '#petquery/server/auth.js';
+import type { PetQueryServerAuthUser } from '#petquery/server/auth.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
 
 type PetQueryServerAuthLocalUser = PetQueryServerAuthManagedUser & {
 	passwordHash:utf8_t;

@@ -5,14 +5,12 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQuerySchema} from '#petquery/schema.js';
-import type {PetQuerySchemaStatic} from '#petquery/schema.js';
-import type {PetQuerySchemaApiPingGetResponseType} from
-	'#schema/api/ping/get/response.js';
-import {PetQueryServerRequestSchema} from
-	'#petquery/server/request/schema.js';
-import {PetQuerySchemaApiPingGetResponse} from
-	'#schema/api/ping/get/response.js';
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaApiPingGetResponse } from '#schema/api/ping/get/response.js';
+import { PetQueryServerRequestSchema } from '#petquery/server/request/schema.js';
+
+import type { PetQuerySchemaApiPingGetResponseType } from '#schema/api/ping/get/response.js';
+import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const T = PetQuerySchema.type;
 

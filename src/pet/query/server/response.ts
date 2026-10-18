@@ -6,10 +6,12 @@
  */
 
 import { PetQueryHttpStatusCode } from '#petquery/http.js';
-import { PetQuerySchema, PetQuerySchemaStatic } from '#petquery/schema.js';
-import type {default as Express} from 'express';
+import { PetQuerySchema } from '#petquery/schema.js';
 import { inspect as NodeUtilInspect } from 'node:util';
+
+import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 import type { SendFileOptions as ExpressSendFileOptions } from 'express-serve-static-core';
+import type { default as Express } from 'express';
 
 const T = PetQuerySchema.type;
 

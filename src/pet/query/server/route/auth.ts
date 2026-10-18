@@ -5,73 +5,42 @@
  * free of charge, without warranty of any kind.
  */
 
-import {
-	PetQueryServerRoute,
-	PetQueryServerRouteAccessGroup,
-	type PetQueryServerNext
-} from '#petquery/server/route.js';
-import type {PetQueryServerRequest} from '#petquery/server/request.js';
-import type {PetQueryServerResponse} from '#petquery/server/response.js';
-import {
-	PetQuerySchemaApiAuthModeGetRequest,
-	type PetQuerySchemaApiAuthModeGetRequestType
-} from '#schema/api/auth/mode/get/request.js';
-import type {PetQuerySchemaApiAuthModeGetResponseType} from
-	'#schema/api/auth/mode/get/response.js';
-import {
-	PetQuerySchemaApiAuthSessionGetRequest,
-	type PetQuerySchemaApiAuthSessionGetRequestType
-} from '#schema/api/auth/session/get/request.js';
-import type {PetQuerySchemaApiAuthSessionGetResponseType} from
-	'#schema/api/auth/session/get/response.js';
-import {
-	PetQuerySchemaApiAuthLoginPostRequest,
-	type PetQuerySchemaApiAuthLoginPostRequestType
-} from '#schema/api/auth/login/post/request.js';
-import type {PetQuerySchemaApiAuthLoginPostResponseType} from
-	'#schema/api/auth/login/post/response.js';
-import {
-	PetQuerySchemaApiAuthLogoutPostRequest,
-	type PetQuerySchemaApiAuthLogoutPostRequestType
-} from '#schema/api/auth/logout/post/request.js';
-import type {PetQuerySchemaApiAuthLogoutPostResponseType} from
-	'#schema/api/auth/logout/post/response.js';
-import {
-	PetQuerySchemaApiAuthOidcLoginGetRequest,
-	type PetQuerySchemaApiAuthOidcLoginGetRequestType
-} from '#schema/api/auth/oidc/login/get/request.js';
-import type {PetQuerySchemaApiAuthOidcLoginGetResponseType} from
-	'#schema/api/auth/oidc/login/get/response.js';
-import {
-	PetQuerySchemaApiAuthOidcCallbackGetRequest,
-	type PetQuerySchemaApiAuthOidcCallbackGetRequestType
-} from '#schema/api/auth/oidc/callback/get/request.js';
-import type {PetQuerySchemaApiAuthOidcCallbackGetResponseType} from
-	'#schema/api/auth/oidc/callback/get/response.js';
-import {
-	PetQuerySchemaApiAuthUsersGetRequest,
-	type PetQuerySchemaApiAuthUsersGetRequestType
-} from '#schema/api/auth/users/get/request.js';
-import type {PetQuerySchemaApiAuthUsersGetResponseType} from
-	'#schema/api/auth/users/get/response.js';
-import {
-	PetQuerySchemaApiAuthUsersPostRequest,
-	type PetQuerySchemaApiAuthUsersPostRequestType
-} from '#schema/api/auth/users/post/request.js';
-import type {PetQuerySchemaApiAuthUsersPostResponseType} from
-	'#schema/api/auth/users/post/response.js';
-import {
-	PetQuerySchemaApiAuthUsersPutRequest,
-	type PetQuerySchemaApiAuthUsersPutRequestType
-} from '#schema/api/auth/users/put/request.js';
-import type {PetQuerySchemaApiAuthUsersPutResponseType} from
-	'#schema/api/auth/users/put/response.js';
-import {
-	PetQuerySchemaApiAuthUsersDeleteRequest,
-	type PetQuerySchemaApiAuthUsersDeleteRequestType
-} from '#schema/api/auth/users/delete/request.js';
-import type {PetQuerySchemaApiAuthUsersDeleteResponseType} from
-	'#schema/api/auth/users/delete/response.js';
+import { PetQuerySchemaApiAuthLoginPostRequest } from '#schema/api/auth/login/post/request.js';
+import { PetQuerySchemaApiAuthLogoutPostRequest } from '#schema/api/auth/logout/post/request.js';
+import { PetQuerySchemaApiAuthModeGetRequest } from '#schema/api/auth/mode/get/request.js';
+import { PetQuerySchemaApiAuthOidcCallbackGetRequest } from '#schema/api/auth/oidc/callback/get/request.js';
+import { PetQuerySchemaApiAuthOidcLoginGetRequest } from '#schema/api/auth/oidc/login/get/request.js';
+import { PetQuerySchemaApiAuthSessionGetRequest } from '#schema/api/auth/session/get/request.js';
+import { PetQuerySchemaApiAuthUsersDeleteRequest } from '#schema/api/auth/users/delete/request.js';
+import { PetQuerySchemaApiAuthUsersGetRequest } from '#schema/api/auth/users/get/request.js';
+import { PetQuerySchemaApiAuthUsersPostRequest } from '#schema/api/auth/users/post/request.js';
+import { PetQuerySchemaApiAuthUsersPutRequest } from '#schema/api/auth/users/put/request.js';
+import { PetQueryServerRoute } from '#petquery/server/route.js';
+import { PetQueryServerRouteAccessGroup } from '#petquery/server/route.js';
+
+import type { PetQuerySchemaApiAuthLoginPostRequestType } from '#schema/api/auth/login/post/request.js';
+import type { PetQuerySchemaApiAuthLoginPostResponseType } from '#schema/api/auth/login/post/response.js';
+import type { PetQuerySchemaApiAuthLogoutPostRequestType } from '#schema/api/auth/logout/post/request.js';
+import type { PetQuerySchemaApiAuthLogoutPostResponseType } from '#schema/api/auth/logout/post/response.js';
+import type { PetQuerySchemaApiAuthModeGetRequestType } from '#schema/api/auth/mode/get/request.js';
+import type { PetQuerySchemaApiAuthModeGetResponseType } from '#schema/api/auth/mode/get/response.js';
+import type { PetQuerySchemaApiAuthOidcCallbackGetRequestType } from '#schema/api/auth/oidc/callback/get/request.js';
+import type { PetQuerySchemaApiAuthOidcCallbackGetResponseType } from '#schema/api/auth/oidc/callback/get/response.js';
+import type { PetQuerySchemaApiAuthOidcLoginGetRequestType } from '#schema/api/auth/oidc/login/get/request.js';
+import type { PetQuerySchemaApiAuthOidcLoginGetResponseType } from '#schema/api/auth/oidc/login/get/response.js';
+import type { PetQuerySchemaApiAuthSessionGetRequestType } from '#schema/api/auth/session/get/request.js';
+import type { PetQuerySchemaApiAuthSessionGetResponseType } from '#schema/api/auth/session/get/response.js';
+import type { PetQuerySchemaApiAuthUsersDeleteRequestType } from '#schema/api/auth/users/delete/request.js';
+import type { PetQuerySchemaApiAuthUsersDeleteResponseType } from '#schema/api/auth/users/delete/response.js';
+import type { PetQuerySchemaApiAuthUsersGetRequestType } from '#schema/api/auth/users/get/request.js';
+import type { PetQuerySchemaApiAuthUsersGetResponseType } from '#schema/api/auth/users/get/response.js';
+import type { PetQuerySchemaApiAuthUsersPostRequestType } from '#schema/api/auth/users/post/request.js';
+import type { PetQuerySchemaApiAuthUsersPostResponseType } from '#schema/api/auth/users/post/response.js';
+import type { PetQuerySchemaApiAuthUsersPutRequestType } from '#schema/api/auth/users/put/request.js';
+import type { PetQuerySchemaApiAuthUsersPutResponseType } from '#schema/api/auth/users/put/response.js';
+import type { PetQueryServerNext } from '#petquery/server/route.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
+import type { PetQueryServerResponse } from '#petquery/server/response.js';
 
 export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 	register():void{

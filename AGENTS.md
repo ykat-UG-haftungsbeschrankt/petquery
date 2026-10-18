@@ -47,6 +47,33 @@
 - Limit each line of code or data to 80 characters, including indentation.
   Wrap long declarations, expressions, comments, and data without changing
   their meaning.
+- Import declarations are an exception: keep each import on a single line,
+  even when it exceeds 80 characters.
+
+## Imports
+
+- Do not use relative module paths in import declarations, such as
+  `'./assert.js'` or `'../assert.js'`. Use configured module aliases for
+  project imports, such as `'#petquery/assert.js'`, and package names or
+  `node:` specifiers for dependencies and Node.js built-ins.
+- Keep every import declaration on a single line. Use spaces inside named
+  import braces, for example:
+
+```ts
+import { PetQueryDestructor } from '#petquery/destructor.js';
+import type { ServerOptions } from 'node:https';
+```
+
+- Place value imports first, followed by a separate group of `import type`
+  declarations. Separate the two groups with one blank line.
+- Use separate declarations for value imports and type-only imports; do not
+  mix inline `type` specifiers into value imports.
+- Sort declarations alphabetically by imported name within each group.
+  Use the module path to break ties.
+- Import only one value or type per declaration and line. Use separate
+  declarations even when importing multiple names from the same module.
+- Preserve the execution order of side-effect-only imports; keep them in
+  their own group before value imports.
 
 ## Comparisons
 

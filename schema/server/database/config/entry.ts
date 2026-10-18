@@ -5,9 +5,11 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQuerySchema} from '#petquery/schema.js';
-import {PetQuerySchemaAbstract} from '#petquery/schema.js';
-import type {PetQuerySchemaProperties, PetQuerySchemaStatic} from '#petquery/schema.js';
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaAbstract } from '#petquery/schema.js';
+
+import type { PetQuerySchemaProperties } from '#petquery/schema.js';
+import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const T = PetQuerySchema.type;
 // setTimeout() fires immediately for delays above 2^31-1 ms.

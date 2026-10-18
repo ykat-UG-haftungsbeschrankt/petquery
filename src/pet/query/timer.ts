@@ -5,7 +5,7 @@
  * free of charge, without warranty of any kind.
  */
 
-import { PetQueryDestructor } from "./destructor.js";
+import { PetQueryDestructor } from '#petquery/destructor.js';
 
 export abstract class PetQueryTimer extends PetQueryDestructor{
 	protected readonly _interval:milliseconds_t;

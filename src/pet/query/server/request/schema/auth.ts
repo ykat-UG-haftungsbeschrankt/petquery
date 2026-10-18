@@ -5,10 +5,10 @@
  * free of charge, without warranty of any kind.
  */
 
+import { PetQueryServerRequestSchema } from '#petquery/server/request/schema.js';
 import util from 'node:util';
-import {PetQueryServerRequestSchema} from
-	'#petquery/server/request/schema.js';
-import type {PetQueryServerResponse} from '#petquery/server/response.js';
+
+import type { PetQueryServerResponse } from '#petquery/server/response.js';
 
 export abstract class PetQueryServerRequestSchemaAuth<
 	T_REQUEST,

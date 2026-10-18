@@ -5,14 +5,12 @@
  * free of charge, without warranty of any kind.
  */
 
-import {open as LmdbOpen} from 'lmdb';
-import type {PetQueryServerDatabaseSession} from
-	'#petquery/server/database/session.js';
-import {PetQueryDestructor} from '#petquery/destructor.js';
-import {
-	PetQuerySchemaServerDatabaseSessionEntry,
-	type PetQuerySchemaServerDatabaseSessionEntryType
-} from '#schema/server/database/session/entry.js';
+import { PetQueryDestructor } from '#petquery/destructor.js';
+import { PetQuerySchemaServerDatabaseSessionEntry } from '#schema/server/database/session/entry.js';
+import { open as LmdbOpen } from 'lmdb';
+
+import type { PetQuerySchemaServerDatabaseSessionEntryType } from '#schema/server/database/session/entry.js';
+import type { PetQueryServerDatabaseSession } from '#petquery/server/database/session.js';
 
 export type PetQueryDatabaseLmdbConfig = {
 	path:filename_t;

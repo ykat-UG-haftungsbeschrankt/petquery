@@ -5,8 +5,9 @@
  * free of charge, without warranty of any kind.
  */
 
-import {useState} from 'react';
-import type {ReactElement} from 'react';
+import { useState } from 'react';
+
+import type { ReactElement } from 'react';
 
 type AttachmentKind = 'image'|'video'|'link';
 

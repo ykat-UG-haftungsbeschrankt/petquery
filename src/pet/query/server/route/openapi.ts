@@ -5,15 +5,14 @@
  * free of charge, without warranty of any kind.
  */
 
-import {default as Express} from 'express';
+import { PetQueryServerRoute } from '#petquery/server/route.js';
+import { default as Express } from 'express';
 import path from 'node:path';
-import {PetQueryServerRoute} from '#petquery/server/route.js';
-import type {PetQueryServerNext} from '#petquery/server/route.js';
-import type {PetQueryServerRequest} from
-	'#petquery/server/request.js';
-import type {PetQueryServerResponse} from
-	'#petquery/server/response.js';
-import type {PetQueryServer} from '#petquery/server.js';
+
+import type { PetQueryServer } from '#petquery/server.js';
+import type { PetQueryServerNext } from '#petquery/server/route.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
+import type { PetQueryServerResponse } from '#petquery/server/response.js';
 
 export class PetQueryServerRouteOpenapi extends PetQueryServerRoute{
 	protected readonly _docsRoot:filename_t;

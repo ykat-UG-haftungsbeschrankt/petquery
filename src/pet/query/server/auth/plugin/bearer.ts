@@ -5,12 +5,12 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {PetQueryConfigServerType} from '#petquery/config.js';
-import type {PetQueryDatabase} from '#petquery/database.js';
-import type {PetQueryServerAuthUser} from '#petquery/server/auth.js';
-import {PetQueryServerAuthPluginLmdb} from
-	'#petquery/server/auth/plugin/lmdb.js';
-import type {PetQueryServerRequest} from '#petquery/server/request.js';
+import { PetQueryServerAuthPluginLmdb } from '#petquery/server/auth/plugin/lmdb.js';
+
+import type { PetQueryConfigServerType } from '#petquery/config.js';
+import type { PetQueryDatabase } from '#petquery/database.js';
+import type { PetQueryServerAuthUser } from '#petquery/server/auth.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
 
 export class PetQueryServerAuthPluginBearer
 extends PetQueryServerAuthPluginLmdb{

@@ -5,12 +5,13 @@
  * free of charge, without warranty of any kind.
  */
 
-import {Client as LdapClient} from 'ldapts';
-import type {PetQueryConfigServerType} from '#petquery/config.js';
-import type {PetQueryDatabase} from '#petquery/database.js';
-import type {PetQueryServerAuthUser} from '#petquery/server/auth.js';
-import {PetQueryServerAuthPlugin} from '#petquery/server/auth/plugin.js';
-import type {PetQueryServerRequest} from '#petquery/server/request.js';
+import { Client as LdapClient } from 'ldapts';
+import { PetQueryServerAuthPlugin } from '#petquery/server/auth/plugin.js';
+
+import type { PetQueryConfigServerType } from '#petquery/config.js';
+import type { PetQueryDatabase } from '#petquery/database.js';
+import type { PetQueryServerAuthUser } from '#petquery/server/auth.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
 
 export class PetQueryServerAuthPluginLdap extends PetQueryServerAuthPlugin{
 	protected readonly _config:PetQueryConfigServerType;

@@ -9,94 +9,52 @@
 // are not written in TypeScript. Run with `npm run build:schema` from the
 // repository root; the .ts files are the source of truth.
 
+import { PetQuerySchemaApiAuthLoginPostRequest } from '#schema/api/auth/login/post/request.js';
+import { PetQuerySchemaApiAuthLoginPostResponse } from '#schema/api/auth/login/post/response.js';
+import { PetQuerySchemaApiAuthLogoutPostRequest } from '#schema/api/auth/logout/post/request.js';
+import { PetQuerySchemaApiAuthLogoutPostResponse } from '#schema/api/auth/logout/post/response.js';
+import { PetQuerySchemaApiAuthModeGetRequest } from '#schema/api/auth/mode/get/request.js';
+import { PetQuerySchemaApiAuthModeGetResponse } from '#schema/api/auth/mode/get/response.js';
+import { PetQuerySchemaApiAuthOidcCallbackGetRequest } from '#schema/api/auth/oidc/callback/get/request.js';
+import { PetQuerySchemaApiAuthOidcCallbackGetResponse } from '#schema/api/auth/oidc/callback/get/response.js';
+import { PetQuerySchemaApiAuthOidcLoginGetRequest } from '#schema/api/auth/oidc/login/get/request.js';
+import { PetQuerySchemaApiAuthOidcLoginGetResponse } from '#schema/api/auth/oidc/login/get/response.js';
+import { PetQuerySchemaApiAuthSessionGetRequest } from '#schema/api/auth/session/get/request.js';
+import { PetQuerySchemaApiAuthSessionGetResponse } from '#schema/api/auth/session/get/response.js';
+import { PetQuerySchemaApiAuthUsersDeleteRequest } from '#schema/api/auth/users/delete/request.js';
+import { PetQuerySchemaApiAuthUsersDeleteResponse } from '#schema/api/auth/users/delete/response.js';
+import { PetQuerySchemaApiAuthUsersGetRequest } from '#schema/api/auth/users/get/request.js';
+import { PetQuerySchemaApiAuthUsersGetResponse } from '#schema/api/auth/users/get/response.js';
+import { PetQuerySchemaApiAuthUsersPostRequest } from '#schema/api/auth/users/post/request.js';
+import { PetQuerySchemaApiAuthUsersPostResponse } from '#schema/api/auth/users/post/response.js';
+import { PetQuerySchemaApiAuthUsersPutRequest } from '#schema/api/auth/users/put/request.js';
+import { PetQuerySchemaApiAuthUsersPutResponse } from '#schema/api/auth/users/put/response.js';
+import { PetQuerySchemaApiConfigGetRequest } from '#schema/api/config/get/request.js';
+import { PetQuerySchemaApiConfigGetResponse } from '#schema/api/config/get/response.js';
+import { PetQuerySchemaApiConfigPutRequest } from '#schema/api/config/put/request.js';
+import { PetQuerySchemaApiConfigPutResponse } from '#schema/api/config/put/response.js';
+import { PetQuerySchemaApiPetDeleteRequest } from '#schema/api/pet/delete/request.js';
+import { PetQuerySchemaApiPetDeleteResponse } from '#schema/api/pet/delete/response.js';
+import { PetQuerySchemaApiPetGetEntryRequest } from '#schema/api/pet/get/entry/request.js';
+import { PetQuerySchemaApiPetGetEntryResponse } from '#schema/api/pet/get/entry/response.js';
+import { PetQuerySchemaApiPetGetRequest } from '#schema/api/pet/get/request.js';
+import { PetQuerySchemaApiPetGetResponse } from '#schema/api/pet/get/response.js';
+import { PetQuerySchemaApiPetPostRequest } from '#schema/api/pet/post/request.js';
+import { PetQuerySchemaApiPetPostResponse } from '#schema/api/pet/post/response.js';
+import { PetQuerySchemaApiPetPutRequest } from '#schema/api/pet/put/request.js';
+import { PetQuerySchemaApiPetPutResponse } from '#schema/api/pet/put/response.js';
+import { PetQuerySchemaApiPetSearchRequest } from '#schema/api/pet/search/request.js';
+import { PetQuerySchemaApiPingGetRequest } from '#schema/api/ping/get/request.js';
+import { PetQuerySchemaApiPingGetResponse } from '#schema/api/ping/get/response.js';
+import { PetQuerySchemaApiServerDeleteRequest } from '#schema/api/server/delete/request.js';
+import { PetQuerySchemaApiServerDeleteResponse } from '#schema/api/server/delete/response.js';
+import { PetQuerySchemaApiServerGetRequest } from '#schema/api/server/get/request.js';
+import { PetQuerySchemaApiServerGetResponse } from '#schema/api/server/get/response.js';
+import { PetQuerySchemaApiServerPutRequest } from '#schema/api/server/put/request.js';
+import { PetQuerySchemaApiServerPutResponse } from '#schema/api/server/put/response.js';
 import fs from 'node:fs/promises';
-import type {PetQuerySchemaType} from '#petquery/schema.js';
-import {PetQuerySchemaApiAuthModeGetRequest} from
-	'#schema/api/auth/mode/get/request.js';
-import {PetQuerySchemaApiAuthModeGetResponse} from
-	'#schema/api/auth/mode/get/response.js';
-import {PetQuerySchemaApiAuthSessionGetRequest} from
-	'#schema/api/auth/session/get/request.js';
-import {PetQuerySchemaApiAuthSessionGetResponse} from
-	'#schema/api/auth/session/get/response.js';
-import {PetQuerySchemaApiAuthLoginPostRequest} from
-	'#schema/api/auth/login/post/request.js';
-import {PetQuerySchemaApiAuthLoginPostResponse} from
-	'#schema/api/auth/login/post/response.js';
-import {PetQuerySchemaApiAuthLogoutPostRequest} from
-	'#schema/api/auth/logout/post/request.js';
-import {PetQuerySchemaApiAuthLogoutPostResponse} from
-	'#schema/api/auth/logout/post/response.js';
-import {PetQuerySchemaApiAuthOidcLoginGetRequest} from
-	'#schema/api/auth/oidc/login/get/request.js';
-import {PetQuerySchemaApiAuthOidcLoginGetResponse} from
-	'#schema/api/auth/oidc/login/get/response.js';
-import {PetQuerySchemaApiAuthOidcCallbackGetRequest} from
-	'#schema/api/auth/oidc/callback/get/request.js';
-import {PetQuerySchemaApiAuthOidcCallbackGetResponse} from
-	'#schema/api/auth/oidc/callback/get/response.js';
-import {PetQuerySchemaApiAuthUsersGetRequest} from
-	'#schema/api/auth/users/get/request.js';
-import {PetQuerySchemaApiAuthUsersGetResponse} from
-	'#schema/api/auth/users/get/response.js';
-import {PetQuerySchemaApiAuthUsersPostRequest} from
-	'#schema/api/auth/users/post/request.js';
-import {PetQuerySchemaApiAuthUsersPostResponse} from
-	'#schema/api/auth/users/post/response.js';
-import {PetQuerySchemaApiAuthUsersPutRequest} from
-	'#schema/api/auth/users/put/request.js';
-import {PetQuerySchemaApiAuthUsersPutResponse} from
-	'#schema/api/auth/users/put/response.js';
-import {PetQuerySchemaApiAuthUsersDeleteRequest} from
-	'#schema/api/auth/users/delete/request.js';
-import {PetQuerySchemaApiAuthUsersDeleteResponse} from
-	'#schema/api/auth/users/delete/response.js';
-import {PetQuerySchemaApiPingGetRequest} from
-	'#schema/api/ping/get/request.js';
-import {PetQuerySchemaApiPingGetResponse} from
-	'#schema/api/ping/get/response.js';
-import {PetQuerySchemaApiServerGetRequest} from
-	'#schema/api/server/get/request.js';
-import {PetQuerySchemaApiServerGetResponse} from
-	'#schema/api/server/get/response.js';
-import {PetQuerySchemaApiServerPutRequest} from
-	'#schema/api/server/put/request.js';
-import {PetQuerySchemaApiServerPutResponse} from
-	'#schema/api/server/put/response.js';
-import {PetQuerySchemaApiServerDeleteRequest} from
-	'#schema/api/server/delete/request.js';
-import {PetQuerySchemaApiServerDeleteResponse} from
-	'#schema/api/server/delete/response.js';
-import {PetQuerySchemaApiConfigGetRequest} from
-	'#schema/api/config/get/request.js';
-import {PetQuerySchemaApiConfigGetResponse} from
-	'#schema/api/config/get/response.js';
-import {PetQuerySchemaApiConfigPutRequest} from
-	'#schema/api/config/put/request.js';
-import {PetQuerySchemaApiConfigPutResponse} from
-	'#schema/api/config/put/response.js';
-import {PetQuerySchemaApiPetGetRequest} from
-	'#schema/api/pet/get/request.js';
-import {PetQuerySchemaApiPetGetResponse} from
-	'#schema/api/pet/get/response.js';
-import {PetQuerySchemaApiPetGetEntryRequest} from
-	'#schema/api/pet/get/entry/request.js';
-import {PetQuerySchemaApiPetGetEntryResponse} from
-	'#schema/api/pet/get/entry/response.js';
-import {PetQuerySchemaApiPetPostRequest} from
-	'#schema/api/pet/post/request.js';
-import {PetQuerySchemaApiPetPostResponse} from
-	'#schema/api/pet/post/response.js';
-import {PetQuerySchemaApiPetPutRequest} from
-	'#schema/api/pet/put/request.js';
-import {PetQuerySchemaApiPetPutResponse} from
-	'#schema/api/pet/put/response.js';
-import {PetQuerySchemaApiPetDeleteRequest} from
-	'#schema/api/pet/delete/request.js';
-import {PetQuerySchemaApiPetDeleteResponse} from
-	'#schema/api/pet/delete/response.js';
-import {PetQuerySchemaApiPetSearchRequest} from
-	'#schema/api/pet/search/request.js';
+
+import type { PetQuerySchemaType } from '#petquery/schema.js';
 
 // Error responses of every route are described by schema/error.json.
 const schemas:Array<[utf8_t,PetQuerySchemaType]> = [

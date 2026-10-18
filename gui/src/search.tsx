@@ -5,12 +5,16 @@
  * free of charge, without warranty of any kind.
  */
 
-import {useState} from 'react';
-import type {ChangeEvent, FormEvent, ReactElement} from 'react';
-import {searchPets} from './api';
-import type {SearchResponse, SearchResult} from './api';
-import {useAction} from './action';
-import {Attachment} from './attachment';
+import { Attachment } from '#gui/attachment';
+import { searchPets } from '#gui/api';
+import { useAction } from '#gui/action';
+import { useState } from 'react';
+
+import type { ChangeEvent } from 'react';
+import type { FormEvent } from 'react';
+import type { ReactElement } from 'react';
+import type { SearchResponse } from '#gui/api';
+import type { SearchResult } from '#gui/api';
 
 type SearchFeature = {
 	title:utf8_t;

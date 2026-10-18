@@ -5,23 +5,19 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {PetQueryConfigServerType} from '#petquery/config.js';
-import type {PetQueryDatabase} from '#petquery/database.js';
-import {PetQuerySchema} from '#petquery/schema.js';
-import type {PetQueryServerRequest} from '#petquery/server/request.js';
-import type {PetQueryServerResponse} from '#petquery/server/response.js';
-import type {PetQueryServerAuthPlugin} from
-	'#petquery/server/auth/plugin.js';
-import {PetQueryServerAuthPluginBearer} from
-	'#petquery/server/auth/plugin/bearer.js';
-import {PetQueryServerAuthPluginLmdb} from
-	'#petquery/server/auth/plugin/lmdb.js';
-import {PetQueryServerAuthPluginLdap} from
-	'#petquery/server/auth/plugin/ldap.js';
-import {PetQueryServerAuthPluginOidc} from
-	'#petquery/server/auth/plugin/oidc.js';
-import {PetQueryServerAuthSession} from '#petquery/server/auth/session.js';
-import {PetQuerySchemaApiAuthUser} from '#schema/api/auth/user.js';
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaApiAuthUser } from '#schema/api/auth/user.js';
+import { PetQueryServerAuthPluginBearer } from '#petquery/server/auth/plugin/bearer.js';
+import { PetQueryServerAuthPluginLdap } from '#petquery/server/auth/plugin/ldap.js';
+import { PetQueryServerAuthPluginLmdb } from '#petquery/server/auth/plugin/lmdb.js';
+import { PetQueryServerAuthPluginOidc } from '#petquery/server/auth/plugin/oidc.js';
+import { PetQueryServerAuthSession } from '#petquery/server/auth/session.js';
+
+import type { PetQueryConfigServerType } from '#petquery/config.js';
+import type { PetQueryDatabase } from '#petquery/database.js';
+import type { PetQueryServerAuthPlugin } from '#petquery/server/auth/plugin.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
+import type { PetQueryServerResponse } from '#petquery/server/response.js';
 
 export type PetQueryServerAuthMode = utf8_t;
 export type PetQueryServerAuthGroup = 'admin'|'user';

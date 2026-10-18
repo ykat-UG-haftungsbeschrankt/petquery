@@ -5,7 +5,8 @@
  * free of charge, without warranty of any kind.
  */
 
-import {useCallback, useState} from 'react';
+import { useCallback } from 'react';
+import { useState } from 'react';
 
 export type Action = {
 	busy:bool_t;

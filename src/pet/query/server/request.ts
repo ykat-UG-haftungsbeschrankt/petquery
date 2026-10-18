@@ -5,15 +5,12 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {
-	PetQueryServerAuth,
-	PetQueryServerAuthUser
-} from '#petquery/server/auth.js';
-import type {PetQueryServerResponse} from
-	'#petquery/server/response.js';
-import type {UploadedFile} from 'express-fileupload';
-import type {default as Express} from 'express';
-import type {PetQuerySchemaPluginFileType} from '#schema/plugin/file.js';
+import type { PetQuerySchemaPluginFileType } from '#schema/plugin/file.js';
+import type { PetQueryServerAuth } from '#petquery/server/auth.js';
+import type { PetQueryServerAuthUser } from '#petquery/server/auth.js';
+import type { PetQueryServerResponse } from '#petquery/server/response.js';
+import type { UploadedFile } from 'express-fileupload';
+import type { default as Express } from 'express';
 
 export class PetQueryServerRequest{
 	protected readonly _request:Express.Request;

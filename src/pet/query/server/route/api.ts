@@ -5,72 +5,29 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQueryServerRoute, PetQueryServerRouteAccessGroup} from '#petquery/server/route.js';
-import {PetQueryConfig} from '#petquery/config.js';
-import {PetQuerySchemaApiPingGetRequest} from
-	'#schema/api/ping/get/request.js';
-import {PetQuerySchemaApiServerGetRequest} from
-	'#schema/api/server/get/request.js';
-import {PetQuerySchemaApiServerPutRequest} from
-	'#schema/api/server/put/request.js';
-import {PetQuerySchemaApiServerDeleteRequest} from
-	'#schema/api/server/delete/request.js';
-import {PetQuerySchemaApiConfigGetRequest} from
-	'#schema/api/config/get/request.js';
-import {PetQuerySchemaApiConfigPutRequest} from
-	'#schema/api/config/put/request.js';
-import type {
-	PetQuerySchemaServerDatabaseConfigEntryType
-} from '#schema/server/database/config/entry.js';
+import { PetQueryConfig } from '#petquery/config.js';
+import { PetQuerySchemaApiConfigGetRequest } from '#schema/api/config/get/request.js';
+import { PetQuerySchemaApiConfigPutRequest } from '#schema/api/config/put/request.js';
+import { PetQuerySchemaApiPingGetRequest } from '#schema/api/ping/get/request.js';
+import { PetQuerySchemaApiServerDeleteRequest } from '#schema/api/server/delete/request.js';
+import { PetQuerySchemaApiServerGetRequest } from '#schema/api/server/get/request.js';
+import { PetQuerySchemaApiServerPutRequest } from '#schema/api/server/put/request.js';
+import { PetQueryServerRoute } from '#petquery/server/route.js';
+import { PetQueryServerRouteAccessGroup } from '#petquery/server/route.js';
 
-import type {
-	PetQuerySchemaApiServerGetRequestType
-} from
-	'#schema/api/server/get/request.js';
-import type {
-	PetQuerySchemaApiServerGetResponseType
-} from
-	'#schema/api/server/get/response.js';
-import type {
-	PetQuerySchemaApiServerPutRequestType
-} from
-	'#schema/api/server/put/request.js';
-import type {
-	PetQuerySchemaApiServerPutResponseType
-} from
-	'#schema/api/server/put/response.js';
-import type {
-	PetQuerySchemaApiServerDeleteRequestType
-} from
-	'#schema/api/server/delete/request.js';
-import type {
-	PetQuerySchemaApiServerDeleteResponseType
-} from
-	'#schema/api/server/delete/response.js';
-import type {
-	PetQuerySchemaApiConfigGetRequestType
-} from
-	'#schema/api/config/get/request.js';
-import type {
-	PetQuerySchemaApiConfigGetResponseType
-} from
-	'#schema/api/config/get/response.js';
-import type {
-	PetQuerySchemaApiConfigPutRequestType
-} from
-	'#schema/api/config/put/request.js';
-import type {
-	PetQuerySchemaApiConfigPutResponseType
-} from
-	'#schema/api/config/put/response.js';
-import type {
-	PetQuerySchemaApiPingGetRequestType
-} from
-	'#schema/api/ping/get/request.js';
-import type {
-	PetQuerySchemaApiPingGetResponseType
-} from
-	'#schema/api/ping/get/response.js';
+import type { PetQuerySchemaApiConfigGetRequestType } from '#schema/api/config/get/request.js';
+import type { PetQuerySchemaApiConfigGetResponseType } from '#schema/api/config/get/response.js';
+import type { PetQuerySchemaApiConfigPutRequestType } from '#schema/api/config/put/request.js';
+import type { PetQuerySchemaApiConfigPutResponseType } from '#schema/api/config/put/response.js';
+import type { PetQuerySchemaApiPingGetRequestType } from '#schema/api/ping/get/request.js';
+import type { PetQuerySchemaApiPingGetResponseType } from '#schema/api/ping/get/response.js';
+import type { PetQuerySchemaApiServerDeleteRequestType } from '#schema/api/server/delete/request.js';
+import type { PetQuerySchemaApiServerDeleteResponseType } from '#schema/api/server/delete/response.js';
+import type { PetQuerySchemaApiServerGetRequestType } from '#schema/api/server/get/request.js';
+import type { PetQuerySchemaApiServerGetResponseType } from '#schema/api/server/get/response.js';
+import type { PetQuerySchemaApiServerPutRequestType } from '#schema/api/server/put/request.js';
+import type { PetQuerySchemaApiServerPutResponseType } from '#schema/api/server/put/response.js';
+import type { PetQuerySchemaServerDatabaseConfigEntryType } from '#schema/server/database/config/entry.js';
 
 export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	register():void{

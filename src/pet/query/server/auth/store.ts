@@ -5,7 +5,7 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {PetQueryDatabase} from '#petquery/database.js';
+import type { PetQueryDatabase } from '#petquery/database.js';
 
 export class PetQueryServerAuthStore{
 	protected readonly _database:PetQueryDatabase;

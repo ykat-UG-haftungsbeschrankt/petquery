@@ -5,10 +5,22 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQueryConfig} from '#petquery/config.js';
-import {PetQueryServer} from '#petquery/server.js';
-import type {PetQueryServerDatabaseIndex} from
-	'#petquery/server/database/index.js';
+import { PetQueryConfig } from '#petquery/config.js';
+import { PetQueryServer } from '#petquery/server.js';
+import { PetQueryServerAuth } from '#petquery/server/auth.js';
+import { PetQueryServerConfig } from '#petquery/server/config.js';
+import { PetQueryServerIndexSync } from '#petquery/server/timer/index/sync.js';
+import { PetQueryServerRouteApi } from '#petquery/server/route/api.js';
+import { PetQueryServerRouteAuth } from '#petquery/server/route/auth.js';
+import { PetQueryServerRouteDefault } from '#petquery/server/route/default.js';
+import { PetQueryServerRouteDocs } from '#petquery/server/route/docs.js';
+import { PetQueryServerRouteGui } from '#petquery/server/route/gui.js';
+import { PetQueryServerRouteOpenapi } from '#petquery/server/route/openapi.js';
+import { PetQueryServerRoutePet } from '#petquery/server/route/pet.js';
+import { v4 as uuidv4 } from 'uuid';
+import { validate as uuidValidate } from 'uuid';
+
+import type { PetQueryServerDatabaseIndex } from '#petquery/server/database/index.js';
 /*
 import {PetQuery3pPluginAnimalidConfig} from
 	'#petquery/3p/plugin/animalid/config.js';
@@ -20,20 +32,7 @@ import {PetQuery3pPluginMysqlPlugin} from
 import {PetQuery3pPluginMysqlConfig} from
 	'#petquery/3p/plugin/mysql/config.js';
 */
-import { PetQueryServerRouteApi } from '#petquery/server/route/api.js';
-import {PetQueryServerRouteDefault} from
-	'#petquery/server/route/default.js';
-import {PetQueryServerRouteDocs} from '#petquery/server/route/docs.js';
-import {PetQueryServerRouteGui} from '#petquery/server/route/gui.js';
-import {PetQueryServerRouteAuth} from '#petquery/server/route/auth.js';
-import {PetQueryServerRoutePet} from '#petquery/server/route/pet.js';
-import {PetQueryServerRouteOpenapi} from
-	'#petquery/server/route/openapi.js';
-import {PetQueryServerIndexSync} from
-	'#petquery/server/timer/index/sync.js';
-import {PetQueryServerConfig} from '#petquery/server/config.js';
-import {PetQueryServerAuth} from '#petquery/server/auth.js';
-import {v4 as uuidv4, validate as uuidValidate} from 'uuid';
+
 
 // Returns the UUID stored in db, generating and storing one on first start.
 async function loadServerUuid(

@@ -5,12 +5,10 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {NextFunction} from 'express';
-import type {PetQueryServer} from '#petquery/server.js';
-import type {PetQueryServerRequest} from
-	'#petquery/server/request.js';
-import type {PetQueryServerResponse} from
-	'#petquery/server/response.js';
+import type { NextFunction } from 'express';
+import type { PetQueryServer } from '#petquery/server.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
+import type { PetQueryServerResponse } from '#petquery/server/response.js';
 
 export type PetQueryServerNext = NextFunction;
 export type PetQueryServerHandler = (

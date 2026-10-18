@@ -5,18 +5,14 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {PetQueryServerDatabaseAuth} from
-	'#petquery/server/database/auth.js';
-import type {PetQueryServerDatabaseConfig} from
-	'#petquery/server/database/config.js';
-import type {PetQueryServerDatabaseIndex} from
-	'#petquery/server/database/index.js';
-import type {PetQueryServerDatabasePet} from
-	'#petquery/server/database/pet.js';
-import type {PetQueryServerDatabaseSession} from
-	'#petquery/server/database/session.js';
-import { PetQueryAssert } from './assert.js';
-import { PetQueryDestructor } from './destructor.js';
+import { PetQueryAssert } from '#petquery/assert.js';
+import { PetQueryDestructor } from '#petquery/destructor.js';
+
+import type { PetQueryServerDatabaseAuth } from '#petquery/server/database/auth.js';
+import type { PetQueryServerDatabaseConfig } from '#petquery/server/database/config.js';
+import type { PetQueryServerDatabaseIndex } from '#petquery/server/database/index.js';
+import type { PetQueryServerDatabasePet } from '#petquery/server/database/pet.js';
+import type { PetQueryServerDatabaseSession } from '#petquery/server/database/session.js';
 
 export class PetQueryDatabase extends PetQueryDestructor{
 	protected readonly _dbAuth:PetQueryServerDatabaseAuth|null;

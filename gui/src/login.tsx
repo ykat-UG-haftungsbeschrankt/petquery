@@ -5,11 +5,14 @@
  * free of charge, without warranty of any kind.
  */
 
-import {useEffect, useState} from 'react';
-import type {FormEvent, ReactElement} from 'react';
-import {getProviderLoginUrl} from './api';
-import type {AuthProvider} from './api';
-import {useAction} from './action';
+import { getProviderLoginUrl } from '#gui/api';
+import { useAction } from '#gui/action';
+import { useEffect } from 'react';
+import { useState } from 'react';
+
+import type { AuthProvider } from '#gui/api';
+import type { FormEvent } from 'react';
+import type { ReactElement } from 'react';
 
 export type LoginProps = {
 	providers:Array<AuthProvider>;

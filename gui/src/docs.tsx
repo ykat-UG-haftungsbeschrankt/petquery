@@ -5,7 +5,7 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {ReactElement} from 'react';
+import type { ReactElement } from 'react';
 
 const DOCS_URL:utf8_t = '/docs/';
 const API_URL:utf8_t = '/openapi/';

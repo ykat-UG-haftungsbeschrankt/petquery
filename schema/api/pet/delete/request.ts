@@ -5,14 +5,12 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQuerySchema} from '#petquery/schema.js';
-import type {PetQuerySchemaStatic} from '#petquery/schema.js';
-import {PetQueryServerRequestSchema} from
-	'#petquery/server/request/schema.js';
-import {
-	PetQuerySchemaApiPetDeleteResponse,
-	type PetQuerySchemaApiPetDeleteResponseType
-} from '#schema/api/pet/delete/response.js';
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaApiPetDeleteResponse } from '#schema/api/pet/delete/response.js';
+import { PetQueryServerRequestSchema } from '#petquery/server/request/schema.js';
+
+import type { PetQuerySchemaApiPetDeleteResponseType } from '#schema/api/pet/delete/response.js';
+import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const T = PetQuerySchema.type;
 const schema = T.Object({

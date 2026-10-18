@@ -5,15 +5,14 @@
  * free of charge, without warranty of any kind.
  */
 
-import {default as Express} from 'express';
+import { PetQueryServerRoute } from '#petquery/server/route.js';
+import { default as Express } from 'express';
 import path from 'node:path';
-import type {ServerResponse} from 'node:http';
-import {PetQueryServerRoute} from '#petquery/server/route.js';
-import type {PetQueryServer} from '#petquery/server.js';
-import type {PetQueryServerRequest} from
-	'#petquery/server/request.js';
-import type {PetQueryServerResponse} from
-	'#petquery/server/response.js';
+
+import type { PetQueryServer } from '#petquery/server.js';
+import type { PetQueryServerRequest } from '#petquery/server/request.js';
+import type { PetQueryServerResponse } from '#petquery/server/response.js';
+import type { ServerResponse } from 'node:http';
 
 // Serves the React GUI built from gui/ at /gui. Pages are public;
 // the GUI sends a bearer token to the authenticated API routes.

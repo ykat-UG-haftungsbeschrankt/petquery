@@ -5,16 +5,18 @@
  * free of charge, without warranty of any kind.
  */
 
-import {useCallback, useEffect, useState} from 'react';
-import type {FormEvent, ReactElement} from 'react';
-import {
-	createPet,
-	deletePet,
-	listPets,
-	updatePet
-} from './api';
-import type {PetRecord} from './api';
-import {useAction} from './action';
+import { createPet } from '#gui/api';
+import { deletePet } from '#gui/api';
+import { listPets } from '#gui/api';
+import { updatePet } from '#gui/api';
+import { useAction } from '#gui/action';
+import { useCallback } from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
+
+import type { FormEvent } from 'react';
+import type { PetRecord } from '#gui/api';
+import type { ReactElement } from 'react';
 
 const EMPTY_PET:PetRecord = {
 	petId:'',

@@ -5,9 +5,11 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQuerySchema, PetQuerySchemaAbstract} from '#petquery/schema.js';
-import type {PetQuerySchemaStatic} from '#petquery/schema.js';
+import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaAbstract } from '#petquery/schema.js';
 import { PetQuerySchemaDatabaseConfigLmdb } from '#schema/database/config/lmdb.js';
+
+import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const T = PetQuerySchema.type;
 

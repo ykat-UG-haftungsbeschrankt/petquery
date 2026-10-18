@@ -5,15 +5,14 @@
  * free of charge, without warranty of any kind.
  */
 
-import util from 'node:util';
-import {PetQueryTimer} from '#petquery/timer.js';
-import type {PetQueryDatabase} from '#petquery/database.js';
-import {PetQuerySchemaApiPingGetRequest} from
-	'#schema/api/ping/get/request.js';
-import {PetQuerySchemaApiServerGetRequest} from
-	'#schema/api/server/get/request.js';
-import { PetQueryServerDatabaseIndex } from '#petquery/server/database/index.js';
 import { PetQueryAbortController } from '#petquery/abort.js';
+import { PetQuerySchemaApiPingGetRequest } from '#schema/api/ping/get/request.js';
+import { PetQuerySchemaApiServerGetRequest } from '#schema/api/server/get/request.js';
+import { PetQueryServerDatabaseIndex } from '#petquery/server/database/index.js';
+import { PetQueryTimer } from '#petquery/timer.js';
+import util from 'node:util';
+
+import type { PetQueryDatabase } from '#petquery/database.js';
 
 // Periodically fetches the server list of every known server and merges it
 // into the index. A remote entry is added, or replaces a known URI, only

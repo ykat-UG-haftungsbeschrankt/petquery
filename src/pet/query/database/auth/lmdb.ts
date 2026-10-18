@@ -5,11 +5,11 @@
  * free of charge, without warranty of any kind.
  */
 
-import {open as LmdbOpen} from 'lmdb';
-import type {Database} from 'lmdb';
-import {PetQueryDestructor} from '#petquery/destructor.js';
-import type {PetQueryServerDatabaseAuth} from
-	'#petquery/server/database/auth.js';
+import { PetQueryDestructor } from '#petquery/destructor.js';
+import { open as LmdbOpen } from 'lmdb';
+
+import type { Database } from 'lmdb';
+import type { PetQueryServerDatabaseAuth } from '#petquery/server/database/auth.js';
 
 export type PetQueryDatabaseLmdbConfig = {
 	path:filename_t;

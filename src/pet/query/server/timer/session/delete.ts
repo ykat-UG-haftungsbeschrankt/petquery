@@ -5,10 +5,11 @@
  * free of charge, without warranty of any kind.
  */
 
-import util from 'node:util';
-import {PetQueryTimer} from '#petquery/timer.js';
-import type {PetQueryDatabase} from '#petquery/database.js';
 import { PetQueryServerDatabaseSession } from '#petquery/server/database/session.js';
+import { PetQueryTimer } from '#petquery/timer.js';
+import util from 'node:util';
+
+import type { PetQueryDatabase } from '#petquery/database.js';
 
 export class PetQueryServerIndexSync extends PetQueryTimer{
 	protected readonly _database:PetQueryServerDatabaseSession;

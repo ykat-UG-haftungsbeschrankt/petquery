@@ -5,12 +5,13 @@
  * free of charge, without warranty of any kind.
  */
 
-import type {PetQueryConfigServerType} from '#petquery/config.js';
-import type {PetQueryServerDatabaseConfig} from
-	'#petquery/server/database/config.js';
-import { PetQuerySchemaServerDatabaseConfigEntry, type PetQuerySchemaServerDatabaseConfigEntryType } from "#schema/server/database/config/entry.js";
 import { PetQueryDatabase } from '#petquery/database.js';
 import { PetQueryDestructor } from '#petquery/destructor.js';
+import { PetQuerySchemaServerDatabaseConfigEntry } from '#schema/server/database/config/entry.js';
+
+import type { PetQueryConfigServerType } from '#petquery/config.js';
+import type { PetQuerySchemaServerDatabaseConfigEntryType } from '#schema/server/database/config/entry.js';
+import type { PetQueryServerDatabaseConfig } from '#petquery/server/database/config.js';
 
 // Loads, validates and atomically saves the server settings that are
 // editable in the admin GUI. Saved values take effect on restart.

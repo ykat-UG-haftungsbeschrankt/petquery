@@ -5,13 +5,16 @@
  * free of charge, without warranty of any kind.
  */
 
-import {useEffect, useState} from 'react';
-import type {MouseEvent, ReactElement} from 'react';
-import {Config} from './config';
-import {Pets} from './pets';
-import {Servers} from './servers';
-import {Users} from './users';
-import type {AuthProvider} from './api';
+import { Config } from '#gui/config';
+import { Pets } from '#gui/pets';
+import { Servers } from '#gui/servers';
+import { Users } from '#gui/users';
+import { useEffect } from 'react';
+import { useState } from 'react';
+
+import type { AuthProvider } from '#gui/api';
+import type { MouseEvent } from 'react';
+import type { ReactElement } from 'react';
 
 type AdminPage = 'home'|'config'|'pets'|'servers'|'users';
 

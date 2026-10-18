@@ -5,11 +5,13 @@
  * free of charge, without warranty of any kind.
  */
 
-import { open as LmdbOpen } from 'lmdb';
-import { PetQueryServerDatabaseIndex } from '#petquery/server/database/index.js';
-import { PetQueryDestructor } from '#petquery/destructor.js';
-import { PetQuerySchemaServerDatabaseIndexEntry, type PetQuerySchemaServerDatabaseIndexEntryType } from '#schema/server/database/index/entry.js';
 import { PetQueryAssert } from '#petquery/assert.js';
+import { PetQueryDestructor } from '#petquery/destructor.js';
+import { PetQuerySchemaServerDatabaseIndexEntry } from '#schema/server/database/index/entry.js';
+import { PetQueryServerDatabaseIndex } from '#petquery/server/database/index.js';
+import { open as LmdbOpen } from 'lmdb';
+
+import type { PetQuerySchemaServerDatabaseIndexEntryType } from '#schema/server/database/index/entry.js';
 
 export type PetQueryDatabaseLmdbConfig = {
 	path:filename_t;
