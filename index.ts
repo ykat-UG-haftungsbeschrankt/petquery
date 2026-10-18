@@ -18,7 +18,6 @@ import { PetQueryServerRouteGui } from '#petquery/server/route/gui.js';
 import { PetQueryServerRouteOpenapi } from '#petquery/server/route/openapi.js';
 import { PetQueryServerRoutePet } from '#petquery/server/route/pet.js';
 import { v4 as uuidv4 } from 'uuid';
-import { validate as uuidValidate } from 'uuid';
 
 import type { PetQueryServerDatabaseIndex } from '#petquery/server/database/index.js';
 /*
@@ -38,16 +37,13 @@ import {PetQuery3pPluginMysqlConfig} from
 async function loadServerUuid(
 	db:PetQueryServerDatabaseIndex
 ):Promise<uuid_t>{
-	const stored = await db.serverIndexGetServerUid();
-	if(undefined !== stored){
-		if(!uuidValidate(stored)){
-			throw new Error(`Stored server UUID is invalid: ${stored}`);
-		}
-		return stored;
+	try{
+		return await db.serverIndexGetServerUid();
+	}catch(UNUSED_error){
+		const uuid = uuidv4();
+		await db.serverIndexSetServerUid(uuid);
+		return uuid;
 	}
-	const uuid = uuidv4();
-	await db.serverIndexSetServerUid(uuid);
-	return uuid;
 }
 const serverConfig = PetQueryConfig.getServerConfig();
 const indexConfig = serverConfig.index;
