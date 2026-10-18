@@ -302,13 +302,34 @@ nav a[aria-current="page"]{
 	background:#d9f4ef;
 	font-weight:700;
 }
+#root:has(> .docs-main){
+	display:grid;
+	grid-template-rows:auto minmax(0,1fr);
+	height:100dvh;
+}
+.docs-main{
+	display:flex;
+	min-height:0;
+	max-width:none;
+	margin:0;
+	padding:0;
+}
 .docs-page{
-	padding-bottom:14px;
+	display:flex;
+	flex-direction:column;
+	flex:1;
+	min-width:0;
+	min-height:0;
+	margin:0;
+	border:0;
+	border-radius:0;
 }
 .docs-frame{
 	display:block;
+	flex:1;
+	box-sizing:border-box;
 	width:100%;
-	min-height:620px;
+	min-height:0;
 	margin-top:14px;
 	border:1px solid #d2d2d2;
 	border-radius:7px;
@@ -458,9 +479,6 @@ input.token{
 	}
 	.search-controls{
 		flex-direction:column;
-	}
-	.docs-frame{
-		min-height:480px;
 	}
 	.feature-grid{
 		grid-template-columns:1fr;

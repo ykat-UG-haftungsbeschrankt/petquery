@@ -27,7 +27,7 @@ type Page = 'search'|'docs'|'admin';
 
 const PAGES:Array<{page:Page;label:utf8_t}> = [
 	{page:'search',label:'Home'},
-	{page:'docs',label:'Docs'},
+	{page:'docs',label:'Documentation'},
 	{page:'admin',label:'Admin'}
 ];
 
@@ -289,7 +289,9 @@ export function App():ReactElement{
 							: <span className="auth-state">Public</span>}
 				</div>
 			</header>
-			<main>{content}</main>
+			<main className={'docs' === page ? 'docs-main' : undefined}>
+				{content}
+			</main>
 		</>
 	);
 }

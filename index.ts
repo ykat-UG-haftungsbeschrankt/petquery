@@ -27,6 +27,8 @@ import {PetQueryServerRouteDocs} from '#petquery/server/route/docs.js';
 import {PetQueryServerRouteGui} from '#petquery/server/route/gui.js';
 import {PetQueryServerRouteAuth} from '#petquery/server/route/auth.js';
 import {PetQueryServerRoutePet} from '#petquery/server/route/pet.js';
+import {PetQueryServerRouteOpenapi} from
+	'#petquery/server/route/openapi.js';
 import {PetQueryServerIndexSync} from
 	'#petquery/server/timer/index/sync.js';
 import {PetQueryServerConfig} from '#petquery/server/config.js';
@@ -127,7 +129,8 @@ server.registerRoutes([
 	new PetQueryServerRouteAuth(server),
 	new PetQueryServerRouteDefault(server),
 	new PetQueryServerRouteDocs(server),
-	new PetQueryServerRouteGui(server)
+	new PetQueryServerRouteGui(server),
+	new PetQueryServerRouteOpenapi(server)
 ]);
 server.start();
 if(indexConfig.sync.enabled){

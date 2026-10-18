@@ -21,6 +21,7 @@ export default defineConfig({
 		proxy:{
 			'/api':'http://127.0.0.1:50000',
 			'/docs':'http://127.0.0.1:50000',
+			'/openapi':'http://127.0.0.1:50000',
 			'/auth':'http://127.0.0.1:50000'
 		}
 	}

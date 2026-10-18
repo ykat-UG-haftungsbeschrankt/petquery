@@ -1,0 +1,1305 @@
+openapi: 3.1.0
+info:
+  title: PetQuery API
+  version: 1.0.0
+  description: |
+    HTTP API for PetQuery. API routes under `/api` can be disabled by server
+    configuration. Successful JSON responses use the envelope
+    `{ success: true, error: [], data: ... }`; error responses use
+    `{ success: false, error: [...], data: null }`.
+servers:
+  - url: /
+    description: The PetQuery server origin
+tags:
+  - name: API
+  - name: Pets
+  - name: Authentication
+  - name: User administration
+paths:
+  /api/ping/get:
+    get:
+      tags: [API]
+      summary: Get this server's identity
+      operationId: getServerPing
+      responses:
+        "200":
+          description: Server identity
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Ping"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/server/get:
+    get:
+      tags: [API]
+      summary: List indexed servers
+      operationId: listServers
+      description: Public endpoint used by peers to synchronize the server index.
+      responses:
+        "200":
+          description: Indexed servers
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ServerEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/server/put/{uuid}:
+    put:
+      tags: [API]
+      summary: Add or update an indexed server
+      operationId: putServer
+      description: Requires an administrator account.
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          description: UUID of the server to index.
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PutServerRequest"
+      responses:
+        "200":
+          description: Server indexed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        maxItems: 0
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/server/delete/{uuid}:
+    delete:
+      tags: [API]
+      summary: Remove an indexed server
+      operationId: deleteServer
+      description: Requires an administrator account.
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Server removed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        maxItems: 0
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/config/get:
+    get:
+      tags: [API]
+      summary: Get active and saved server configuration
+      operationId: getServerConfig
+      description: Requires an administrator account.
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Active and persisted configuration
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ConfigResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/config/put:
+    put:
+      tags: [API]
+      summary: Save configuration for the next restart
+      operationId: putServerConfig
+      description: |
+        Requires an administrator account. Saves values applied on restart.
+        Unknown plugin names are rejected.
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServerConfig"
+      responses:
+        "200":
+          description: Saved configuration
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ServerConfig"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/pets:
+    get:
+      tags: [Pets]
+      summary: List pets
+      operationId: listPets
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Pet records
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Pet"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    post:
+      tags: [Pets]
+      summary: Create a pet record
+      operationId: createPet
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+      responses:
+        "200":
+          description: Created pet record
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Pet"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/pets/{pet_id}:
+    parameters:
+      - name: pet_id
+        in: path
+        required: true
+        description: Pet identifier.
+        schema:
+          type: string
+          minLength: 1
+    get:
+      tags: [Pets]
+      summary: Get a pet record
+      operationId: getPet
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Pet record
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Pet"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    put:
+      tags: [Pets]
+      summary: Replace a pet record
+      operationId: replacePet
+      description: The `petId` field in the body must match the path value.
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplacePetRequest"
+      responses:
+        "200":
+          description: Updated pet record
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Pet"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    delete:
+      tags: [Pets]
+      summary: Delete a pet record
+      operationId: deletePet
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Pet deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: "null"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /auth/mode:
+    get:
+      tags: [Authentication]
+      summary: Get configured authentication providers
+      operationId: getAuthMode
+      responses:
+        "200":
+          description: Authentication configuration
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/AuthMode"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /auth/session:
+    get:
+      tags: [Authentication]
+      summary: Get the current authenticated user
+      operationId: getAuthSession
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [user]
+                        properties:
+                          user:
+                            $ref: "#/components/schemas/AuthUser"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Log in using an authentication provider
+      operationId: login
+      description: |
+        The `provider` identifies the configured provider. Username and
+        password are used by password-based providers; other provider-specific
+        fields may be accepted. Successful login creates a session cookie.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [provider]
+              properties:
+                provider:
+                  type: string
+                  minLength: 1
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+              additionalProperties: true
+      responses:
+        "200":
+          description: Authenticated user; response sets the session cookie.
+          headers:
+            Set-Cookie:
+              description: Session cookie configured by the server.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [user]
+                        properties:
+                          user:
+                            $ref: "#/components/schemas/AuthUser"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /auth/logout:
+    post:
+      tags: [Authentication]
+      summary: Log out and clear the current session
+      operationId: logout
+      responses:
+        "200":
+          description: Session cleared
+          headers:
+            Set-Cookie:
+              description: Clears the configured session cookie.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: "null"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /auth/oidc/login:
+    get:
+      tags: [Authentication]
+      summary: Start OpenID Connect login
+      operationId: startOidcLogin
+      responses:
+        "302":
+          description: Redirect to the identity provider.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /auth/oidc/callback:
+    get:
+      tags: [Authentication]
+      summary: Handle the OpenID Connect callback
+      operationId: handleOidcCallback
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: error
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: error_description
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: error_uri
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: iss
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: session_state
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect to the PetQuery GUI after login.
+          headers:
+            Location:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /auth/users:
+    get:
+      tags: [User administration]
+      summary: List managed users
+      operationId: listAuthUsers
+      description: Requires an administrator account.
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      parameters:
+        - name: provider
+          in: query
+          required: false
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Managed users
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ManagedUser"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    post:
+      tags: [User administration]
+      summary: Create a managed user
+      operationId: createAuthUser
+      description: Requires an administrator account.
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "200":
+          description: Created user
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ManagedUser"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /auth/users/{username}:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+    put:
+      tags: [User administration]
+      summary: Update a managed user
+      operationId: updateAuthUser
+      description: |
+        Requires an administrator account. The path parameter supplies the
+        username.
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/ManagedUser"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+    delete:
+      tags: [User administration]
+      summary: Delete a managed user
+      operationId: deleteAuthUser
+      description: Requires an administrator account.
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      parameters:
+        - name: provider
+          in: query
+          required: false
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: User deleted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: "null"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /auth/providers/{provider}/login:
+    get:
+      tags: [Authentication]
+      summary: Start login with a configured provider
+      operationId: startProviderLogin
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "302":
+          description: Redirect to the configured identity provider.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /auth/providers/{provider}/callback:
+    get:
+      tags: [Authentication]
+      summary: Handle a configured provider callback
+      operationId: handleProviderCallback
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "302":
+          description: Redirect to the PetQuery GUI after login.
+          headers:
+            Location:
+              schema:
+                type: string
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Bearer token configured for the server.
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: petquery_session
+      description: |
+        Session cookie. The cookie name defaults to `petquery_session` and
+        can be changed by server configuration.
+  responses:
+    BadRequest:
+      description: Invalid request or request processing error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Unauthorized:
+      description: Authentication required or insufficient privileges.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    ServerError:
+      description: Unexpected server error.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+  schemas:
+    SuccessEnvelope:
+      type: object
+      required: [success, error, data]
+      properties:
+        success:
+          type: boolean
+          const: true
+        error:
+          type: array
+          items:
+            type: string
+        data: {}
+      additionalProperties: false
+    ErrorEnvelope:
+      type: object
+      required: [success, error, data]
+      properties:
+        success:
+          type: boolean
+          const: false
+        error:
+          type: array
+          items:
+            type: string
+        data:
+          type: "null"
+      additionalProperties: false
+    Ping:
+      type: object
+      required: [uid, uri]
+      properties:
+        uid:
+          type: string
+          format: uuid
+        uri:
+          type: string
+          format: uri
+      additionalProperties: false
+    ServerEntry:
+      type: object
+      required: [uid, uri]
+      properties:
+        uid:
+          type: string
+          format: uuid
+        uri:
+          type: string
+          format: uri
+          maxLength: 2048
+      additionalProperties: false
+    PutServerRequest:
+      type: object
+      required: [uri]
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: The path parameter supplies this value.
+        uri:
+          type: string
+          format: uri
+          maxLength: 2048
+      additionalProperties: false
+    Pet:
+      type: object
+      required:
+        - petId
+        - name
+        - species
+        - owner_contact
+        - notes
+        - source
+        - preview
+        - files
+        - attributes
+      properties:
+        petId:
+          type: string
+          description: Pet identifier; generated records use UUIDs.
+        name:
+          type: string
+          minLength: 1
+          maxLength: 256
+        species:
+          type: string
+          minLength: 1
+          maxLength: 256
+        owner_contact:
+          type: string
+          maxLength: 4096
+        notes:
+          type: string
+          maxLength: 65536
+        source:
+          type: object
+          required: [favicon, url, name]
+          properties:
+            favicon:
+              type: string
+            url:
+              type: string
+            name:
+              type: string
+          additionalProperties: false
+        preview:
+          type: string
+        files:
+          type: array
+          items:
+            type: string
+        attributes:
+          type: array
+          items:
+            type: object
+            required: [key, value]
+            properties:
+              key:
+                type: string
+              value:
+                type: string
+            additionalProperties: false
+      additionalProperties: false
+    ReplacePetRequest:
+      type: object
+      required:
+        - petId
+        - name
+        - species
+        - owner_contact
+        - notes
+        - source
+        - preview
+        - files
+        - attributes
+      properties:
+        petId:
+          type: string
+          description: Must match the pet_id path parameter.
+        pet_id:
+          type: string
+          minLength: 1
+          description: The path parameter supplies this value.
+        name:
+          type: string
+          minLength: 1
+          maxLength: 256
+        species:
+          type: string
+          minLength: 1
+          maxLength: 256
+        owner_contact:
+          type: string
+          maxLength: 4096
+        notes:
+          type: string
+          maxLength: 65536
+        source:
+          type: object
+          required: [favicon, url, name]
+          properties:
+            favicon:
+              type: string
+            url:
+              type: string
+            name:
+              type: string
+          additionalProperties: false
+        preview:
+          type: string
+        files:
+          type: array
+          items:
+            type: string
+        attributes:
+          type: array
+          items:
+            type: object
+            required: [key, value]
+            properties:
+              key:
+                type: string
+              value:
+                type: string
+            additionalProperties: false
+      additionalProperties: false
+    AuthMode:
+      type: object
+      required: [mode, providers]
+      properties:
+        mode:
+          type: string
+        providers:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuthProvider"
+      additionalProperties: false
+    AuthProvider:
+      type: object
+      required: [name, login, userManagement]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        login:
+          type: string
+          enum: [bearer, password, redirect]
+        userManagement:
+          type: boolean
+      additionalProperties: false
+    AuthUser:
+      type: object
+      required: [username, displayName, group, provider]
+      properties:
+        username:
+          type: string
+        displayName:
+          type: string
+        group:
+          type: string
+          enum: [admin, user]
+        provider:
+          type: string
+          minLength: 1
+      additionalProperties: false
+    ManagedUser:
+      type: object
+      required: [username, displayName, group, provider, createdAt]
+      properties:
+        username:
+          type: string
+        displayName:
+          type: string
+        group:
+          type: string
+          enum: [admin, user]
+        provider:
+          type: string
+          minLength: 1
+        createdAt:
+          type: string
+      additionalProperties: false
+    CreateUserRequest:
+      type: object
+      required: [displayName, password, group]
+      properties:
+        provider:
+          type: string
+          minLength: 1
+        username:
+          type: string
+        displayName:
+          type: string
+        password:
+          type: string
+          format: password
+        group:
+          type: string
+          enum: [admin, user]
+      additionalProperties: true
+    UpdateUserRequest:
+      type: object
+      required: [username, displayName, password, group]
+      properties:
+        provider:
+          type: string
+          minLength: 1
+        username:
+          type: string
+          minLength: 1
+        displayName:
+          type: string
+        password:
+          type: string
+          format: password
+        group:
+          type: string
+          enum: [admin, user]
+      additionalProperties: true
+    ConfigResponse:
+      type: object
+      required: [active, saved, saved_error, plugins]
+      properties:
+        active:
+          $ref: "#/components/schemas/ServerConfig"
+        saved:
+          oneOf:
+            - $ref: "#/components/schemas/ServerConfig"
+            - type: "null"
+        saved_error:
+          type:
+            - string
+            - "null"
+        plugins:
+          type: array
+          items:
+            type: string
+      additionalProperties: false
+    ServerConfig:
+      type: object
+      required:
+        - serverUid
+        - http
+        - authenticate
+        - file
+        - max_results_per_module
+        - max_results_total
+        - index
+        - route
+      properties:
+        serverUid:
+          type: string
+          pattern: "^[\\x21-\\x7e]{16,256}$"
+        http:
+          type: object
+          required: [port]
+          properties:
+            port:
+              type: integer
+              minimum: 1
+              maximum: 65535
+          additionalProperties: false
+        authenticate:
+          $ref: "#/components/schemas/AuthenticateConfig"
+        file:
+          type: object
+          required: [upload]
+          properties:
+            upload:
+              type: object
+              required: [enabled, max_file_size]
+              properties:
+                enabled:
+                  type: boolean
+                max_file_size:
+                  type: integer
+                  minimum: 1
+              additionalProperties: false
+          additionalProperties: false
+        max_results_per_module:
+          type: integer
+          minimum: 1
+          maximum: 1000000
+        max_results_total:
+          type: integer
+          minimum: 1
+          maximum: 1000000
+        index:
+          type: object
+          required: [sync]
+          properties:
+            sync:
+              type: object
+              required: [enabled, interval, timeout, max_servers]
+              properties:
+                enabled:
+                  type: boolean
+                interval:
+                  type: integer
+                  minimum: 1000
+                  maximum: 2147483647
+                timeout:
+                  type: integer
+                  minimum: 100
+                  maximum: 2147483647
+                max_servers:
+                  type: integer
+                  minimum: 1
+                  maximum: 1000000
+              additionalProperties: false
+          additionalProperties: false
+        route:
+          type: object
+          required: [api, json, "/", gui]
+          properties:
+            api:
+              type: object
+              required: [enabled, plugins]
+              properties:
+                enabled:
+                  type: boolean
+                plugins:
+                  type: array
+                  maxItems: 1000
+                  items:
+                    type: string
+                    minLength: 1
+              additionalProperties: false
+            json:
+              type: object
+              required: [enabled]
+              properties:
+                enabled:
+                  type: boolean
+              additionalProperties: false
+            "/":
+              type: object
+              required: [enabled]
+              properties:
+                enabled:
+                  type: boolean
+              additionalProperties: false
+            gui:
+              type: object
+              required: [enabled]
+              properties:
+                enabled:
+                  type: boolean
+              additionalProperties: false
+          additionalProperties: false
+      additionalProperties: false
+    AuthenticateConfig:
+      type: object
+      required: [mode, bearer, session, lmdb, ldap, oidc]
+      properties:
+        mode:
+          type: string
+          minLength: 1
+        providers:
+          type: array
+          maxItems: 1000
+          items:
+            type: string
+            minLength: 1
+        plugin_options:
+          type: object
+          additionalProperties: true
+        bearer:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            type: string
+            pattern: "^[\\x21-\\x7e]{16,256}$"
+        session:
+          type: object
+          required: [cookie_name, max_age, secure]
+          properties:
+            cookie_name:
+              type: string
+              pattern: "^[A-Za-z0-9._-]{1,64}$"
+            max_age:
+              type: integer
+              minimum: 60000
+              maximum: 2147483647
+            secure:
+              type: boolean
+          additionalProperties: false
+        lmdb:
+          type: object
+          required: [users_name, sessions_name]
+          properties:
+            users_name:
+              type: string
+              minLength: 1
+              maxLength: 128
+            sessions_name:
+              type: string
+              minLength: 1
+              maxLength: 128
+          additionalProperties: false
+        ldap:
+          type: object
+          required:
+            - url
+            - bind_dn
+            - bind_password
+            - base_dn
+            - user_filter
+            - admin_group
+          properties:
+            url:
+              type: string
+              maxLength: 4096
+            bind_dn:
+              type: string
+              maxLength: 4096
+            bind_password:
+              type: string
+              maxLength: 4096
+              format: password
+            base_dn:
+              type: string
+              maxLength: 4096
+            user_filter:
+              type: string
+              maxLength: 4096
+            admin_group:
+              type: string
+              maxLength: 1024
+          additionalProperties: false
+        oidc:
+          type: object
+          required:
+            - issuer
+            - client_id
+            - client_secret
+            - redirect_uri
+            - scopes
+            - admin_group
+          properties:
+            issuer:
+              type: string
+              maxLength: 4096
+            client_id:
+              type: string
+              maxLength: 1024
+            client_secret:
+              type: string
+              maxLength: 4096
+              format: password
+            redirect_uri:
+              type: string
+              maxLength: 4096
+            scopes:
+              type: string
+              maxLength: 1024
+            admin_group:
+              type: string
+              maxLength: 1024
+          additionalProperties: false
+      additionalProperties: false
