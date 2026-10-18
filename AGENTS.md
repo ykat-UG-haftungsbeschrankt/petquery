@@ -136,7 +136,7 @@ import type { ServerOptions } from 'node:https';
 
 ## Lifecycle and cleanup
 
-- Every PetQuery class must provide a public `destructor()` method, even if it
+- Every PetQuery class must provide a public `async _destructor():Promise<void>` method, even if it
   has no resources to release. Override an inherited implementation when
   additional cleanup is needed.
 - Explicitly invoke `destructor()` when an owned PetQuery instance reaches the
