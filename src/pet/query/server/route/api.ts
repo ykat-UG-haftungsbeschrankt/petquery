@@ -84,9 +84,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	): Promise<PetQuerySchemaApiPingGetResponseType>{
 		return {
 			uid:this.getServer()._getUuid(),
-			uri:`http://127.0.0.1:${
-				this.getServer()._getConfig().http.port
-			}/`
+			uri:this.getServer()._getConfig().api.endpoint
 		};
 	}
 

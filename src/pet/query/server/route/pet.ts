@@ -137,6 +137,14 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<PetQuerySchemaApiPetGetResponseType>{
+		const searchQuery = request.query.trim();
+		const files = [
+			...(request.files ?? []),
+			...req._getFiles().values()
+		];
+		if('' === searchQuery && 0 === files.length){
+			throw new Error('Enter a microchip ID or select files.');
+		}
 		const server = this.getServer();
 		const config = server._getConfig();
 		const trace = request.tracerouteUuid ?? [];
@@ -149,12 +157,9 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			return [];
 		}
 		const query:PetQuerySchemaPluginRequestType = {
-			query:request.query,
+			query:searchQuery,
 			bearer:'',
-			files:[
-				...(request.files ?? []),
-				...req._getFiles().values()
-			],
+			files,
 			serverUuid:server._getUuid(),
 			tracerouteUuid:[...trace,server._getUuid()]
 		};
@@ -163,9 +168,11 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		for(const plugin of plugins){
 			tasks.push(this._queryPlugin(plugin,query));
 		}
-		tasks.push(
-			server._getDatabase().getDbPet().serverPetSearch(request.query)
-		);
+		if('' !== searchQuery){
+			tasks.push(
+				server._getDatabase().getDbPet().serverPetSearch(searchQuery)
+			);
+		}
 		const results = await Promise.allSettled(tasks);
 		const data:PetQuerySchemaApiPetGetResponseType = [];
 		const error:Array<utf8_t> = [];

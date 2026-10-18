@@ -15,7 +15,7 @@ import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const T = PetQuerySchema.type;
 const schema = T.Object({
-	query:T.String({minLength:1,pattern:'\\S'}),
+	query:T.String(),
 	files:T.Optional(T.Array(PetQuerySchemaPluginFile.getSchema())),
 	tracerouteUuid:T.Optional(T.Array(T.String({format:'uuid'})))
 },{

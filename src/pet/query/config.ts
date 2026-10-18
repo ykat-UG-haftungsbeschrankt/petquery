@@ -41,6 +41,9 @@ export type PetQueryConfigAuthenticate = (
 )=>void;
 
 export type PetQueryConfigServerType = {
+		api:{
+			endpoint:uri_t;
+		}
 		http:{
 			port:port_t;
 			enabled:bool_t;
@@ -139,7 +142,10 @@ function authenticate(
 
 const settings:PetQueryConfigType = {
 	server:{
-		 http:{
+		api:{
+			endpoint:'http://localhost:50000'
+		},
+		http:{
 			port:50000 as port_t
 			,enabled:true
 		}

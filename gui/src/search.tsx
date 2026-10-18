@@ -63,10 +63,10 @@ export function Search(props:{token:utf8_t}):ReactElement{
 	function onSubmit(event:FormEvent<HTMLFormElement>):void{
 		event.preventDefault();
 		const value = query.trim();
-		if('' === value){
-			return;
-		}
 		run(async ()=>{
+			if('' === value && 0 === files.length){
+				throw new Error('Enter a microchip ID or select files.');
+			}
 			setResponse(await searchPets(props.token,value,files));
 		});
 	}
@@ -85,7 +85,8 @@ export function Search(props:{token:utf8_t}):ReactElement{
 				<div className="eyebrow">Federated pet lookup</div>
 				<h2>Find a pet</h2>
 				<p className="muted">
-					Search every enabled registry with one microchip ID.
+					Search enabled registries with a microchip ID, files,
+					or both.
 				</p>
 				<form className="search-form" onSubmit={onSubmit}>
 					<label htmlFor="pet-query">Microchip ID</label>
@@ -93,7 +94,6 @@ export function Search(props:{token:utf8_t}):ReactElement{
 						<input
 							id="pet-query"
 							type="search"
-							required
 							autoComplete="off"
 							placeholder="112093400000465"
 							value={query}
@@ -103,7 +103,7 @@ export function Search(props:{token:utf8_t}):ReactElement{
 						/>
 					</div>
 					<label className="file-field" htmlFor="pet-files">
-						Supporting files
+						Files
 					</label>
 					<input
 						id="pet-files"
@@ -127,7 +127,9 @@ export function Search(props:{token:utf8_t}):ReactElement{
 						className="search-submit"
 						type="submit"
 						aria-busy={busy}
-						disabled={busy || '' === query.trim()}
+						disabled={
+							busy || ('' === query.trim() && 0 === files.length)
+						}
 					>
 						<span className="search-submit-icon" aria-hidden="true">
 							<svg viewBox="0 0 24 24">
@@ -147,8 +149,9 @@ export function Search(props:{token:utf8_t}):ReactElement{
 				</div>
 				<p>
 					PetQuery is a friendly, federated pet search. Enter a
-					microchip ID to query connected registries at once, add a
-					photo or document, and help lost pets find their people.
+					microchip ID, upload photos or documents, or use both to
+					query connected registries and help lost pets find
+					their people.
 				</p>
 				<div className="description-points">
 					<span>Search connected registries</span>
