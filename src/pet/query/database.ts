@@ -17,25 +17,25 @@ import type {PetQueryServerDatabaseSession} from
 	'#petquery/server/database/session.js';
 import { PetQueryAssert } from './assert.js';
 
-export abstract class PetQueryDatabase{
+export class PetQueryDatabase{
 	protected readonly _dbAuth:PetQueryServerDatabaseAuth|null;
 	protected readonly _dbConfig:PetQueryServerDatabaseConfig|null;
 	protected readonly _dbIndex:PetQueryServerDatabaseIndex|null;
 	protected readonly _dbPet:PetQueryServerDatabasePet|null;
 	protected readonly _dbSession:PetQueryServerDatabaseSession|null;
 	
-	constructor(
+	constructor(obj:{
 		dbAuth:PetQueryServerDatabaseAuth|null,
 		dbConfig:PetQueryServerDatabaseConfig|null,
 		dbIndex:PetQueryServerDatabaseIndex|null,
 		dbPet:PetQueryServerDatabasePet|null,
 		dbSession:PetQueryServerDatabaseSession|null
-	){
-		this._dbAuth = dbAuth;
-		this._dbConfig = dbConfig;
-		this._dbIndex = dbIndex;
-		this._dbPet = dbPet;
-		this._dbSession = dbSession;
+	}){
+		this._dbAuth = obj.dbAuth;
+		this._dbConfig = obj.dbConfig;
+		this._dbIndex = obj.dbIndex;
+		this._dbPet = obj.dbPet;
+		this._dbSession = obj.dbSession;
 	}
 
 	getDbAuth():PetQueryServerDatabaseAuth{

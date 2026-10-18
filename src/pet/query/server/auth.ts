@@ -308,7 +308,7 @@ export class PetQueryServerAuth{
 			expiresAt:Date.now() + 10 * 60 * 1000
 		};
 
-		await this._database.serverSessionPut(
+		await this._database.serverSessionAdd(
 			this._getOidcKey(state),
 			JSON.stringify(pending)
 		);

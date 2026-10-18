@@ -5,13 +5,14 @@
  * free of charge, without warranty of any kind.
  */
 
-import {PetQuery3pPluginMongodbConfig} from
-	'#petquery/3p/plugin/mongodb/config.js';
 import { PetQueryTypes } from './types.js';
 import type {PetQueryServerRequest} from
 	'#petquery/server/request.js';
 import type {PetQueryServerResponse} from
 	'#petquery/server/response.js';
+/*
+import {PetQuery3pPluginMongodbConfig} from
+	'#petquery/3p/plugin/mongodb/config.js';
 import {PetQuery3pPluginPetqueryConfig} from
 	'#petquery/3p/plugin/petquery/config.js';
 import {PetQuery3pPluginMysqlConfig} from
@@ -22,13 +23,17 @@ import {PetQuery3pPluginTestConfig} from
 	'#petquery/3p/plugin/test/config.js';
 import {PetQuery3pPluginAnimalidConfig} from
 	'#petquery/3p/plugin/animalid/config.js';
+*/
 import fileUpload from 'express-fileupload';
 import type {ServerOptions} from 'node:https';
 import type {PetQueryPluginConfig} from '#petquery/plugin.js';
 import { PetQueryDatabase } from '#petquery/database.js';
-
-export type PetQueryConfigAuthMode =
-	'bearer'|'lmdb'|'ldap'|'oidc';
+import { PetQueryDatabaseAuthLmdb } from '#petquery/database/auth/lmdb.js';
+import { PetQueryDatabasePetLmdb } from '#petquery/database/pet/lmdb.js';
+import { PetQueryDatabaseConfigLmdb } from '#petquery/database/config/lmdb.js';
+import { PetQueryDatabaseIndexLmdb } from '#petquery/database/index/lmdb.js';
+import { PetQueryDatabaseSessionLmdb } from '#petquery/database/session/lmdb.js';
+import { PetQueryServerAuthMode } from '#petquery/server/auth.js';
 
 export type PetQueryConfigAuthenticate = (
 	req:PetQueryServerRequest,
@@ -47,7 +52,7 @@ export type PetQueryConfigServerType = {
 			certificate:ServerOptions;
 		};
 		authenticate:{
-			mode:PetQueryConfigAuthMode;
+			mode:PetQueryServerAuthMode;
 			bearer:Set<utf8_t>;
 			session:{
 				cookie_name:utf8_t;
@@ -85,7 +90,6 @@ export type PetQueryConfigServerType = {
 		max_results_per_module:uint_t;
 		max_results_total:uint_t;
 		index:{
-			database:PetQueryDatabase;
 			sync:{
 				enabled:bool_t;
 				interval:milliseconds_t;
@@ -93,9 +97,7 @@ export type PetQueryConfigServerType = {
 				max_servers:uint_t;
 			};
 		};
-		settings:{
-			database:PetQueryDatabase;
-		};
+		database:PetQueryDatabase;
 		route:{
 			api:{
 				plugins:Set<utf8_t>;
@@ -149,7 +151,7 @@ const settings:PetQueryConfigType = {
 			}
 		}
 		,authenticate:{
-			 mode:'bearer' as PetQueryConfigAuthMode
+			 mode:'bearer'
 			,bearer:new Set<string>([
 				 '75258ce9e0a7e751ce4e78cf20dd3f8f'
 				,'c815512c071af26c864e6af29c2e2080'
@@ -201,16 +203,7 @@ const settings:PetQueryConfigType = {
 		,max_results_per_module:10 as uint_t
 		,max_results_total:1000 as uint_t
 		,index:{
-			database:new PetQueryDatabaseLmdb({
-				// LMDB environment directory, relative to the
-				// working directory.
-				 path:'var/lmdb' as filename_t
-				,name:'servers' as utf8_t
-				// Database in the same environment holding this
-				// server's UUID.
-				,settings_name:'settings' as utf8_t
-			})
-			,sync:{
+			sync:{
 				 enabled:true
 				,interval:15 * 60 * 1000 as milliseconds_t
 				// Timeout of each request to a peer.
@@ -219,12 +212,28 @@ const settings:PetQueryConfigType = {
 				,max_servers:1000 as uint_t
 			}
 		}
-		,settings:{
-			database:new PetQueryDatabaseLmdb({
-				 path:'var/lmdb' as filename_t
-				,name:'pets' as utf8_t
-			})
-		}
+		,database:new PetQueryDatabase({
+			dbAuth:new PetQueryDatabaseAuthLmdb({
+				path:'./lmdb',
+				name:'auth',
+			}),
+			dbConfig:new PetQueryDatabaseConfigLmdb({
+				path:'./lmdb',
+				name:'config',
+			}),
+			dbIndex:new PetQueryDatabaseIndexLmdb({
+				path:'./lmdb',
+				name:'index',
+			}),
+			dbPet:new PetQueryDatabasePetLmdb({
+				path:'./lmdb',
+				name:'pet',
+			}),
+			dbSession:new PetQueryDatabaseSessionLmdb({
+				path:'./lmdb',
+				name:'session',
+			}),
+		})
 		,route:{
 			api:{
 				 plugins:new Set<string>(['test'])
@@ -245,7 +254,7 @@ const settings:PetQueryConfigType = {
 			}
 		}
 	}
-	,plugin:new Map<string,PetQueryPluginConfig>([
+	,plugin:new Map<string,PetQueryPluginConfig>([/*
 		["animalid.by",new PetQuery3pPluginAnimalidConfig(
 			{
 				enabled:false,
@@ -257,7 +266,7 @@ const settings:PetQueryConfigType = {
 				}
 			}
 		)]
-		/*,["europetnet.org",new PetQueryPluginEuropetnetOrgConfig(
+		,["europetnet.org",new PetQueryPluginEuropetnetOrgConfig(
 			{
 				enabled:false,
 				timeout:5000,
@@ -267,7 +276,7 @@ const settings:PetQueryConfigType = {
 					,name:'Europetnet'
 				}
 			}
-		)]*/
+		)]
 		,["test",new PetQuery3pPluginTestConfig(
 			{
 				enabled:false,
@@ -340,7 +349,7 @@ const settings:PetQueryConfigType = {
 					'Authorization': ''
 				}
 			}
-		)]
+		)]*/
 	])
 };
 

@@ -7,7 +7,6 @@
 
 import {PetQueryServerRoute, PetQueryServerRouteAccessGroup} from '#petquery/server/route.js';
 import {PetQueryConfig} from '#petquery/config.js';
-import {PetQuerySchemaSearchRequest} from '#schema/search/request.js';
 import {PetQuerySchemaApiPingGetRequest} from
 	'#schema/api/ping/get/request.js';
 import {PetQuerySchemaApiServerGetRequest} from
@@ -80,14 +79,6 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 			return;
 		}
 
-		this.getServer().all(
-			'/api',
-			this._authenticateUser.bind(this),
-			PetQuerySchemaSearchRequest._handle.bind(
-				this,
-				this._handleSearch.bind(this,config.plugins)
-			)
-		);
 		this.getServer().get(
 			'/api/ping/get',
 			PetQuerySchemaApiPingGetRequest._handle.bind(
