@@ -56,9 +56,11 @@ const serverServerConfig = new PetQueryServerConfig(
 	serverUuid,
 	serverConfig.database
 );
-const savedServerConfig = await serverServerConfig.load();
-if(null !== savedServerConfig){
+try{
+	const savedServerConfig = await serverServerConfig.load();
 	serverServerConfig.applyToServerConfig(serverConfig,savedServerConfig);
+}catch(error){
+	console.error('Failed to load server config:',error);
 }
 
 const auth = new PetQueryServerAuth(
