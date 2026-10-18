@@ -14,7 +14,11 @@ import {
 	type PetQuerySchemaApiAuthUsersGetResponseType
 } from '#schema/api/auth/users/get/response.js';
 
-const schema = PetQuerySchema.type.Object({},{
+const schema = PetQuerySchema.type.Object({
+	provider:PetQuerySchema.type.Optional(
+		PetQuerySchema.type.String({minLength:1})
+	)
+},{
 	title:'GET /auth/users request',
 	additionalProperties:true
 });

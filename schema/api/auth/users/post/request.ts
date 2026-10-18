@@ -17,6 +17,7 @@ import {
 
 const T = PetQuerySchema.type;
 const schema = T.Object({
+	provider:T.Optional(T.String({minLength:1})),
 	username:T.String(),
 	displayName:T.String(),
 	password:T.String(),

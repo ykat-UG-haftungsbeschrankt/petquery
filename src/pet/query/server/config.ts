@@ -42,6 +42,8 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 			,http:{port:config.http.port}
 			,authenticate:{
 				 mode:config.authenticate.mode
+				,providers:Array.from(config.authenticate.providers)
+				,plugin_options:config.authenticate.plugin_options
 				,bearer:Array.from(config.authenticate.bearer)
 				,session:{
 					 cookie_name:config.authenticate.session.cookie_name
@@ -107,6 +109,12 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 
 		config.http.port = values.http.port;
 		config.authenticate.mode = values.authenticate.mode;
+		config.authenticate.providers = Array.from(new Set(
+			values.authenticate.providers
+			?? [values.authenticate.mode,'bearer']
+		));
+		config.authenticate.plugin_options =
+			values.authenticate.plugin_options ?? {};
 		config.authenticate.bearer = new Set(values.authenticate.bearer);
 		config.authenticate.session.cookie_name =
 			values.authenticate.session.cookie_name;

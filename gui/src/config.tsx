@@ -19,15 +19,26 @@ const MAX_TIMER_MS = 2147483647;
 function flatten(
 	value:unknown,
 	prefix:utf8_t,
-	out:Map<utf8_t,utf8_t>
+	out:Map<utf8_t,utf8_t>,
+	preserveArrayOrder:bool_t = false
 ):void{
 	if(Array.isArray(value)){
-		out.set(prefix,JSON.stringify(value.map(String).sort()));
+		const json = preserveArrayOrder
+			? JSON.stringify(value)
+			: JSON.stringify(value.map(String).sort());
+		out.set(prefix,json);
 		return;
 	}
 	if('object' === typeof value && null !== value){
 		for(const [key,child] of Object.entries(value)){
-			flatten(child,'' === prefix ? key : `${prefix}.${key}`,out);
+			const path = '' === prefix ? key : `${prefix}.${key}`;
+			flatten(
+				child,
+				path,
+				out,
+				preserveArrayOrder
+					|| path.startsWith('authenticate.plugin_options')
+			);
 		}
 		return;
 	}
@@ -78,11 +89,46 @@ function formatBytes(bytes:uint_t):utf8_t{
 	return `${Math.round(bytes / 10485.76) / 100} MiB`;
 }
 
+function isJson(value:unknown):value is json_t{
+	if(null === value
+	|| 'string' === typeof value
+	|| 'boolean' === typeof value){
+		return true;
+	}
+	if('number' === typeof value){
+		return Number.isFinite(value);
+	}
+	if(Array.isArray(value)){
+		return value.every(isJson);
+	}
+	if('object' === typeof value){
+		return Object.values(value).every(isJson);
+	}
+	return false;
+}
+
+function isJsonRecord(
+	value:unknown
+):value is Record<utf8_t,json_t>{
+	return 'object' === typeof value
+		&& null !== value
+		&& !Array.isArray(value)
+		&& Object.values(value).every(isJson);
+}
+
+function parsePluginOptions(text:utf8_t):Record<utf8_t,json_t>{
+	const value:unknown = JSON.parse(text);
+	if(!isJsonRecord(value)){
+		throw new Error('Plugin options must be a JSON object');
+	}
+	return value;
+}
+
 // Returns the reasons why saving values might lock the admin out.
 function getWarnings(values:ConfigValues,token:utf8_t):Array<utf8_t>{
 	const ret:Array<utf8_t> = [];
 
-	if('bearer' === values.authenticate.mode
+	if(values.authenticate.providers.includes('bearer')
 	&& !values.authenticate.bearer.includes(token)){
 		ret.push(
 			'The token you are using is not in the list. After a restart'
@@ -173,11 +219,21 @@ export function Config(props:{token:utf8_t}):ReactElement{
 	const [initialToken] = useState<utf8_t>(token);
 	const [state,setState] = useState<ConfigState|null>(null);
 	const [form,setForm] = useState<ConfigValues|null>(null);
+	const [pluginOptionsText,setPluginOptionsText] = useState<utf8_t>('');
+	const [pluginOptionsError,setPluginOptionsError] =
+		useState<utf8_t|null>(null);
 
 	const load = useCallback(async (loadToken:utf8_t):Promise<void>=>{
 		const next = await getConfig(loadToken);
+		const values = next.saved ?? next.active;
 		setState(next);
-		setForm(structuredClone(next.saved ?? next.active));
+		setForm(structuredClone(values));
+		setPluginOptionsText(JSON.stringify(
+			values.authenticate.plugin_options,
+			null,
+			2
+		));
+		setPluginOptionsError(null);
 	},[]);
 
 	// Loads once on open; later token edits must not fire requests per key.
@@ -269,6 +325,12 @@ export function Config(props:{token:utf8_t}):ReactElement{
 
 	function onReset():void{
 		setForm(structuredClone(baseline));
+		setPluginOptionsText(JSON.stringify(
+			baseline.authenticate.plugin_options,
+			null,
+			2
+		));
+		setPluginOptionsError(null);
 	}
 
 	function onSubmit(event:FormEvent<HTMLFormElement>):void{
@@ -278,6 +340,19 @@ export function Config(props:{token:utf8_t}):ReactElement{
 		}
 		const current = state;
 		const values = structuredClone(form);
+		try{
+			values.authenticate.plugin_options =
+				parsePluginOptions(pluginOptionsText);
+			setPluginOptionsError(null);
+		}
+		catch(error){
+			setPluginOptionsError(
+				error instanceof Error
+					? error.message
+					: 'Invalid plugin options JSON'
+			);
+			return;
+		}
 		values.authenticate.bearer = values.authenticate.bearer
 			.map((value)=>{
 				return value.trim();
@@ -294,6 +369,11 @@ export function Config(props:{token:utf8_t}):ReactElement{
 			const saved = await saveConfig(token,values);
 			setState({...current,saved,savedError:null});
 			setForm(structuredClone(saved));
+			setPluginOptionsText(JSON.stringify(
+				saved.authenticate.plugin_options,
+				null,
+				2
+			));
 		});
 	}
 
@@ -325,19 +405,52 @@ export function Config(props:{token:utf8_t}):ReactElement{
 				<section>
 					<h2>Bearer tokens</h2>
 					<div className="auth-fields">
+						<label className="field">
+							<span>Enabled providers</span>
+							<textarea
+								rows={4}
+								value={
+									form.authenticate.providers.join('\n')
+								}
+								onChange={(event)=>{
+									const providers = event.target.value
+										.split('\n')
+										.map((provider)=>{
+											return provider.trim();
+										})
+										.filter((provider)=>{
+											return '' !== provider;
+										});
+									edit((draft)=>{
+										draft.authenticate.providers =
+											Array.from(new Set(providers));
+									});
+								}}
+							/>
+							<small className="muted">
+								Enter one registered provider name per line.
+								Names are selected explicitly at sign in.
+							</small>
+						</label>
 						Clients send one of these as
 						{' '}<code>Authorization: ******;token&gt;</code>.
 						At least 16 printable characters, no spaces.
+						{textField(
+							'Legacy mode value (compatibility only)',
+							form.authenticate.mode,
+							(value)=>{
+								edit((draft)=>{
+									draft.authenticate.mode = value;
+								});
+							}
+						)}
 					<label className="field">
-							<span>Provider</span>
+							<span>Common legacy mode values</span>
 							<select
 								value={form.authenticate.mode}
 								onChange={(event)=>{
 									const value = event.target.value;
-									if(value === 'bearer'
-									|| value === 'lmdb'
-									|| value === 'ldap'
-									|| value === 'oidc'){
+									if('' !== value){
 										edit((draft)=>{
 											draft.authenticate.mode = value;
 										});
@@ -345,6 +458,15 @@ export function Config(props:{token:utf8_t}):ReactElement{
 								}}
 							>
 								<option value="bearer">Bearer tokens</option>
+								{'bearer' !== form.authenticate.mode
+								&& 'lmdb' !== form.authenticate.mode
+								&& 'ldap' !== form.authenticate.mode
+								&& 'oidc' !== form.authenticate.mode
+									&& <option
+										value={form.authenticate.mode}
+									>
+										{form.authenticate.mode}
+									</option>}
 								<option value="lmdb">LMDB users</option>
 								<option value="ldap">LDAP</option>
 								<option value="oidc">OpenID Connect</option>
@@ -382,7 +504,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 								});
 							}
 						)}
-						{'lmdb' === form.authenticate.mode && <>
+						{form.authenticate.providers.includes('lmdb') && <>
 							{textField(
 								'Users database',
 								form.authenticate.lmdb.users_name,
@@ -404,7 +526,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 								}
 							)}
 						</>}
-						{'ldap' === form.authenticate.mode && <>
+						{form.authenticate.providers.includes('ldap') && <>
 							{textField(
 								'LDAP URL',
 								form.authenticate.ldap.url,
@@ -466,7 +588,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 								}
 							)}
 						</>}
-						{'oidc' === form.authenticate.mode && <>
+						{form.authenticate.providers.includes('oidc') && <>
 							{textField(
 								'Issuer',
 								form.authenticate.oidc.issuer,
@@ -532,7 +654,8 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						{' '}<code>Authorization: Bearer &lt;token&gt;</code>.
 						At least 16 printable characters, no spaces.
 					</div>
-					{form.authenticate.bearer.map((value,index)=>{
+					{form.authenticate.providers.includes('bearer')
+						&& form.authenticate.bearer.map((value,index)=>{
 						return (
 							<div className="row" key={index}>
 								<input
@@ -563,18 +686,33 @@ export function Config(props:{token:utf8_t}):ReactElement{
 								</button>
 							</div>
 						);
-					})}
-					<button
-						type="button"
-						onClick={()=>{
-							const next = generateToken();
-							edit((draft)=>{
-								draft.authenticate.bearer.push(next);
-							});
-						}}
-					>
-						Add generated token
-					</button>
+						})}
+					{form.authenticate.providers.includes('bearer')
+						&& <button
+							type="button"
+							onClick={()=>{
+								const next = generateToken();
+								edit((draft)=>{
+									draft.authenticate.bearer.push(next);
+								});
+							}}
+						>
+							Add generated token
+						</button>}
+					<label className="field">
+						<span>Provider options (JSON)</span>
+						<textarea
+							rows={10}
+							spellCheck={false}
+							value={pluginOptionsText}
+							onChange={(event)=>{
+								setPluginOptionsText(event.target.value);
+								setPluginOptionsError(null);
+							}}
+						/>
+					</label>
+					{null !== pluginOptionsError
+						&& <pre className="error">{pluginOptionsError}</pre>}
 				</section>
 
 				<section>

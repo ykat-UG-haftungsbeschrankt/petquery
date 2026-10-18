@@ -75,7 +75,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			'/auth/mode',
 			this._disableCache.bind(this),
 			PetQuerySchemaApiAuthModeGetRequest._handle.bind(
-				this,
+				PetQuerySchemaApiAuthModeGetRequest,
 				this._handleMode.bind(this)
 			)
 		);
@@ -83,7 +83,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			'/auth/session',
 			this._disableCache.bind(this),
 			PetQuerySchemaApiAuthSessionGetRequest._handle.bind(
-				this,
+				PetQuerySchemaApiAuthSessionGetRequest,
 				this._handleSession.bind(this)
 			)
 		);
@@ -91,7 +91,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			'/auth/login',
 			this._disableCache.bind(this),
 			PetQuerySchemaApiAuthLoginPostRequest._handle.bind(
-				this,
+				PetQuerySchemaApiAuthLoginPostRequest,
 				this._handleLogin.bind(this)
 			)
 		);
@@ -99,7 +99,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			'/auth/logout',
 			this._disableCache.bind(this),
 			PetQuerySchemaApiAuthLogoutPostRequest._handle.bind(
-				this,
+				PetQuerySchemaApiAuthLogoutPostRequest,
 				this._handleLogout.bind(this)
 			)
 		);
@@ -107,7 +107,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			'/auth/oidc/login',
 			this._disableCache.bind(this),
 			PetQuerySchemaApiAuthOidcLoginGetRequest._handle.bind(
-				this,
+				PetQuerySchemaApiAuthOidcLoginGetRequest,
 				this._handleOidcLogin.bind(this)
 			)
 		);
@@ -115,7 +115,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			'/auth/oidc/callback',
 			this._disableCache.bind(this),
 			PetQuerySchemaApiAuthOidcCallbackGetRequest._handle.bind(
-				this,
+				PetQuerySchemaApiAuthOidcCallbackGetRequest,
 				this._handleOidcCallback.bind(this)
 			)
 		);
@@ -124,7 +124,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			PetQuerySchemaApiAuthUsersGetRequest._handle.bind(
-				this,
+				PetQuerySchemaApiAuthUsersGetRequest,
 				this._handleListUsers.bind(this)
 			)
 		);
@@ -134,7 +134,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			this._requireWritableUsers.bind(this),
 			PetQuerySchemaApiAuthUsersPostRequest._handle.bind(
-				this,
+				PetQuerySchemaApiAuthUsersPostRequest,
 				this._handleCreateUser.bind(this)
 			)
 		);
@@ -144,7 +144,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			this._requireWritableUsers.bind(this),
 			PetQuerySchemaApiAuthUsersPutRequest._handle.bind(
-				this,
+				PetQuerySchemaApiAuthUsersPutRequest,
 				this._handleUpdateUser.bind(this)
 			)
 		);
@@ -154,29 +154,46 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			this._requireWritableUsers.bind(this),
 			PetQuerySchemaApiAuthUsersDeleteRequest._handle.bind(
-				this,
+				PetQuerySchemaApiAuthUsersDeleteRequest,
 				this._handleDeleteUser.bind(this)
 			)
+		);
+		this.getServer().get(
+			'/auth/providers/:provider/login',
+			this._disableCache.bind(this),
+			this._handleProviderLogin.bind(this)
+		);
+		this.getServer().get(
+			'/auth/providers/:provider/callback',
+			this._disableCache.bind(this),
+			this._handleProviderCallback.bind(this)
 		);
 	}
 
 	protected _requireWritableUsers(
-		UNUSED_req:PetQueryServerRequest,
+		req:PetQueryServerRequest,
 		res:PetQueryServerResponse,
 		next:PetQueryServerNext
 	):void{
-		const mode = this.getServer().getAuth().getMode();
-		if('lmdb' !== mode && 'bearer' !== mode){
-			res.sendAuthForbiddenError('User management is read-only');
-			return;
+		try{
+			if(!this.getServer().getAuth().canManageUsers(
+				this._getProvider(req)
+			)){
+				res.sendAuthForbiddenError('User management is read-only');
+				return;
+			}
+			next();
 		}
-		next();
+		catch(error){
+			res.sendApiError(error);
+		}
 	}
 
 	protected async _handleMode(
 		UNUSED_request:PetQuerySchemaApiAuthModeGetRequestType
 	):Promise<PetQuerySchemaApiAuthModeGetResponseType>{
-		return {mode:this.getServer().getAuth().getMode()};
+		const auth = this.getServer().getAuth();
+		return {mode:auth.getMode(),providers:auth.getProviders()};
 	}
 
 	protected async _handleSession(
@@ -218,7 +235,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		UNUSED_req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):Promise<void>{
-		if('oidc' !== this.getServer().getAuth().getMode()){
+		if(!this.getServer().getAuth().hasProvider('oidc')){
 			res.sendAuthUnauthorizedError('OpenID Connect is not enabled');
 			return;
 		}
@@ -241,9 +258,9 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 	}
 
 	protected async _handleListUsers(
-		UNUSED_request:PetQuerySchemaApiAuthUsersGetRequestType
+		request:PetQuerySchemaApiAuthUsersGetRequestType
 	):Promise<PetQuerySchemaApiAuthUsersGetResponseType>{
-		return this.getServer().getAuth().listUsers();
+		return this.getServer().getAuth().listUsers(request.provider);
 	}
 
 	protected async _handleCreateUser(
@@ -254,7 +271,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			displayName:request.displayName,
 			group:request.group,
 			password:request.password
-		});
+		},request.provider);
 	}
 
 	protected async _handleUpdateUser(
@@ -264,13 +281,71 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			displayName:request.displayName,
 			group:request.group,
 			password:request.password
-		});
+		},request.provider);
 	}
 
 	protected async _handleDeleteUser(
 		request:PetQuerySchemaApiAuthUsersDeleteRequestType
 	):Promise<PetQuerySchemaApiAuthUsersDeleteResponseType>{
-		await this.getServer().getAuth().deleteUser(request.username);
+		await this.getServer().getAuth().deleteUser(
+			request.username,
+			request.provider
+		);
 		return null;
+	}
+
+	protected _getProvider(req:PetQueryServerRequest):utf8_t|undefined{
+		const args = req.getHandlerArgs();
+		if('object' !== typeof args || null === args
+		|| Array.isArray(args)){
+			throw new Error('Invalid authentication arguments');
+		}
+		const provider = args.provider;
+		if(undefined === provider){
+			return undefined;
+		}
+		if('string' !== typeof provider || '' === provider){
+			throw new Error('Authentication provider must be a nonempty string');
+		}
+		return provider;
+	}
+
+	protected async _handleProviderLogin(
+		req:PetQueryServerRequest,
+		res:PetQueryServerResponse
+	):Promise<void>{
+		try{
+			const provider = this._getProvider(req);
+			if(undefined === provider){
+				throw new Error('Authentication provider is required');
+			}
+			const url = await this.getServer().getAuth().getLoginUrl(provider);
+			res.redirectUrl(url.href);
+		}
+		catch(error){
+			res.sendApiError(error);
+		}
+	}
+
+	protected async _handleProviderCallback(
+		req:PetQueryServerRequest,
+		res:PetQueryServerResponse
+	):Promise<void>{
+		try{
+			const provider = this._getProvider(req);
+			if(undefined === provider){
+				throw new Error('Authentication provider is required');
+			}
+			const user = await this.getServer().getAuth().handleCallback(
+				provider,
+				req,
+				res
+			);
+			const section = 'admin' === user.group ? 'config' : 'pets';
+			res.redirectUrl(`/gui/admin/${section}`);
+		}
+		catch(error){
+			res.sendApiError(error);
+		}
 	}
 };

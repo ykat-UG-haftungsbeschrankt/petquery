@@ -8,19 +8,19 @@
 import {useEffect, useState} from 'react';
 import type {MouseEvent, ReactElement} from 'react';
 import {
-	authenticate,
-	getAuthMode,
+	getAuthProviders,
 	getSession,
 	loginUser,
 	logout
 } from './api';
-import type {AuthMode, AuthUser} from './api';
+import type {AuthProvider, AuthUser} from './api';
 import {Admin} from './admin';
 import {Docs} from './docs';
 import {Login} from './login';
 import {Search} from './search';
 
 const TOKEN_KEY = 'petquery.admin.token';
+const PROVIDER_KEY = 'petquery.admin.provider';
 const LOGO_URL:utf8_t = `${import.meta.env.BASE_URL}logo.svg`;
 
 type Page = 'search'|'docs'|'admin';
@@ -71,7 +71,7 @@ function pageUrl(page:Page,user:AuthUser|null):utf8_t{
 
 export function App():ReactElement{
 	const [page,setPage] = useState<Page>(readPage);
-	const [mode,setMode] = useState<AuthMode>('bearer');
+	const [providers,setProviders] = useState<Array<AuthProvider>>([]);
 	const [token,setToken] = useState<utf8_t>('');
 	const [user,setUser] = useState<AuthUser|null>(null);
 	const [checking,setChecking] = useState<bool_t>(true);
@@ -79,32 +79,44 @@ export function App():ReactElement{
 
 	useEffect(()=>{
 		const stored = sessionStorage.getItem(TOKEN_KEY) ?? '';
+		const storedProvider =
+			sessionStorage.getItem(PROVIDER_KEY) ?? 'bearer';
 		let active = true;
 		async function restoreSession():Promise<void>{
-			const nextMode = await getAuthMode();
+			const auth = await getAuthProviders();
 			if(!active){
 				return;
 			}
-			setMode(nextMode);
+			setProviders(auth.providers);
 			const session = await getSession();
 			if(null !== session){
 				setUser(session);
 				return;
 			}
-			if('bearer' === nextMode && '' !== stored){
-				await authenticate(stored);
+			if(auth.providers.some((provider)=>{
+				return provider.name === storedProvider
+					&& 'bearer' === provider.login;
+			}) && '' !== stored){
+				const authenticated = await loginUser(
+					storedProvider,
+					'',
+					'',
+					stored
+				);
 				setToken(stored);
 				setUser({
 					username:'bearer',
 					displayName:'Bearer token',
 					group:'admin',
-					provider:'bearer'
+					provider:storedProvider
 				});
+				setUser(authenticated);
 			}
 		}
 		restoreSession().catch(()=>{
 			if(active){
 				sessionStorage.removeItem(TOKEN_KEY);
+				sessionStorage.removeItem(PROVIDER_KEY);
 				setAuthError('Your saved session has expired.');
 			}
 		}).finally(()=>{
@@ -136,13 +148,26 @@ export function App():ReactElement{
 	}
 
 	async function onLogin(credentials:{
+		provider:utf8_t;
 		username:utf8_t;
 		password:utf8_t;
 		token:utf8_t;
 	}):Promise<void>{
-		if('bearer' === mode){
-			await authenticate(credentials.token);
+		const provider = providers.find((entry)=>{
+			return entry.name === credentials.provider;
+		});
+		if(undefined === provider){
+			throw new Error('Selected authentication provider is unavailable');
+		}
+		if('bearer' === provider.login){
+			const authenticated = await loginUser(
+				provider.name,
+				'',
+				'',
+				credentials.token
+			);
 			sessionStorage.setItem(TOKEN_KEY,credentials.token);
+			sessionStorage.setItem(PROVIDER_KEY,provider.name);
 			setToken(credentials.token);
 			setUser({
 				username:'bearer',
@@ -150,11 +175,18 @@ export function App():ReactElement{
 				group:'admin',
 				provider:'bearer'
 			});
-		}else{
+			setUser(authenticated);
+		}else if('password' === provider.login){
+			sessionStorage.removeItem(TOKEN_KEY);
+			sessionStorage.removeItem(PROVIDER_KEY);
+			setToken('');
 			setUser(await loginUser(
+				provider.name,
 				credentials.username,
 				credentials.password
 			));
+		}else{
+			throw new Error('Selected provider uses redirect sign-in');
 		}
 		setAuthError(null);
 	}
@@ -168,6 +200,7 @@ export function App():ReactElement{
 
 	function clearSession():void{
 		sessionStorage.removeItem(TOKEN_KEY);
+		sessionStorage.removeItem(PROVIDER_KEY);
 		setToken('');
 		setUser(null);
 		setAuthError(null);
@@ -191,13 +224,19 @@ export function App():ReactElement{
 	}else if(null === user){
 		content = (
 			<Login
-				mode={mode}
+				providers={providers}
 				error={authError}
 				onLogin={onLogin}
 			/>
 		);
 	}else{
-		content = <Admin token={token} user={user}/>;
+		content = (
+			<Admin
+				token={token}
+				user={user}
+				providers={providers}
+			/>
+		);
 	}
 
 	return (

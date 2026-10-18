@@ -5,7 +5,7 @@
  * free of charge, without warranty of any kind.
  */
 
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import type {ChangeEvent, FormEvent, ReactElement} from 'react';
 import {
 	createUser,
@@ -13,26 +13,49 @@ import {
 	listUsers,
 	updateUser
 } from './api';
-import type {ManagedUser} from './api';
+import type {AuthProvider, ManagedUser} from './api';
 import {useAction} from './action';
 
 type UserGroup = 'admin'|'user';
 
-export function Users(props:{token:utf8_t}):ReactElement{
+export function Users(props:{
+	token:utf8_t;
+	providers:Array<AuthProvider>;
+}):ReactElement{
 	const {busy,error,run} = useAction();
 	const [users,setUsers] = useState<Array<ManagedUser>>([]);
+	const [provider,setProvider] = useState<utf8_t>('');
 	const [editing,setEditing] = useState<utf8_t|null>(null);
 	const [username,setUsername] = useState<utf8_t>('');
 	const [displayName,setDisplayName] = useState<utf8_t>('');
 	const [group,setGroup] = useState<UserGroup>('user');
 	const [password,setPassword] = useState<utf8_t>('');
-	const canManageUsers = users.every((user)=>{
-		return 'lmdb' === user.provider;
+	const writableProviders = useMemo(()=>{
+		return props.providers.filter((entry)=>{
+			return entry.userManagement;
+		});
+	},[props.providers]);
+	const canManageUsers = writableProviders.some((entry)=>{
+		return entry.name === provider;
 	});
 
+	useEffect(()=>{
+		if(!props.providers.some((entry)=>{
+			return entry.name === provider;
+		})){
+			setProvider(props.providers[0]?.name ?? '');
+		}
+	},[provider,props.providers]);
+
 	const refresh = useCallback(async ():Promise<void>=>{
-		setUsers(await listUsers(props.token));
-	},[props.token]);
+		if(!props.providers.some((entry)=>{
+			return entry.name === provider;
+		})){
+			setUsers([]);
+			return;
+		}
+		setUsers(await listUsers(props.token,provider));
+	},[props.token,provider,props.providers]);
 
 	useEffect(()=>{
 		run(refresh);
@@ -66,9 +89,9 @@ export function Users(props:{token:utf8_t}):ReactElement{
 				await createUser(props.token,{
 					username:username.trim(),
 					...values
-				});
+				},provider);
 			}else{
-				await updateUser(props.token,editing,values);
+				await updateUser(props.token,editing,values,provider);
 			}
 			resetForm();
 			await refresh();
@@ -80,7 +103,7 @@ export function Users(props:{token:utf8_t}):ReactElement{
 			return;
 		}
 		run(async ()=>{
-			await deleteUser(props.token,user.username);
+			await deleteUser(props.token,user.username,provider);
 			if(editing === user.username){
 				resetForm();
 			}
@@ -109,6 +132,29 @@ export function Users(props:{token:utf8_t}):ReactElement{
 						Refresh
 					</button>
 				</div>
+				{0 < props.providers.length && (
+					<label className="field">
+						<span>User management provider</span>
+						<select
+							value={provider}
+							onChange={(event)=>{
+								resetForm();
+								setProvider(event.target.value);
+							}}
+						>
+							{props.providers.map((entry)=>{
+								return (
+									<option
+										key={entry.name}
+										value={entry.name}
+									>
+										{entry.name}
+									</option>
+								);
+							})}
+						</select>
+					</label>
+				)}
 				{0 === users.length
 					? <p className="muted">No users found.</p>
 					: <table>
@@ -124,7 +170,7 @@ export function Users(props:{token:utf8_t}):ReactElement{
 						<tbody>
 							{users.map((user)=>{
 								return (
-									<tr key={user.username}>
+									<tr key={`${user.provider}:${user.username}`}>
 										<td><code>{user.username}</code></td>
 										<td>{user.displayName}</td>
 										<td>{user.group}</td>
@@ -132,7 +178,10 @@ export function Users(props:{token:utf8_t}):ReactElement{
 										<td>
 											<button
 												type="button"
-												disabled={busy || 'lmdb' !== user.provider}
+												disabled={
+													busy
+													|| provider !== user.provider
+												}
 												onClick={()=>{
 													editUser(user);
 												}}
@@ -143,7 +192,7 @@ export function Users(props:{token:utf8_t}):ReactElement{
 												type="button"
 												disabled={
 													busy
-													|| 'lmdb' !== user.provider
+													|| provider !== user.provider
 												}
 												onClick={()=>{
 													onDelete(user);
@@ -227,8 +276,7 @@ export function Users(props:{token:utf8_t}):ReactElement{
 				</form>
 				</section>
 				: <div className="banner">
-					External-provider users are read-only. Manage them in the
-					identity provider.
+					No enabled provider supports user management.
 				</div>}
 		</>
 	);

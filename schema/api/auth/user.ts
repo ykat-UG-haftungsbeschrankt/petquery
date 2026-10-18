@@ -17,6 +17,12 @@ export const PetQuerySchemaApiAuthMode = T.Union([
 	T.Literal('oidc')
 ]);
 
+export const PetQuerySchemaApiAuthProviderLogin = T.Union([
+	T.Literal('bearer'),
+	T.Literal('password'),
+	T.Literal('redirect')
+]);
+
 export const PetQuerySchemaApiAuthGroup = T.Union([
 	T.Literal('admin'),
 	T.Literal('user')
@@ -26,7 +32,7 @@ export const PetQuerySchemaApiAuthUser = T.Object({
 	username:T.String(),
 	displayName:T.String(),
 	group:PetQuerySchemaApiAuthGroup,
-	provider:PetQuerySchemaApiAuthMode
+	provider:T.String({minLength:1})
 },{additionalProperties:false});
 
 export const PetQuerySchemaApiAuthManagedUser = T.Object({

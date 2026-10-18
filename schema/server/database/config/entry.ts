@@ -24,12 +24,15 @@ const schema = strict({
 		port:T.Integer({minimum:1,maximum:65535})
 	})
 	,authenticate:strict({
-		mode:T.Union([
-			T.Literal('bearer'),
-			T.Literal('lmdb'),
-			T.Literal('ldap'),
-			T.Literal('oidc')
-		])
+		mode:T.String({minLength:1})
+		,providers:T.Optional(T.Array(
+			T.String({minLength:1}),
+			{maxItems:1000}
+		))
+		,plugin_options:T.Optional(T.Record(
+			T.String({minLength:1}),
+			T.Any()
+		))
 		// Printable ASCII without spaces, see authenticate() in config.ts.
 		,bearer:T.Array(
 			T.String({pattern:'^[\\x21-\\x7e]{16,256}$'}),

@@ -15,7 +15,10 @@ import {
 } from '#schema/api/auth/users/delete/response.js';
 
 const schema = PetQuerySchema.type.Object({
-	username:PetQuerySchema.type.String({minLength:1})
+	username:PetQuerySchema.type.String({minLength:1}),
+	provider:PetQuerySchema.type.Optional(
+		PetQuerySchema.type.String({minLength:1})
+	)
 },{
 	title:'DELETE /auth/users/:username request',
 	additionalProperties:true

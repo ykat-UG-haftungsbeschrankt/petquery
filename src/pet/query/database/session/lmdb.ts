@@ -5,11 +5,14 @@
  * free of charge, without warranty of any kind.
  */
 
-import { open as LmdbOpen } from 'lmdb';
-import { PetQueryServerDatabaseSession } from '#petquery/server/database/session.js';
-import { PetQueryDestructor } from '#petquery/destructor.js';
-import { PetQuerySchemaServerDatabaseSessionEntry, type PetQuerySchemaServerDatabaseSessionEntryType } from '#schema/server/database/session/entry.js';
-import { PetQueryAssert } from '#petquery/assert.js';
+import {open as LmdbOpen} from 'lmdb';
+import type {PetQueryServerDatabaseSession} from
+	'#petquery/server/database/session.js';
+import {PetQueryDestructor} from '#petquery/destructor.js';
+import {
+	PetQuerySchemaServerDatabaseSessionEntry,
+	type PetQuerySchemaServerDatabaseSessionEntryType
+} from '#schema/server/database/session/entry.js';
 
 export type PetQueryDatabaseLmdbConfig = {
 	path:filename_t;
@@ -30,26 +33,56 @@ implements PetQueryServerDatabaseSession{
 		});
 	}
 	protected async _destructor():Promise<void>{
-		await this._db.close();
+		try{
+			await this._db.close();
+		}
+		catch(UNUSED_e){
+		}
 	}
 
-	async serverSessionAdd(value:PetQuerySchemaServerDatabaseSessionEntryType){
+	async serverSessionAdd(
+		value:PetQuerySchemaServerDatabaseSessionEntryType
+	):Promise<void>{
 		this._assertNotDestroyed();
-		this._db.put('session/' + value.sessionId,JSON.stringify(value));
+		await this._db.put('session/' + value.sessionId,JSON.stringify(value));
 	};
-	async serverSessionGet(sessionId:utf8_t):Promise<PetQuerySchemaServerDatabaseSessionEntryType>{
+	async serverSessionGet(
+		sessionId:utf8_t
+	):Promise<PetQuerySchemaServerDatabaseSessionEntryType|undefined>{
 		this._assertNotDestroyed();
 		const value = this._db.get('session/' + sessionId);
-		PetQueryAssert.notNull(value);
-		return PetQuerySchemaServerDatabaseSessionEntry.fromJson(JSON.parse(value));
+		if(undefined === value){
+			return undefined;
+		}
+		return PetQuerySchemaServerDatabaseSessionEntry.fromJson(
+			JSON.parse(value)
+		);
+	}
+	async serverSessionGetEntries():Promise<
+		Array<PetQuerySchemaServerDatabaseSessionEntryType>
+	>{
+		this._assertNotDestroyed();
+		const entries:Array<PetQuerySchemaServerDatabaseSessionEntryType> = [];
+		for(const {key,value} of this._db.getRange()){
+			if(key.startsWith('session/')){
+				entries.push(
+					PetQuerySchemaServerDatabaseSessionEntry.fromJson(
+						JSON.parse(value)
+					)
+				);
+			}
+		}
+		return entries;
 	}
 	async serverSessionRemove(sessionId:utf8_t):Promise<void>{
 		this._assertNotDestroyed();
 		await this._db.remove('session/' + sessionId);
 	}
-	protected _isExpired(entry:PetQuerySchemaServerDatabaseSessionEntryType):boolean{
+	protected _isExpired(
+		entry:PetQuerySchemaServerDatabaseSessionEntryType
+	):bool_t{
 		const now = Date.now();
-		return now >= entry.expiredTs;
+		return entry.expiredTs <= now;
 	}
 	async serverSessionDeleteExpired():Promise<void>{
 		this._assertNotDestroyed();
@@ -57,7 +90,9 @@ implements PetQueryServerDatabaseSession{
 			if(!key.startsWith('session/')){
 				continue;
 			}
-			const entry = PetQuerySchemaServerDatabaseSessionEntry.fromJson(JSON.parse(value));
+			const entry = PetQuerySchemaServerDatabaseSessionEntry.fromJson(
+				JSON.parse(value)
+			);
 			if(this._isExpired(entry)){
 				await this._db.remove(key);
 			}

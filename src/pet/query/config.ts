@@ -33,7 +33,6 @@ import { PetQueryDatabasePetLmdb } from '#petquery/database/pet/lmdb.js';
 import { PetQueryDatabaseConfigLmdb } from '#petquery/database/config/lmdb.js';
 import { PetQueryDatabaseIndexLmdb } from '#petquery/database/index/lmdb.js';
 import { PetQueryDatabaseSessionLmdb } from '#petquery/database/session/lmdb.js';
-import { PetQueryServerAuthMode } from '#petquery/server/auth.js';
 
 export type PetQueryConfigAuthenticate = (
 	req:PetQueryServerRequest,
@@ -52,7 +51,9 @@ export type PetQueryConfigServerType = {
 			certificate:ServerOptions;
 		};
 		authenticate:{
-			mode:PetQueryServerAuthMode;
+			mode:utf8_t;
+			providers:Array<utf8_t>;
+			plugin_options:Record<utf8_t,json_t>;
 			bearer:Set<utf8_t>;
 			session:{
 				cookie_name:utf8_t;
@@ -152,6 +153,8 @@ const settings:PetQueryConfigType = {
 		}
 		,authenticate:{
 			 mode:'bearer'
+			,providers:['bearer']
+			,plugin_options:{}
 			,bearer:new Set<string>([
 				 '75258ce9e0a7e751ce4e78cf20dd3f8f'
 				,'c815512c071af26c864e6af29c2e2080'

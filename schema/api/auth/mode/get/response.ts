@@ -9,10 +9,18 @@ import {PetQuerySchema} from '#petquery/schema.js';
 import type {PetQuerySchemaStatic} from '#petquery/schema.js';
 import {PetQueryServerResponseSchema} from
 	'#petquery/server/response/schema.js';
-import {PetQuerySchemaApiAuthMode} from '#schema/api/auth/user.js';
+import {PetQuerySchemaApiAuthProviderLogin} from
+	'#schema/api/auth/user.js';
 
 const schema = PetQuerySchema.type.Object({
-	mode:PetQuerySchemaApiAuthMode
+	mode:PetQuerySchema.type.String(),
+	providers:PetQuerySchema.type.Array(
+		PetQuerySchema.type.Object({
+			name:PetQuerySchema.type.String({minLength:1}),
+			login:PetQuerySchemaApiAuthProviderLogin,
+			userManagement:PetQuerySchema.type.Boolean()
+		},{additionalProperties:false})
+	)
 },{
 	title:'GET /auth/mode response',
 	additionalProperties:false

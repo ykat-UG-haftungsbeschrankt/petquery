@@ -11,6 +11,7 @@ import { PetQueryDestructor } from '#petquery/destructor.js';
 import { PetQuerySchemaServerDatabasePetEntry, type PetQuerySchemaServerDatabasePetEntryType } from '#schema/server/database/pet/entry.js';
 import { PetQueryAssert } from '#petquery/assert.js';
 import { PetQueryJson } from '#petquery/json.js';
+import { PetQueryRegexp } from '#petquery/regexp.js';
 
 export type PetQueryDatabaseLmdbConfig = {
 	path:filename_t;
@@ -62,7 +63,7 @@ implements PetQueryServerDatabasePet{
 	async serverPetSearch(query:utf8_t):Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>{
 		this._assertNotDestroyed();
 		const entries:Array<PetQuerySchemaServerDatabasePetEntryType> = [];
-		const regex = new RegExp(RegExp.escape(query),'im');
+		const regex = new RegExp(PetQueryRegexp.escape(query),'im');
 		for(const entry of await this.serverPetGetEntries()){
 			if(PetQueryJson.match(
 				 entry

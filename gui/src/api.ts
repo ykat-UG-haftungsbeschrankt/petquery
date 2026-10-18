@@ -13,13 +13,19 @@ export type ServerEntry = {
 	uri:uri_t;
 };
 
-export type AuthMode = 'bearer'|'lmdb'|'ldap'|'oidc';
+export type AuthMode = utf8_t;
+
+export type AuthProvider = {
+	name:utf8_t;
+	login:'bearer'|'password'|'redirect';
+	userManagement:bool_t;
+};
 
 export type AuthUser = {
 	username:utf8_t;
 	displayName:utf8_t;
 	group:'admin'|'user';
-	provider:AuthMode;
+	provider:utf8_t;
 };
 
 export type ManagedUser = AuthUser & {
@@ -56,12 +62,40 @@ export async function authenticate(token:utf8_t):Promise<void>{
 	await getConfig(token);
 }
 
-export async function getAuthMode():Promise<AuthMode>{
+export async function getAuthProviders():Promise<{
+	mode:AuthMode;
+	providers:Array<AuthProvider>;
+}>{
 	const data = await request('GET','/auth/mode','',undefined);
-	if(!isRecord(data) || !isAuthMode(data.mode)){
-		throw new Error('Invalid authentication mode response');
+	if(!isRecord(data)
+	|| !isNonEmptyString(data.mode)
+	|| !Array.isArray(data.providers)){
+		throw new Error('Invalid authentication provider response');
 	}
-	return data.mode;
+	const providers:Array<AuthProvider> = [];
+	for(const value of data.providers){
+		if(!isRecord(value)
+		|| 'string' !== typeof value.name
+		|| '' === value.name
+		|| !isAuthLogin(value.login)
+		|| 'boolean' !== typeof value.userManagement){
+			throw new Error('Invalid authentication provider entry');
+		}
+		providers.push({
+			name:value.name,
+			login:value.login,
+			userManagement:value.userManagement
+		});
+	}
+	return {mode:data.mode,providers};
+}
+
+export async function getAuthMode():Promise<AuthMode>{
+	return (await getAuthProviders()).mode;
+}
+
+export function getProviderLoginUrl(provider:utf8_t):utf8_t{
+	return `/auth/providers/${encodeURIComponent(provider)}/login`;
 }
 
 export async function getSession():Promise<AuthUser|null>{
@@ -79,14 +113,25 @@ export async function getSession():Promise<AuthUser|null>{
 }
 
 export async function loginUser(
-	username:utf8_t,
-	password:utf8_t
+	provider:utf8_t,
+	username:utf8_t = '',
+	password:utf8_t = '',
+	bearerToken:utf8_t = ''
 ):Promise<AuthUser>{
+	const body:{provider:utf8_t;username?:utf8_t;password?:utf8_t} = {
+		provider
+	};
+	if('' !== username){
+		body.username = username;
+	}
+	if('' !== password && '' === bearerToken){
+		body.password = password;
+	}
 	const data = await request(
 		'POST',
 		'/auth/login',
-		'',
-		{username,password}
+		bearerToken,
+		body
 	);
 	return readAuthUser(data);
 }
@@ -95,8 +140,14 @@ export async function logout():Promise<void>{
 	await request('POST','/auth/logout','',undefined);
 }
 
-export async function listUsers(token:utf8_t):Promise<Array<ManagedUser>>{
-	const data = await request('GET','/auth/users',token,undefined);
+export async function listUsers(
+	token:utf8_t,
+	provider?:utf8_t
+):Promise<Array<ManagedUser>>{
+	const path = undefined === provider
+		? '/auth/users'
+		: `/auth/users?provider=${encodeURIComponent(provider)}`;
+	const data = await request('GET',path,token,undefined);
 	if(!Array.isArray(data)){
 		throw new Error('Invalid user list response');
 	}
@@ -114,9 +165,13 @@ export async function createUser(
 		displayName:utf8_t;
 		group:'admin'|'user';
 		password:utf8_t;
-	}
+	},
+	provider?:utf8_t
 ):Promise<ManagedUser>{
-	const data = await request('POST','/auth/users',token,user);
+	const body = undefined === provider
+		? user
+		: {...user,provider};
+	const data = await request('POST','/auth/users',token,body);
 	return readManagedUser(data);
 }
 
@@ -127,24 +182,33 @@ export async function updateUser(
 		displayName:utf8_t;
 		group:'admin'|'user';
 		password:utf8_t;
-	}
+	},
+	provider?:utf8_t
 ):Promise<ManagedUser>{
+	const body = undefined === provider
+		? user
+		: {...user,provider};
 	const data = await request(
 		'PUT',
 		`/auth/users/${encodeURIComponent(username)}`,
 		token,
-		user
+		body
 	);
 	return readManagedUser(data);
 }
 
 export async function deleteUser(
 	token:utf8_t,
-	username:utf8_t
+	username:utf8_t,
+	provider?:utf8_t
 ):Promise<void>{
+	const path = undefined === provider
+		? `/auth/users/${encodeURIComponent(username)}`
+		: `/auth/users/${encodeURIComponent(username)}`
+			+ `?provider=${encodeURIComponent(provider)}`;
 	await request(
 		'DELETE',
-		`/auth/users/${encodeURIComponent(username)}`,
+		path,
 		token,
 		undefined
 	);
@@ -270,7 +334,9 @@ export async function deleteServer(
 export type ConfigValues = {
 	http:{port:uint16_t};
 	authenticate:{
-		mode:AuthMode;
+		mode:utf8_t;
+		providers:Array<utf8_t>;
+		plugin_options:Record<utf8_t,json_t>;
 		bearer:Array<utf8_t>;
 		session:{
 			cookie_name:utf8_t;
@@ -317,6 +383,17 @@ export type ConfigValues = {
 	};
 };
 
+type ConfigValuesInput = Omit<ConfigValues,'authenticate'> & {
+	authenticate:
+		Omit<
+			ConfigValues['authenticate'],
+			'providers'|'plugin_options'
+		> & {
+			providers?:Array<utf8_t>;
+			plugin_options?:Record<utf8_t,json_t>;
+		};
+};
+
 export type ConfigState = {
 	active:ConfigValues;
 	saved:ConfigValues|null;
@@ -329,18 +406,17 @@ export async function getConfig(token:utf8_t):Promise<ConfigState>{
 	if(!isRecord(data)){
 		throw new Error('Invalid config response');
 	}
-	const active = data.active;
-	const saved = data.saved;
 	const savedError = data.saved_error;
-	if(!isConfigValues(active)){
+	const active = normalizeConfigValues(data.active);
+	if(null === active){
 		throw new Error('Invalid active config response');
 	}
 	let savedConfig:ConfigValues|null = null;
-	if(null !== saved){
-		if(!isConfigValues(saved)){
+	if(null !== data.saved && undefined !== data.saved){
+		savedConfig = normalizeConfigValues(data.saved);
+		if(null === savedConfig){
 			throw new Error('Invalid saved config response');
 		}
-		savedConfig = saved;
 	}
 	if(null !== savedError && 'string' !== typeof savedError){
 		throw new Error('Invalid config error response');
@@ -360,10 +436,14 @@ export async function saveConfig(
 	values:ConfigValues
 ):Promise<ConfigValues>{
 	const data = await request('PUT','/api/config/put',token,values);
-	if(!isRecord(data) || !isConfigValues(data.saved)){
+	if(!isRecord(data)){
 		throw new Error('Invalid save response');
 	}
-	return data.saved;
+	const saved = normalizeConfigValues(data.saved);
+	if(null === saved){
+		throw new Error('Invalid save response');
+	}
+	return saved;
 }
 
 function serverPath(action:utf8_t,uuid:uuid_t):utf8_t{
@@ -495,10 +575,15 @@ function readPetRecord(value:unknown):PetRecord{
 }
 
 function isAuthMode(value:unknown):value is AuthMode{
+	return isNonEmptyString(value);
+}
+
+function isAuthLogin(
+	value:unknown
+):value is AuthProvider['login']{
 	return 'bearer' === value
-		|| 'lmdb' === value
-		|| 'ldap' === value
-		|| 'oidc' === value;
+		|| 'password' === value
+		|| 'redirect' === value;
 }
 
 function isUserGroup(value:unknown):value is 'admin'|'user'{
@@ -580,7 +665,25 @@ function isInteger(value:unknown):value is number{
 	return 'number' === typeof value && Number.isInteger(value);
 }
 
-function isConfigValues(value:unknown):value is ConfigValues{
+function normalizeConfigValues(value:unknown):ConfigValues|null{
+	if(!isConfigValues(value)){
+		return null;
+	}
+	const providers = Array.from(new Set(
+		value.authenticate.providers
+		?? [value.authenticate.mode,'bearer']
+	));
+	return {
+		...value,
+		authenticate:{
+			...value.authenticate,
+			providers,
+			plugin_options:value.authenticate.plugin_options ?? {}
+		}
+	};
+}
+
+function isConfigValues(value:unknown):value is ConfigValuesInput{
 	if(!isRecord(value)
 	|| !isRecord(value.http)
 	|| !isRecord(value.authenticate)
@@ -600,8 +703,13 @@ function isConfigValues(value:unknown):value is ConfigValues{
 		return false;
 	}
 	return isInteger(value.http.port)
-		&& isAuthMode(value.authenticate.mode)
+		&& isNonEmptyString(value.authenticate.mode)
 		&& Array.isArray(value.authenticate.bearer)
+		&& (undefined === value.authenticate.providers
+			|| Array.isArray(value.authenticate.providers)
+				&& value.authenticate.providers.every(isNonEmptyString))
+		&& (undefined === value.authenticate.plugin_options
+			|| isJsonRecord(value.authenticate.plugin_options))
 		&& 'string' === typeof value.authenticate.session.cookie_name
 		&& isInteger(value.authenticate.session.max_age)
 		&& 'boolean' === typeof value.authenticate.session.secure
@@ -638,6 +746,34 @@ function isConfigValues(value:unknown):value is ConfigValues{
 
 function isString(value:unknown):value is string{
 	return 'string' === typeof value;
+}
+
+function isNonEmptyString(value:unknown):value is string{
+	return 'string' === typeof value && '' !== value;
+}
+
+function isJson(value:unknown):value is json_t{
+	if(null === value
+	|| 'string' === typeof value
+	|| 'boolean' === typeof value){
+		return true;
+	}
+	if('number' === typeof value){
+		return Number.isFinite(value);
+	}
+	if(Array.isArray(value)){
+		return value.every(isJson);
+	}
+	if(isRecord(value)){
+		return Object.values(value).every(isJson);
+	}
+	return false;
+}
+
+function isJsonRecord(
+	value:unknown
+):value is Record<utf8_t,json_t>{
+	return isRecord(value) && Object.values(value).every(isJson);
 }
 
 function isRecord(value:unknown):value is Record<utf8_t,unknown>{

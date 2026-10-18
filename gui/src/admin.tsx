@@ -11,6 +11,7 @@ import {Config} from './config';
 import {Pets} from './pets';
 import {Servers} from './servers';
 import {Users} from './users';
+import type {AuthProvider} from './api';
 
 type AdminPage = 'home'|'config'|'pets'|'servers'|'users';
 
@@ -58,6 +59,7 @@ function pageUrl(page:AdminPage):utf8_t{
 export function Admin(props:{
 	token:utf8_t;
 	user:{group:'admin'|'user'};
+	providers:Array<AuthProvider>;
 }):ReactElement{
 	const [page,setPage] = useState<AdminPage>(
 		()=>readPage(props.user.group)
@@ -102,7 +104,12 @@ export function Admin(props:{
 	}else if('servers' === page){
 		content = <Servers token={props.token}/>;
 	}else if('users' === page){
-		content = <Users token={props.token}/>;
+		content = (
+			<Users
+				token={props.token}
+				providers={props.providers}
+			/>
+		);
 	}
 
 	return (

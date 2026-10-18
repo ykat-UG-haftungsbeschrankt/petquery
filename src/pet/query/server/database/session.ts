@@ -5,11 +5,19 @@
  * free of charge, without warranty of any kind.
  */
 
-import type { PetQuerySchemaServerDatabaseSessionEntryType } from "#schema/server/database/session/entry.js";
+import type {PetQuerySchemaServerDatabaseSessionEntryType} from
+	'#schema/server/database/session/entry.js';
 
 export interface PetQueryServerDatabaseSession{
-	serverSessionGet(sessionId:utf8_t):Promise<PetQuerySchemaServerDatabaseSessionEntryType>;
-	serverSessionAdd(value:PetQuerySchemaServerDatabaseSessionEntryType):Promise<void>;
+	serverSessionGet(
+		sessionId:utf8_t
+	):Promise<PetQuerySchemaServerDatabaseSessionEntryType|undefined>;
+	serverSessionAdd(
+		value:PetQuerySchemaServerDatabaseSessionEntryType
+	):Promise<void>;
+	serverSessionGetEntries():Promise<
+		Array<PetQuerySchemaServerDatabaseSessionEntryType>
+	>;
 	serverSessionRemove(sessionId:utf8_t):Promise<void>;
 	serverSessionDeleteExpired():Promise<void>;
 };

@@ -11,11 +11,12 @@ import type {PetQuerySchemaStatic} from '#petquery/schema.js';
 
 const T = PetQuerySchema.type;
 const schema = T.Object({
-	 sessionId:T.String({sessionId:'uuid'})
-	,createdTs:T.Number()
-	,expiredTs:T.Number()
+	 sessionId:T.String({minLength:1})
+	,createdTs:T.Integer({minimum:0})
+	,expiredTs:T.Integer({minimum:0})
+	,data:T.Optional(T.String())
 },{
-	title:'Search response of /api and /json',
+	title:'Persisted session or pending authentication record',
 	additionalProperties:false
 });
 
@@ -24,8 +25,6 @@ const validator = PetQuerySchema.compile(schema);
 export type PetQuerySchemaServerDatabaseSessionEntryType =
 	PetQuerySchemaStatic<typeof schema>;
 
-// Successful response of GET /api/ping/get. Errors are sent as
-// PetQueryServerResponseSchemaError.
 class PetQuerySchemaServerDatabaseSessionEntry extends PetQuerySchemaAbstract<
 	PetQuerySchemaServerDatabaseSessionEntryType
 >{
