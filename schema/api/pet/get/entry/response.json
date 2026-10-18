@@ -2,7 +2,7 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"required": [
-		"petId",
+		"gid",
 		"name",
 		"species",
 		"owner_contact",
@@ -13,9 +13,9 @@
 		"attributes"
 	],
 	"properties": {
-		"petId": {
+		"gid": {
 			"type": "string",
-			"petId": "uuid"
+			"gid": "uuid"
 		},
 		"name": {
 			"type": "string",
@@ -84,6 +84,6 @@
 			}
 		}
 	},
-	"title": "GET /api/pets/:petId response",
+	"title": "GET /api/pets/:gid response",
 	"additionalProperties": false
 }

@@ -2,7 +2,7 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"required": [
-		"serverUid",
+		"gid",
 		"http",
 		"authenticate",
 		"file",
@@ -12,7 +12,7 @@
 		"route"
 	],
 	"properties": {
-		"serverUid": {
+		"gid": {
 			"type": "string",
 			"pattern": "^[\\x21-\\x7e]{16,256}$"
 		},

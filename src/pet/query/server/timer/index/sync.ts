@@ -57,7 +57,7 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 			if(this.isInterrupted()){
 				return;
 			}
-			if(visited.has(server.uid)){
+			if(visited.has(server.gid)){
 				continue;
 			}
 			try{
@@ -70,7 +70,7 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 					if(this.isInterrupted()){
 						return;
 					}
-					if(visited.has(remoteServer.uid)){
+					if(visited.has(remoteServer.gid)){
 						continue;
 					}
 					try{
@@ -79,9 +79,10 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 							{},
 							this._abortController.getTimeoutSignal(this._timeout)
 						);
-						if(remoteServer.uid !== data.uid){
+						if(remoteServer.gid !== data.gid){
 							throw new Error(
-								`Ping answered with UUID ${data.uid}, expected ${remoteServer.uid}`
+								`Ping answered with UUID ${data.gid}, `
+								+ `expected ${remoteServer.gid}`
 							);
 						}
 						await this._database.serverIndexAddServer(data);

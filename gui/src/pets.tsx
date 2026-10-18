@@ -19,7 +19,7 @@ import type { PetRecord } from '#gui/api';
 import type { ReactElement } from 'react';
 
 const EMPTY_PET:PetRecord = {
-	petId:'',
+	gid:'',
 	name:'',
 	species:'',
 	owner_contact:'',
@@ -55,13 +55,13 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 	}
 
 	function editPet(pet:PetRecord):void{
-		setEditing(pet.petId);
+		setEditing(pet.gid);
 		setForm(structuredClone(pet));
 		setFilesText(pet.files.join('\n'));
 	}
 
 	function setField(
-		field:'petId'|'name'|'species'|'owner_contact'|'notes'|'preview',
+		field:'gid'|'name'|'species'|'owner_contact'|'notes'|'preview',
 		value:utf8_t
 	):void{
 		setForm((current)=>{
@@ -106,7 +106,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 		event.preventDefault();
 		const values:PetRecord = {
 			...form,
-			petId:form.petId.trim(),
+			gid:form.gid.trim(),
 			name:form.name.trim(),
 			species:form.species.trim(),
 			owner_contact:form.owner_contact.trim(),
@@ -131,12 +131,12 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 	}
 
 	function onDelete(pet:PetRecord):void{
-		if(!window.confirm(`Delete pet ${pet.petId}?`)){
+		if(!window.confirm(`Delete pet ${pet.gid}?`)){
 			return;
 		}
 		run(async ()=>{
-			await deletePet(props.token,pet.petId);
-			if(editing === pet.petId){
+			await deletePet(props.token,pet.gid);
+			if(editing === pet.gid){
 				resetForm();
 			}
 			await refresh();
@@ -169,7 +169,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 					: <table>
 						<thead>
 							<tr>
-								<th>Pet ID</th>
+								<th>Pet GID</th>
 								<th>Name</th>
 								<th>Species</th>
 								<th>Owner contact</th>
@@ -179,8 +179,8 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						<tbody>
 							{pets.map((pet)=>{
 								return (
-									<tr key={pet.petId}>
-										<td><code>{pet.petId}</code></td>
+									<tr key={pet.gid}>
+										<td><code>{pet.gid}</code></td>
 										<td>{pet.name}</td>
 										<td>{pet.species}</td>
 										<td>{pet.owner_contact}</td>
@@ -215,13 +215,13 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 				<h2>{null === editing ? 'Add pet' : 'Edit pet'}</h2>
 				<form onSubmit={onSubmit}>
 					<label className="field">
-						<span>Pet ID</span>
+						<span>Pet GID</span>
 						<input
 							required
 							disabled={null !== editing}
-							value={form.petId}
+							value={form.gid}
 							onChange={(event)=>{
-								setField('petId',event.target.value);
+								setField('gid',event.target.value);
 							}}
 						/>
 					</label>

@@ -17,15 +17,15 @@ import type { PetQueryServerDatabaseConfig } from '#petquery/server/database/con
 // editable in the admin GUI. Saved values take effect on restart.
 export class PetQueryServerConfig extends PetQueryDestructor{
 	protected readonly _database:PetQueryServerDatabaseConfig;
-	protected readonly _serverUid:uuid_t;
+	protected readonly _gid:uuid_t;
 
 	// pluginNames lists the plugins that route.api.plugins may contain.
 	constructor(
-		serverUid:uuid_t,
+		gid:uuid_t,
 		database:PetQueryDatabase
 	){
 		super();
-		this._serverUid = serverUid;
+		this._gid = gid;
 		this._database = database.getDbConfig();
 	}
 
@@ -39,7 +39,7 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 		const sync = config.index.sync;
 
 		return {
-			 serverUid:this._serverUid
+			 gid:this._gid
 			,http:{port:config.http.port}
 			,authenticate:{
 				 mode:config.authenticate.mode
@@ -170,11 +170,11 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 
 	// Returns the saved values, or null if nothing has been saved yet.
 	async load():Promise<PetQuerySchemaServerDatabaseConfigEntryType>{
-		return await this._database.serverConfigLoad(this._serverUid);
+		return await this._database.serverConfigLoad(this._gid);
 	}
 
 	// Saves values returned by normalize() through the database backend.
 	async save(values:PetQuerySchemaServerDatabaseConfigEntryType):Promise<void>{
-		return this._database.serverConfigSave(this._serverUid,values);
+		return this._database.serverConfigSave(this._gid,values);
 	}
 };

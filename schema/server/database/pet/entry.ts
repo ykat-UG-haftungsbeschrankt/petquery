@@ -12,7 +12,7 @@ import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const T = PetQuerySchema.type;
 const schema = T.Object({
-	petId:T.String({petId:'uuid'}),
+	gid:T.String({gid:'uuid'}),
 	name:T.String({minLength:1,maxLength:256}),
 	species:T.String({minLength:1,maxLength:256}),
 	owner_contact:T.String({maxLength:4096}),

@@ -13,7 +13,7 @@ import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	 uid:T.String({format:'uuid'})
+	 gid:T.String({format:'uuid'})
 	,uri:T.String({format:'uri'})
 },{
 	title:'GET /api/ping/get response',

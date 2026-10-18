@@ -13,7 +13,7 @@ import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 const T = PetQuerySchema.type;
 
 const schema = T.Array(T.Unknown(),{
-	title:'PUT /api/server/put/:uid response',
+	title:'PUT /api/server/put/:gid response',
 	additionalProperties:false
 });
 
@@ -22,7 +22,7 @@ const validator = PetQuerySchema.compile(schema);
 export type PetQuerySchemaApiServerPutResponseType =
 	PetQuerySchemaStatic<typeof schema>;
 
-// Successful response of PUT /api/server/put/:uid. Errors are sent as
+// Successful response of PUT /api/server/put/:gid. Errors are sent as
 // PetQueryServerResponseSchemaError.
 class PetQuerySchemaApiServerPutResponse extends
 	PetQueryServerResponseSchema<

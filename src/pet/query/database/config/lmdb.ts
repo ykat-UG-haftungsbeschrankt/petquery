@@ -31,14 +31,19 @@ implements PetQueryServerDatabaseConfig{
 		await this._db.close();
 	}
 
-	async serverConfigSave(serverUid:uuid_t,value:PetQuerySchemaServerDatabaseConfigEntryType):Promise<void>{
+	async serverConfigSave(
+		gid:uuid_t,
+		value:PetQuerySchemaServerDatabaseConfigEntryType
+	):Promise<void>{
 		this._assertNotDestroyed();
-		this._db.put('config/' + serverUid,JSON.stringify(value));
+		this._db.put('config/' + gid,JSON.stringify(value));
 	};
 	
-	async serverConfigLoad(serverUid:uuid_t):Promise<PetQuerySchemaServerDatabaseConfigEntryType>{
+	async serverConfigLoad(
+		gid:uuid_t
+	):Promise<PetQuerySchemaServerDatabaseConfigEntryType>{
 		this._assertNotDestroyed();
-		const value = this._db.get('config/' + serverUid);
+		const value = this._db.get('config/' + gid);
 		PetQueryAssert.notNull(value);
 		return PetQuerySchemaServerDatabaseConfigEntry.fromJson(JSON.parse(value));
 	}

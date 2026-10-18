@@ -5,12 +5,15 @@
  * free of charge, without warranty of any kind.
  */
 
-import { PetQueryDatabase } from '#petquery/database.js';
+import { PetQueryDatabase, PetQueryDatabaseEx } from '#petquery/database.js';
+import { PetQueryDatabasePostgresql } from '#petquery/database/postgresql.js';
+/*
 import { PetQueryDatabaseAuthLmdb } from '#petquery/database/auth/lmdb.js';
 import { PetQueryDatabaseConfigLmdb } from '#petquery/database/config/lmdb.js';
 import { PetQueryDatabaseIndexLmdb } from '#petquery/database/index/lmdb.js';
 import { PetQueryDatabasePetLmdb } from '#petquery/database/pet/lmdb.js';
 import { PetQueryDatabaseSessionLmdb } from '#petquery/database/session/lmdb.js';
+*/
 import { PetQueryTypes } from '#petquery/types.js';
 import fileUpload from 'express-fileupload';
 
@@ -221,7 +224,19 @@ const settings:PetQueryConfigType = {
 				,max_servers:1000 as uint_t
 			}
 		}
-		,database:new PetQueryDatabase({
+		,database:new PetQueryDatabaseEx(
+			new PetQueryDatabasePostgresql({
+				type:'postgresql',
+				connectionString: PetQueryDatabasePostgresql.buildConnectionString({
+					host:'localhost',
+					port:5432,
+					database:'petquery',
+					user:'petquery',
+					password:'petquery'
+				})
+			})
+		)
+		/*,database:new PetQueryDatabase({
 			dbAuth:new PetQueryDatabaseAuthLmdb({
 				type:'lmdb',
 				path:'./var/lmdb',
@@ -247,7 +262,7 @@ const settings:PetQueryConfigType = {
 				path:'./var/lmdb',
 				name:'session',
 			}),
-		})
+		})*/
 		,route:{
 			api:{
 				 plugins:new Set<string>(['test'])

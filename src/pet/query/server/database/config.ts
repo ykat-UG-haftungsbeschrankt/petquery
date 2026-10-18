@@ -10,9 +10,12 @@ import { PetQueryDestructor } from '#petquery/destructor.js';
 import type { PetQuerySchemaServerDatabaseConfigEntryType } from '#schema/server/database/config/entry.js';
 
 export abstract class PetQueryServerDatabaseConfig extends PetQueryDestructor{
-	abstract serverConfigSave(serverUid:uuid_t,value:PetQuerySchemaServerDatabaseConfigEntryType):Promise<void>;
+	abstract serverConfigSave(
+		gid:uuid_t,
+		value:PetQuerySchemaServerDatabaseConfigEntryType
+	):Promise<void>;
 	
 	abstract serverConfigLoad(
-		serverUid:uuid_t
+		gid:uuid_t
 	):Promise<PetQuerySchemaServerDatabaseConfigEntryType>;
 };

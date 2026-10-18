@@ -38,13 +38,13 @@ implements PetQueryServerDatabaseSession{
 		value:PetQuerySchemaServerDatabaseSessionEntryType
 	):Promise<void>{
 		this._assertNotDestroyed();
-		await this._db.put('session/' + value.sessionId,JSON.stringify(value));
+		await this._db.put('session/' + value.gid,JSON.stringify(value));
 	};
 	async serverSessionGet(
-		sessionId:utf8_t
+		gid:utf8_t
 	):Promise<PetQuerySchemaServerDatabaseSessionEntryType|undefined>{
 		this._assertNotDestroyed();
-		const value = this._db.get('session/' + sessionId);
+		const value = this._db.get('session/' + gid);
 		if(undefined === value){
 			return undefined;
 		}
@@ -68,9 +68,9 @@ implements PetQueryServerDatabaseSession{
 		}
 		return entries;
 	}
-	async serverSessionRemove(sessionId:utf8_t):Promise<void>{
+	async serverSessionRemove(gid:utf8_t):Promise<void>{
 		this._assertNotDestroyed();
-		await this._db.remove('session/' + sessionId);
+		await this._db.remove('session/' + gid);
 	}
 	protected _isExpired(
 		entry:PetQuerySchemaServerDatabaseSessionEntryType

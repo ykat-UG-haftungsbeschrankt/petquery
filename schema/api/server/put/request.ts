@@ -15,16 +15,16 @@ import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	uid:T.String({format:'uuid'}),
+	gid:T.String({format:'uuid'}),
 	uri:T.String({format:'uri',maxLength:2048})
-},{title:'PUT /api/server/put/:uid request'});
+},{title:'PUT /api/server/put/:gid request'});
 
 const validator = PetQuerySchema.compile(schema);
 
 export type PetQuerySchemaApiServerPutRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
-// PUT /api/server/put/:uid
+// PUT /api/server/put/:gid
 class PetQuerySchemaApiServerPutRequest extends
 	PetQueryServerRequestSchema<
 		 PetQuerySchemaApiServerPutRequestType

@@ -21,7 +21,7 @@ function strict<P extends PetQuerySchemaProperties>(properties:P){
 }
 
 const schema = strict({
-	 serverUid:T.String({pattern:'^[\\x21-\\x7e]{16,256}$'})
+	 gid:T.String({pattern:'^[\\x21-\\x7e]{16,256}$'})
 	,http:strict({
 		port:T.Integer({minimum:1,maximum:65535})
 	})

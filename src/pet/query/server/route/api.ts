@@ -50,14 +50,14 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 			)
 		);
 		this.getServer().put(
-			'/api/server/put/:uid',
+			'/api/server/put/:gid',
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			PetQuerySchemaApiServerPutRequest.getHandle(
 				this._handleAddServer.bind(this)
 			)
 		);
 		this.getServer().delete(
-			'/api/server/delete/:uid',
+			'/api/server/delete/:gid',
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			PetQuerySchemaApiServerDeleteRequest.getHandle(
 				this._handleDeleteServer.bind(this)
@@ -83,7 +83,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		UNUSED_request: PetQuerySchemaApiPingGetRequestType
 	): Promise<PetQuerySchemaApiPingGetResponseType>{
 		return {
-			uid:this.getServer()._getUuid(),
+			gid:this.getServer()._getUuid(),
 			uri:this.getServer()._getConfig().api.endpoint
 		};
 	}
@@ -106,7 +106,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 			._getDatabase()
 			.getDbIndex()
 			.serverIndexAddServer({
-				uid:request.uid,
+				gid:request.gid,
 				uri:request.uri
 			});
 		return [];
@@ -118,7 +118,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		await this.getServer()
 			._getDatabase()
 			.getDbIndex()
-			.serverIndexRemoveServer(request.uid);
+			.serverIndexRemoveServer(request.gid);
 		return [];
 	}
 

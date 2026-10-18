@@ -81,3 +81,21 @@ export class PetQueryDatabase extends PetQueryDestructor{
 		return this._dbSession;
 	}
 };
+
+export class PetQueryDatabaseEx extends PetQueryDatabase{
+	constructor(db:
+		  PetQueryServerDatabaseAuth
+		& PetQueryServerDatabaseConfig
+		& PetQueryServerDatabaseIndex
+		& PetQueryServerDatabasePet
+		& PetQueryServerDatabaseSession
+	){
+		super({
+			dbAuth:db,
+			dbConfig:db,
+			dbIndex:db,
+			dbPet:db,
+			dbSession:db
+		});
+	}
+};

@@ -9,7 +9,7 @@
 // served by the same origin as the API.
 
 export type ServerEntry = {
-	uid:uuid_t;
+	gid:uuid_t;
 	uri:uri_t;
 };
 
@@ -33,7 +33,7 @@ export type ManagedUser = AuthUser & {
 };
 
 export type PetRecord = {
-	petId:utf8_t;
+	gid:utf8_t;
 	name:utf8_t;
 	species:utf8_t;
 	owner_contact:utf8_t;
@@ -230,12 +230,12 @@ export async function createPet(
 
 export async function updatePet(
 	token:utf8_t,
-	petId:utf8_t,
+	gid:utf8_t,
 	pet:PetRecord
 ):Promise<PetRecord>{
 	const data = await request(
 		'PUT',
-		`/api/pets/${encodeURIComponent(petId)}`,
+		`/api/pets/${encodeURIComponent(gid)}`,
 		token,
 		pet
 	);
@@ -244,11 +244,11 @@ export async function updatePet(
 
 export async function deletePet(
 	token:utf8_t,
-	petId:utf8_t
+	gid:utf8_t
 ):Promise<void>{
 	await request(
 		'DELETE',
-		`/api/pets/${encodeURIComponent(petId)}`,
+		`/api/pets/${encodeURIComponent(gid)}`,
 		token,
 		undefined
 	);
@@ -256,7 +256,7 @@ export async function deletePet(
 
 export async function ping():Promise<uuid_t>{
 	const data = await request('GET','/api/ping/get','',undefined);
-	return readStringFromRecord(data,'uid');
+	return readStringFromRecord(data,'gid');
 }
 
 export async function listServers():Promise<Array<ServerEntry>>{
@@ -267,11 +267,11 @@ export async function listServers():Promise<Array<ServerEntry>>{
 	const ret:Array<ServerEntry> = [];
 	for(const entry of data){
 		if(!isRecord(entry)
-		|| 'string' !== typeof entry.uid
+		|| 'string' !== typeof entry.gid
 		|| 'string' !== typeof entry.uri){
 			throw new Error('Invalid server list entry');
 		}
-		ret.push({uid:entry.uid,uri:entry.uri});
+		ret.push({gid:entry.gid,uri:entry.uri});
 	}
 	return ret;
 }
@@ -314,22 +314,22 @@ export async function searchPets(
 // Adds the server, or replaces its URI if the UUID already exists.
 export async function addServer(
 	token:utf8_t,
-	uid:uuid_t,
+	gid:uuid_t,
 	uri:uri_t
 ):Promise<void>{
-	await request('PUT',serverPath('put',uid),token,{uri});
+	await request('PUT',serverPath('put',gid),token,{uri});
 }
 
 export async function deleteServer(
 	token:utf8_t,
-	uid:uuid_t
+	gid:uuid_t
 ):Promise<void>{
-	await request('DELETE',serverPath('delete',uid),token,undefined);
+	await request('DELETE',serverPath('delete',gid),token,undefined);
 }
 
 // Mirrors PetQueryServerConfigValues in src/pet/query/server/config.ts.
 export type ConfigValues = {
-	serverUid:uuid_t;
+	gid:uuid_t;
 	http:{port:uint16_t};
 	authenticate:{
 		mode:utf8_t;
@@ -444,8 +444,8 @@ export async function saveConfig(
 	return saved;
 }
 
-function serverPath(action:utf8_t,uid:uuid_t):utf8_t{
-	return `/api/server/${action}/${encodeURIComponent(uid)}`;
+function serverPath(action:utf8_t,gid:uuid_t):utf8_t{
+	return `/api/server/${action}/${encodeURIComponent(gid)}`;
 }
 
 // Sends a request and returns the response's data field.
@@ -586,7 +586,7 @@ function readSearchResult(value:unknown):SearchResult{
 		});
 	}
 	return {
-		petId:readString(value.petId,'pet ID'),
+		gid:readString(value.gid,'pet GID'),
 		name:readString(value.name,'pet name'),
 		species:readString(value.species,'pet species'),
 		owner_contact:readString(value.owner_contact,'owner contact'),
@@ -670,7 +670,7 @@ function normalizeConfigValues(value:unknown):ConfigValues|null{
 
 function isConfigValues(value:unknown):value is ConfigValuesInput{
 	if(!isRecord(value)
-	|| !isNonEmptyString(value.serverUid)
+	|| !isNonEmptyString(value.gid)
 	|| !isRecord(value.http)
 	|| !isRecord(value.authenticate)
 	|| !isRecord(value.authenticate.session)

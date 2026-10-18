@@ -11,7 +11,7 @@ import type { PetQuerySchemaServerDatabaseSessionEntryType } from '#schema/serve
 
 export abstract class PetQueryServerDatabaseSession extends PetQueryDestructor{
 	abstract serverSessionGet(
-		sessionId:utf8_t
+		gid:utf8_t
 	):Promise<PetQuerySchemaServerDatabaseSessionEntryType|undefined>;
 	abstract serverSessionAdd(
 		value:PetQuerySchemaServerDatabaseSessionEntryType
@@ -19,6 +19,6 @@ export abstract class PetQueryServerDatabaseSession extends PetQueryDestructor{
 	abstract serverSessionGetEntries():Promise<
 		Array<PetQuerySchemaServerDatabaseSessionEntryType>
 	>;
-	abstract serverSessionRemove(sessionId:utf8_t):Promise<void>;
+	abstract serverSessionRemove(gid:utf8_t):Promise<void>;
 	abstract serverSessionDeleteExpired():Promise<void>;
 };

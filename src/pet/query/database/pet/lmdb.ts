@@ -35,17 +35,19 @@ implements PetQueryServerDatabasePet{
 
 	async serverPetAdd(value:PetQuerySchemaServerDatabasePetEntryType){
 		this._assertNotDestroyed();
-		await this._db.put('pet/' + value.petId,JSON.stringify(value));
+		await this._db.put('pet/' + value.gid,JSON.stringify(value));
 	};
-	async serverPetGet(petId:utf8_t):Promise<PetQuerySchemaServerDatabasePetEntryType>{
+	async serverPetGet(
+		gid:utf8_t
+	):Promise<PetQuerySchemaServerDatabasePetEntryType>{
 		this._assertNotDestroyed();
-		const value = this._db.get('pet/' + petId);
+		const value = this._db.get('pet/' + gid);
 		PetQueryAssert.notNull(value);
 		return PetQuerySchemaServerDatabasePetEntry.fromJson(JSON.parse(value));
 	}
-	async serverPetRemove(petId:utf8_t):Promise<void>{
+	async serverPetRemove(gid:utf8_t):Promise<void>{
 		this._assertNotDestroyed();
-		await this._db.remove('pet/' + petId);
+		await this._db.remove('pet/' + gid);
 	}
 	async serverPetGetEntries():Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>{
 		this._assertNotDestroyed();

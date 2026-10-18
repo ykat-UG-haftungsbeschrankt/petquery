@@ -21,7 +21,7 @@ import type { PetQueryServerResponse } from '#petquery/server/response.js';
 const T = PetQuerySchema.type;
 const schema = T.Object({
 	...PetQuerySchemaApiAuthUser.properties,
-	sessionId:T.String({minLength:1}),
+	gid:T.String({minLength:1}),
 	createdAt:T.Integer({minimum:0}),
 	expiresAt:T.Integer({minimum:0})
 },{additionalProperties:false});
@@ -57,17 +57,17 @@ export class PetQueryServerAuthSession{
 		req:PetQueryServerRequest
 	):Promise<PetQueryServerAuthUser|null>{
 		this._assertNotDestroyed();
-		const sessionId = this._getCookie(req);
-		if(null === sessionId){
+		const gid = this._getCookie(req);
+		if(null === gid){
 			return null;
 		}
-		const text = await this._store.get(`session:${sessionId}`);
+		const text = await this._store.get(`session:${gid}`);
 		this._assertNotDestroyed();
 		if(undefined === text){
 			return null;
 		}
 		const session = PetQuerySchema.parse(validator,JSON.parse(text));
-		if(sessionId !== session.sessionId){
+		if(gid !== session.gid){
 			throw new Error('Authentication session identifier does not match');
 		}
 		return this._toUser(session);
@@ -78,22 +78,22 @@ export class PetQueryServerAuthSession{
 		res:PetQueryServerResponse
 	):Promise<void>{
 		this._assertNotDestroyed();
-		const sessionId = crypto.randomBytes(32).toString('base64url');
+		const gid = crypto.randomBytes(32).toString('base64url');
 		const now = Date.now();
 		const maxAge = this._config.authenticate.session.max_age;
 		const session:PetQueryServerAuthSessionData = {
 			...user,
-			sessionId,
+			gid,
 			createdAt:now,
 			expiresAt:now + maxAge
 		};
 		await this._store.put(
-			`session:${sessionId}`,
+			`session:${gid}`,
 			JSON.stringify(session),
 			session.expiresAt
 		);
 		this._assertNotDestroyed();
-		res.cookie(this._config.authenticate.session.cookie_name,sessionId,{
+		res.cookie(this._config.authenticate.session.cookie_name,gid,{
 			httpOnly:true,
 			secure:this._config.authenticate.session.secure,
 			sameSite:'lax',
@@ -107,9 +107,9 @@ export class PetQueryServerAuthSession{
 		res:PetQueryServerResponse
 	):Promise<void>{
 		this._assertNotDestroyed();
-		const sessionId = this._getCookie(req);
-		if(null !== sessionId){
-			await this._store.remove(`session:${sessionId}`);
+		const gid = this._getCookie(req);
+		if(null !== gid){
+			await this._store.remove(`session:${gid}`);
 		}
 		this._assertNotDestroyed();
 		res.clearCookie(this._config.authenticate.session.cookie_name,{
@@ -129,7 +129,7 @@ export class PetQueryServerAuthSession{
 		this._assertNotDestroyed();
 		const users = new Map<utf8_t,PetQueryServerAuthManagedUser>();
 		for(const entry of entries){
-			if(!entry.sessionId.startsWith('session:')
+			if(!entry.gid.startsWith('session:')
 			|| entry.expiredTs <= Date.now()){
 				continue;
 			}

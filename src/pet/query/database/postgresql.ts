@@ -57,24 +57,16 @@ type PostgresqlEntry = {
 	value:unknown;
 };
 
-const recordFields = {
-	auth:'key',
-	config:'serverUid',
-	index:'uid',
-	pet:'petId',
-	session:'sessionId',
-	server:'name'
-} as const;
-
-type PostgresqlRecordType = keyof typeof recordFields;
+type PostgresqlRecordType =
+	'auth'|'config'|'index'|'pet'|'session'|'server';
 
 const authValidator = PetQuerySchema.compile(PetQuerySchema.type.Object({
-	key:PetQuerySchema.type.String(),
+	gid:PetQuerySchema.type.String(),
 	data:PetQuerySchema.type.String()
 },{additionalProperties:false}));
 const serverValidator = PetQuerySchema.compile(PetQuerySchema.type.Object({
-	name:PetQuerySchema.type.Literal('uid'),
-	uid:PetQuerySchema.type.String({format:'uuid'})
+	gid:PetQuerySchema.type.Literal('uid'),
+	data:PetQuerySchema.type.String({format:'uuid'})
 },{additionalProperties:false}));
 
 export class PetQueryDatabasePostgresql extends PetQueryDestructor
@@ -112,7 +104,7 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 	}
 
 	async serverAuthPut(key:utf8_t,value:utf8_t):Promise<void>{
-		await this._put('auth',{key,data:value});
+		await this._put('auth',{gid:key,data:value});
 	}
 
 	async serverAuthRemove(key:utf8_t):Promise<void>{
@@ -122,37 +114,37 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 	async serverAuthGetEntries():Promise<Map<utf8_t,utf8_t>>{
 		const entries = new Map<utf8_t,utf8_t>();
 		for(const entry of await this._getValues('auth',authValidator)){
-			entries.set(entry.key,entry.data);
+			entries.set(entry.gid,entry.data);
 		}
 		return entries;
 	}
 
 	async serverConfigSave(
-		serverUid:uuid_t,
+		gid:uuid_t,
 		value:PetQuerySchemaServerDatabaseConfigEntryType
 	):Promise<void>{
-		if(serverUid !== value.serverUid){
-			throw new Error('Configuration serverUid does not match');
+		if(gid !== value.gid){
+			throw new Error('Configuration gid does not match');
 		}
 		await this._put('config',value);
 	}
 
 	async serverConfigLoad(
-		serverUid:uuid_t
+		gid:uuid_t
 	):Promise<PetQuerySchemaServerDatabaseConfigEntryType>{
 		return this._getRequired(
-			'config',serverUid,
+			'config',gid,
 			PetQuerySchemaServerDatabaseConfigEntry.getValidator()
 		);
 	}
 
 	async serverIndexGetServerUid():Promise<uuid_t>{
 		const entry = await this._getRequired('server','uid',serverValidator);
-		return entry.uid;
+		return entry.data;
 	}
 
-	async serverIndexSetServerUid(uid:uuid_t):Promise<void>{
-		await this._put('server',{name:'uid',uid});
+	async serverIndexSetServerUid(gid:uuid_t):Promise<void>{
+		await this._put('server',{gid:'uid',data:gid});
 	}
 
 	async serverIndexAddServer(
@@ -162,16 +154,16 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 	}
 
 	async serverIndexGetServer(
-		uid:utf8_t
+		gid:utf8_t
 	):Promise<PetQuerySchemaServerDatabaseIndexEntryType>{
 		return this._getRequired(
-			'index',uid,
+			'index',gid,
 			PetQuerySchemaServerDatabaseIndexEntry.getValidator()
 		);
 	}
 
-	async serverIndexRemoveServer(uid:utf8_t):Promise<void>{
-		await this._remove('index',uid);
+	async serverIndexRemoveServer(gid:utf8_t):Promise<void>{
+		await this._remove('index',gid);
 	}
 
 	async serverIndexGetServerList():Promise<
@@ -190,16 +182,16 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 	}
 
 	async serverPetGet(
-		petId:utf8_t
+		gid:utf8_t
 	):Promise<PetQuerySchemaServerDatabasePetEntryType>{
 		return this._getRequired(
-			'pet',petId,
+			'pet',gid,
 			PetQuerySchemaServerDatabasePetEntry.getValidator()
 		);
 	}
 
-	async serverPetRemove(petId:utf8_t):Promise<void>{
-		await this._remove('pet',petId);
+	async serverPetRemove(gid:utf8_t):Promise<void>{
+		await this._remove('pet',gid);
 	}
 
 	async serverPetGetEntries():Promise<
@@ -228,7 +220,7 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 						lower($1)
 					) > 0
 			)
-			ORDER BY value->>'petId'`,
+			ORDER BY value->>'gid'`,
 			[query]
 		);
 		return this._parseRows(
@@ -243,11 +235,11 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 		await this._put('session',value);
 	}
 
-	async serverSessionGet(sessionId:utf8_t):Promise<
+	async serverSessionGet(gid:utf8_t):Promise<
 		PetQuerySchemaServerDatabaseSessionEntryType|undefined
 	>{
 		return this._get(
-			'session',sessionId,
+			'session',gid,
 			PetQuerySchemaServerDatabaseSessionEntry.getValidator()
 		);
 	}
@@ -261,8 +253,8 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 		);
 	}
 
-	async serverSessionRemove(sessionId:utf8_t):Promise<void>{
-		await this._remove('session',sessionId);
+	async serverSessionRemove(gid:utf8_t):Promise<void>{
+		await this._remove('session',gid);
 	}
 
 	async serverSessionDeleteExpired():Promise<void>{
@@ -298,28 +290,15 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 					),
 					value jsonb NOT NULL CHECK (
 						jsonb_typeof(value) = 'object'
-						AND jsonb_typeof(value->(
-							CASE record_type
-								WHEN 'auth' THEN 'key'
-								WHEN 'config' THEN 'serverUid'
-								WHEN 'index' THEN 'uid'
-								WHEN 'pet' THEN 'petId'
-								WHEN 'session' THEN 'sessionId'
-								WHEN 'server' THEN 'name'
-							END
-						)) IS NOT DISTINCT FROM 'string'
+						AND jsonb_typeof(value->'gid')
+							IS NOT DISTINCT FROM 'string'
 					)
 				)`
 			);
-			for(const [recordType,field] of Object.entries(recordFields)){
-				// Identifiers come only from the fixed recordFields map.
-				await client.query(
-					`CREATE UNIQUE INDEX IF NOT EXISTS
-						petquery_${recordType}_identity
-					ON petquery ((value->>'${field}'))
-					WHERE record_type = '${recordType}'`
-				);
-			}
+			await client.query(
+				`CREATE UNIQUE INDEX IF NOT EXISTS petquery_identity
+				ON petquery (record_type,(value->>'gid'))`
+			);
 			await client.query(
 				`CREATE INDEX IF NOT EXISTS petquery_session_expiry
 				ON petquery (((value->>'expiredTs')::numeric))
@@ -341,11 +320,9 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 		value:json_t
 	):Promise<void>{
 		const pool = await this._getPool();
-		const field = recordFields[recordType];
 		await pool.query(
 			`INSERT INTO petquery (record_type,value) VALUES ($1,$2::jsonb)
-			ON CONFLICT ((value->>'${field}'))
-				WHERE record_type = '${recordType}'
+			ON CONFLICT (record_type,(value->>'gid'))
 			DO UPDATE SET value = EXCLUDED.value`,
 			[recordType,JSON.stringify(value)]
 		);
@@ -357,11 +334,10 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 		validator:PetQuerySchemaCheck<T>
 	):Promise<T|undefined>{
 		const pool = await this._getPool();
-		const field = recordFields[recordType];
 		const result = await pool.query<PostgresqlEntry>(
 			`SELECT value FROM petquery
-			WHERE record_type = '${recordType}' AND value->>'${field}' = $1`,
-			[identity]
+			WHERE record_type = $1 AND value->>'gid' = $2`,
+			[recordType,identity]
 		);
 		if(0 === result.rows.length){
 			return undefined;
@@ -388,11 +364,10 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 		identity:utf8_t
 	):Promise<void>{
 		const pool = await this._getPool();
-		const field = recordFields[recordType];
 		await pool.query(
 			`DELETE FROM petquery
-			WHERE record_type = '${recordType}' AND value->>'${field}' = $1`,
-			[identity]
+			WHERE record_type = $1 AND value->>'gid' = $2`,
+			[recordType,identity]
 		);
 	}
 
@@ -401,10 +376,10 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 		validator:PetQuerySchemaCheck<T>
 	):Promise<Array<T>>{
 		const pool = await this._getPool();
-		const field = recordFields[recordType];
 		const result = await pool.query<PostgresqlEntry>(
-			`SELECT value FROM petquery WHERE record_type = '${recordType}'
-			ORDER BY value->>'${field}'`,
+			`SELECT value FROM petquery WHERE record_type = $1
+			ORDER BY value->>'gid'`,
+			[recordType]
 		);
 		return this._parseRows(result.rows,validator);
 	}
@@ -422,5 +397,15 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 
 	protected _onPoolError(error:Error):void{
 		console.error('PostgreSQL idle connection error:',error);
+	}
+
+	static buildConnectionString(config:{
+		host:utf8_t,
+		port:port_t,
+		database:utf8_t,
+		user:utf8_t,
+		password:utf8_t
+	}):utf8_t{
+		return `postgresql://${config.user}:${config.password}@${config.host}:${config.port}/${config.database}`;
 	}
 };

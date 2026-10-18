@@ -2,14 +2,14 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "object",
 	"required": [
-		"petId"
+		"gid"
 	],
 	"properties": {
-		"petId": {
+		"gid": {
 			"type": "string",
 			"minLength": 1
 		}
 	},
-	"title": "DELETE /api/pets/:petId request",
+	"title": "DELETE /api/pets/:gid request",
 	"additionalProperties": false
 }

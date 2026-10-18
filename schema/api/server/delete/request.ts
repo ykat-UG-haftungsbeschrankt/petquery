@@ -15,15 +15,15 @@ import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	uid:T.String({format:'uuid'})
-},{title:'DELETE /api/server/delete/:uid request'});
+	gid:T.String({format:'uuid'})
+},{title:'DELETE /api/server/delete/:gid request'});
 
 const validator = PetQuerySchema.compile(schema);
 
 export type PetQuerySchemaApiServerDeleteRequestType =
 	PetQuerySchemaStatic<typeof schema>;
 
-// DELETE /api/server/delete/:uid
+// DELETE /api/server/delete/:gid
 class PetQuerySchemaApiServerDeleteRequest extends
 	PetQueryServerRequestSchema<
 		 PetQuerySchemaApiServerDeleteRequestType

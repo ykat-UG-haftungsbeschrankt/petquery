@@ -44,7 +44,7 @@ export class PetQueryServerAuthStore{
 	):Promise<void>{
 		this._assertNotDestroyed();
 		await this._database.getDbSession().serverSessionAdd({
-			sessionId:key,
+			gid:key,
 			createdTs:Date.now(),
 			expiredTs:expiresAt,
 			data:value

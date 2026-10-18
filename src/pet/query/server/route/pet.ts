@@ -63,7 +63,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			)
 		);
 		this.getServer().get(
-			'/api/pets/:petId',
+			'/api/pets/:gid',
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(accessGroup),
 			PetQuerySchemaApiPetGetEntryRequest.getHandle(
@@ -71,7 +71,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			)
 		);
 		this.getServer().put(
-			'/api/pets/:petId',
+			'/api/pets/:gid',
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(accessGroup),
 			PetQuerySchemaApiPetPutRequest.getHandle(
@@ -79,7 +79,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			)
 		);
 		this.getServer().delete(
-			'/api/pets/:petId',
+			'/api/pets/:gid',
 			this._disableCache.bind(this),
 			this._getAccessGroupHandler(accessGroup),
 			PetQuerySchemaApiPetDeleteRequest.getHandle(
@@ -99,7 +99,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		request:PetQuerySchemaApiPetGetEntryRequestType
 	):Promise<PetQuerySchemaApiPetGetEntryResponseType>{
 		const database = this.getServer()._getDatabase().getDbPet();
-		return database.serverPetGet(request.petId);
+		return database.serverPetGet(request.gid);
 	}
 
 	protected async _handleCreate(
@@ -116,11 +116,11 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 	):Promise<PetQuerySchemaApiPetPutResponseType>{
 		const body:unknown = req.body;
 		if(null !== body && 'object' === typeof body
-		&& 'petId' in body && request.petId !== body.petId){
-			throw new Error('petId must match the petId URL parameter');
+		&& 'gid' in body && request.gid !== body.gid){
+			throw new Error('gid must match the gid URL parameter');
 		}
 		const database = this.getServer()._getDatabase().getDbPet();
-		await database.serverPetGet(request.petId);
+		await database.serverPetGet(request.gid);
 		await database.serverPetAdd(request);
 		return request;
 	}
@@ -129,7 +129,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		request:PetQuerySchemaApiPetDeleteRequestType
 	):Promise<PetQuerySchemaApiPetDeleteResponseType>{
 		const database = this.getServer()._getDatabase().getDbPet();
-		await database.serverPetRemove(request.petId);
+		await database.serverPetRemove(request.gid);
 		return null;
 	}
 	protected async _handleSearch(

@@ -14,7 +14,7 @@ const T = PetQuerySchema.type;
 
 const schema = T.Array(
 	T.Object({
-		uid:T.String({format:'uuid'}),
+		gid:T.String({format:'uuid'}),
 		uri:T.String({format:'uri'})
 	})
 ,{

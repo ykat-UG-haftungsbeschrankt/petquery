@@ -11,7 +11,7 @@ import type { PetQuerySchemaServerDatabaseIndexEntryType } from '#schema/server/
 
 export abstract class PetQueryServerDatabaseIndex extends PetQueryDestructor{
 	abstract serverIndexGetServerUid():Promise<uuid_t>;
-	abstract serverIndexSetServerUid(uid:uuid_t):Promise<void>;
+	abstract serverIndexSetServerUid(gid:uuid_t):Promise<void>;
 	abstract serverIndexAddServer(value:PetQuerySchemaServerDatabaseIndexEntryType):Promise<void>;
 	abstract serverIndexGetServer(key:utf8_t):Promise<PetQuerySchemaServerDatabaseIndexEntryType>;
 

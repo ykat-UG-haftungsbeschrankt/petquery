@@ -13,7 +13,7 @@ import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const schema = {
 	...PetQuerySchemaServerDatabasePetEntry.getSchema(),
-	title:'GET /api/pets/:petId response'
+	title:'GET /api/pets/:gid response'
 };
 const validator = PetQuerySchema.compile(schema);
 

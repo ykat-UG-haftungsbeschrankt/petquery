@@ -4,7 +4,7 @@
 	"items": {
 		"type": "object",
 		"required": [
-			"petId",
+			"gid",
 			"name",
 			"species",
 			"owner_contact",
@@ -15,9 +15,9 @@
 			"attributes"
 		],
 		"properties": {
-			"petId": {
+			"gid": {
 				"type": "string",
-				"petId": "uuid"
+				"gid": "uuid"
 			},
 			"name": {
 				"type": "string",

@@ -2,6 +2,6 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"type": "array",
 	"items": {},
-	"title": "DELETE /api/server/delete/:uid response",
+	"title": "DELETE /api/server/delete/:gid response",
 	"additionalProperties": false
 }

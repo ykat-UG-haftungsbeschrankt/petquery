@@ -250,7 +250,7 @@ function SearchResultCard(props:{result:SearchResult}):ReactElement{
 					loading="lazy"
 				/>
 			)}<h3>{result.name}</h3>
-			<p>{result.species} - <code>{result.petId}</code></p>
+			<p>{result.species} - <code>{result.gid}</code></p>
 			{'' !== result.owner_contact && <p>{result.owner_contact}</p>}
 			{'' !== result.notes && <p>{result.notes}</p>}
 			<div className="result-source">

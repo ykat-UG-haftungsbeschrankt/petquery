@@ -37,23 +37,25 @@ implements PetQueryServerDatabaseIndex{
 		PetQueryAssert.notNull(value);
 		return value;
 	}
-	async serverIndexSetServerUid(uid:uuid_t):Promise<void>{
+	async serverIndexSetServerUid(gid:uuid_t):Promise<void>{
 		this._assertNotDestroyed();
-		await this._db.put('server/uid',uid);
+		await this._db.put('server/uid',gid);
 	}
 	async serverIndexAddServer(value:PetQuerySchemaServerDatabaseIndexEntryType){
 		this._assertNotDestroyed();
-		this._db.put('index/' + value.uid,JSON.stringify(value));
+		this._db.put('index/' + value.gid,JSON.stringify(value));
 	};
-	async serverIndexGetServer(uid:utf8_t):Promise<PetQuerySchemaServerDatabaseIndexEntryType>{
+	async serverIndexGetServer(
+		gid:utf8_t
+	):Promise<PetQuerySchemaServerDatabaseIndexEntryType>{
 		this._assertNotDestroyed();
-		const value = this._db.get('index/' + uid);
+		const value = this._db.get('index/' + gid);
 		PetQueryAssert.notNull(value);
 		return PetQuerySchemaServerDatabaseIndexEntry.fromJson(JSON.parse(value));
 	}
-	async serverIndexRemoveServer(uid:utf8_t):Promise<void>{
+	async serverIndexRemoveServer(gid:utf8_t):Promise<void>{
 		this._assertNotDestroyed();
-		await this._db.remove('index/' + uid);
+		await this._db.remove('index/' + gid);
 	}
 	async serverIndexGetServerList():Promise<Array<PetQuerySchemaServerDatabaseIndexEntryType>>{
 		this._assertNotDestroyed();

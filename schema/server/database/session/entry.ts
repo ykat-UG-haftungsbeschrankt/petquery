@@ -12,7 +12,7 @@ import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const T = PetQuerySchema.type;
 const schema = T.Object({
-	 sessionId:T.String({minLength:1})
+	 gid:T.String({minLength:1})
 	,createdTs:T.Integer({minimum:0})
 	,expiredTs:T.Integer({minimum:0})
 	,data:T.Optional(T.String())

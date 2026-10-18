@@ -4,11 +4,11 @@
 	"items": {
 		"type": "object",
 		"required": [
-			"uid",
+			"gid",
 			"uri"
 		],
 		"properties": {
-			"uid": {
+			"gid": {
 				"type": "string",
 				"format": "uuid"
 			},
