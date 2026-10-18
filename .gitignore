@@ -6,3 +6,4 @@
 /aisearch/data.json
 /aisearch/*.tmp
 __pycache__/
+.trash/
