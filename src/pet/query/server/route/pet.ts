@@ -29,6 +29,7 @@ import type { PetQuerySchemaApiPetPostResponseType } from '#schema/api/pet/post/
 import type { PetQuerySchemaApiPetPutRequestType } from '#schema/api/pet/put/request.js';
 import type { PetQuerySchemaApiPetPutResponseType } from '#schema/api/pet/put/response.js';
 import type { PetQuerySchemaApiPetSearchRequestType } from '#schema/api/pet/search/request.js';
+import type { PetQuerySchemaApiPetSearchResponseType } from '#schema/api/pet/search/response.js';
 import type { PetQuerySchemaPluginRequestType } from '#schema/plugin/request.js';
 import type { PetQueryServerRequest } from '#petquery/server/request.js';
 import type { PetQueryServerResponse } from '#petquery/server/response.js';
@@ -136,7 +137,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		request:PetQuerySchemaApiPetSearchRequestType,
 		req:PetQueryServerRequest,
 		res:PetQueryServerResponse
-	):Promise<PetQuerySchemaApiPetGetResponseType>{
+	):Promise<PetQuerySchemaApiPetSearchResponseType>{
 		const searchQuery = request.query.trim();
 		const files = [
 			...(request.files ?? []),
@@ -174,7 +175,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			);
 		}
 		const results = await Promise.allSettled(tasks);
-		const data:PetQuerySchemaApiPetGetResponseType = [];
+		const data:PetQuerySchemaApiPetSearchResponseType = [];
 		const error:Array<utf8_t> = [];
 		for(const result of results){
 			if('rejected' === result.status){

@@ -6,11 +6,11 @@
  */
 
 import { PetQuerySchema } from '#petquery/schema.js';
-import { PetQuerySchemaApiPetGetResponse } from '#schema/api/pet/get/response.js';
+import { PetQuerySchemaApiPetSearchResponse } from '#schema/api/pet/search/response.js';
 import { PetQuerySchemaPluginFile } from '#schema/plugin/file.js';
 import { PetQueryServerRequestSchema } from '#petquery/server/request/schema.js';
 
-import type { PetQuerySchemaApiPetGetResponseType } from '#schema/api/pet/get/response.js';
+import type { PetQuerySchemaApiPetSearchResponseType } from '#schema/api/pet/search/response.js';
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const T = PetQuerySchema.type;
@@ -29,7 +29,7 @@ export type PetQuerySchemaApiPetSearchRequestType =
 
 class PetQuerySchemaApiPetSearchRequest extends PetQueryServerRequestSchema<
 	PetQuerySchemaApiPetSearchRequestType,
-	PetQuerySchemaApiPetGetResponseType
+	PetQuerySchemaApiPetSearchResponseType
 >{
 	protected static _instance:PetQuerySchemaApiPetSearchRequest|null = null;
 
@@ -53,7 +53,7 @@ class PetQuerySchemaApiPetSearchRequest extends PetQueryServerRequestSchema<
 	}
 
 	getResponseSchema(){
-		return PetQuerySchemaApiPetGetResponse;
+		return PetQuerySchemaApiPetSearchResponse;
 	}
 };
 

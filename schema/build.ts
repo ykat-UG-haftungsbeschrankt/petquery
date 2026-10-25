@@ -44,6 +44,7 @@ import { PetQuerySchemaApiPetPostResponse } from '#schema/api/pet/post/response.
 import { PetQuerySchemaApiPetPutRequest } from '#schema/api/pet/put/request.js';
 import { PetQuerySchemaApiPetPutResponse } from '#schema/api/pet/put/response.js';
 import { PetQuerySchemaApiPetSearchRequest } from '#schema/api/pet/search/request.js';
+import { PetQuerySchemaApiPetSearchResponse } from '#schema/api/pet/search/response.js';
 import { PetQuerySchemaApiPingGetRequest } from '#schema/api/ping/get/request.js';
 import { PetQuerySchemaApiPingGetResponse } from '#schema/api/ping/get/response.js';
 import { PetQuerySchemaApiServerDeleteRequest } from '#schema/api/server/delete/request.js';
@@ -61,6 +62,10 @@ const schemas:Array<[utf8_t,PetQuerySchemaType]> = [
 	[
 		'schema/api/pet/search/request.json',
 		PetQuerySchemaApiPetSearchRequest.getSchema()
+	],
+	[
+		'schema/api/pet/search/response.json',
+		PetQuerySchemaApiPetSearchResponse.getSchema()
 	],
 	[
 		'schema/api/auth/mode/get/request.json',

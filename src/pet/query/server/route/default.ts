@@ -12,13 +12,22 @@ import type { PetQueryServerResponse } from '#petquery/server/response.js';
 
 export class PetQueryServerRouteDefault extends PetQueryServerRoute{
 	register():void{
-		this.getServer().get('/',this._redirectToGui.bind(this));
+		const config = this.getServer()._getConfig();
+		if(true !== config.route['/'].enabled){
+			return;
+		}
+		this.getServer().get('/',this._handleRoot.bind(this));
 	}
 
-	protected _redirectToGui(
+	protected _handleRoot(
 		UNUSED_req:PetQueryServerRequest,
 		res:PetQueryServerResponse
 	):void{
+		if(true !== this.getServer()._getConfig().route.gui.enabled){
+			res.status(404);
+			res.end();
+			return;
+		}
 		res.redirect(302,'/gui');
 	}
 };
