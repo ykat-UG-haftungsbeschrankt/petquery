@@ -128,45 +128,13 @@ export abstract class PetQueryServerRoute{
 			);
 			try{
 				const callback = handler.bind(context);
-				this._sendRouteResponse(
-					res,
-					200,
-					false,
-					context.getErrors(),
+				context.getResponse().sendApiSuccess(
 					await callback(req.getHandlerArgs())
 				);
 			}
 			catch(error){
-				this._sendRouteResponse(
-					res,
-					400,
-					false,
-					[
-						 this._getErrorMessage(error)
-						,...context.getErrors()
-					],
-					null
-				);
+				context.getResponse().sendApiError(error);
 			}
 		};
-	}
-
-	protected _sendRouteResponse(
-		res:PetQueryServerResponse,
-		status:uint16_t,
-		success:boolean,
-		error:Array<utf8_t>,
-		data:json_t
-	):void{
-		res.set('Cache-Control','no-store');
-		res.status(status).json({
-			 success:success
-			,error:error
-			,data:data
-		});
-	}
-
-	protected _getErrorMessage(error:unknown):utf8_t{
-		return error instanceof Error ? error.message : String(error);
 	}
 };

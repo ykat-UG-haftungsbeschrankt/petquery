@@ -186,7 +186,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			}
 		}
 		const limited = data.slice(0,config.max_results_total);
-		//res.json({success:0 === error.length,error,data:limited});
+		// FIXME: Include plugin errors in the search response.
 		return limited;
 	}
 

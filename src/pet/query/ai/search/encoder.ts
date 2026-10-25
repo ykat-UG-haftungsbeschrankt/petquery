@@ -202,7 +202,7 @@ export class PetQueryAiSearchEncoder extends PetQueryDestructor{
 			return await pipeline.toBuffer();
 		}
 		catch(error){
-			throw new Error(`Cannot read image ${image.path ?? '<buffer>'}`, {
+			throw new Error('Cannot read image buffer', {
 				cause: error,
 			});
 		}

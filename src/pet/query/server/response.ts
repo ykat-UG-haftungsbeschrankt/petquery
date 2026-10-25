@@ -110,7 +110,7 @@ export class PetQueryServerResponse{
 
 	sendAuthForbiddenError(error:unknown):void{
 		this._sendApi(
-			 PetQueryHttpStatusCode.UNAUTHORIZED
+			 PetQueryHttpStatusCode.FORBIDDEN
 			,false
 			,(error instanceof Error
 				? error.message.split('\n')
