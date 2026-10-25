@@ -375,7 +375,6 @@ export type ConfigValues = {
 	};
 	route:{
 		api:{enabled:bool_t;plugins:Array<utf8_t>};
-		json:{enabled:bool_t};
 		'/':{enabled:bool_t};
 		gui:{enabled:bool_t};
 	};
@@ -496,18 +495,17 @@ async function requestEnvelope(
 		);
 	}
 	if(!response.ok){
+		const status = `HTTP ${response.status} ${response.statusText}`;
 		const message = readErrorMessage(json.error);
 		if('' !== message){
-			throw new Error(message);
+			throw new Error(`${status}: ${message}`);
 		}
 		if(403 === response.status){
 			throw new Error(
 				'HTTP 403 Forbidden: check the bearer token'
 			);
 		}
-		throw new Error(
-			`HTTP ${response.status} ${response.statusText}`
-		);
+		throw new Error(status);
 	}
 	return json;
 }
@@ -683,7 +681,6 @@ function isConfigValues(value:unknown):value is ConfigValuesInput{
 	|| !isRecord(value.index.sync)
 	|| !isRecord(value.route)
 	|| !isRecord(value.route.api)
-	|| !isRecord(value.route.json)
 	|| !isRecord(value.route['/'])
 	|| !isRecord(value.route.gui)){
 		return false;
@@ -723,7 +720,6 @@ function isConfigValues(value:unknown):value is ConfigValuesInput{
 		&& isInteger(value.index.sync.max_servers)
 		&& 'boolean' === typeof value.route.api.enabled
 		&& Array.isArray(value.route.api.plugins)
-		&& 'boolean' === typeof value.route.json.enabled
 		&& 'boolean' === typeof value.route['/'].enabled
 		&& 'boolean' === typeof value.route.gui.enabled
 		&& value.authenticate.bearer.every(isString)

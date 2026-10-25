@@ -89,7 +89,6 @@ const schema = strict({
 			 enabled:T.Boolean()
 			,plugins:T.Array(T.String({minLength:1}),{maxItems:1000})
 		})
-		,json:strict({enabled:T.Boolean()})
 		,'/':strict({enabled:T.Boolean()})
 		,gui:strict({enabled:T.Boolean()})
 	})

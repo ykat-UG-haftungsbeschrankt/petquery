@@ -93,7 +93,6 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 					 enabled:config.route.api.enabled
 					,plugins:Array.from(config.route.api.plugins)
 				}
-				,json:{enabled:config.route.json.enabled}
 				,'/':{enabled:config.route['/'].enabled}
 				,gui:{enabled:config.route.gui.enabled}
 			}
@@ -157,7 +156,6 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 		sync.max_servers = values.index.sync.max_servers;
 		config.route.api.enabled = values.route.api.enabled;
 		config.route.api.plugins = new Set(values.route.api.plugins);
-		config.route.json.enabled = values.route.json.enabled;
 		config.route['/'].enabled = values.route['/'].enabled;
 		config.route.gui.enabled = values.route.gui.enabled;
 	}

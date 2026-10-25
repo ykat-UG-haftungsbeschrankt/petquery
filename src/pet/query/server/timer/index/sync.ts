@@ -86,6 +86,7 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 							);
 						}
 						await this._database.serverIndexAddServer(data);
+						visited.add(data.gid);
 					}catch(error){
 						this._report(`Server index sync with ${remoteServer.uri} failed`,error);
 					}

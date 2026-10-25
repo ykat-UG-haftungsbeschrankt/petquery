@@ -9,13 +9,13 @@ import { PetQueryHttp } from '#petquery/http.js';
 import { PetQueryHttpMethod } from '#petquery/http.js';
 import { PetQueryHttpStatusCode } from '#petquery/http.js';
 import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQueryServerResponse } from '#petquery/server/response.js';
 import { PetQuerySingleton } from '#petquery/singleton.js';
 import util from 'node:util';
 
 import type { PetQuerySchemaCheck } from '#petquery/schema.js';
 import type { PetQuerySchemaType } from '#petquery/schema.js';
 import type { PetQueryServerRequest } from '#petquery/server/request.js';
-import type { PetQueryServerResponse } from '#petquery/server/response.js';
 import type { PetQueryServerResponseSchema } from '#petquery/server/response/schema.js';
 
 export abstract class PetQueryServerRequestSchema<
@@ -63,7 +63,10 @@ export abstract class PetQueryServerRequestSchema<
 		);
 		return PetQuerySchema.parse<
 			T_RESPONSE
-		>(this.getResponseSchema().getValidator(),result);
+		>(
+			this.getResponseSchema().getValidator(),
+			PetQueryServerResponse.parseApiResponse(result)
+		);
 	}
 
 	getHandle(

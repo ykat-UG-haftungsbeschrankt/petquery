@@ -111,10 +111,6 @@ export type PetQueryConfigServerType = {
 				enabled:bool_t;
 				authenticate:PetQueryConfigAuthenticate;
 			};
-			json:{
-				enabled:bool_t;
-				authenticate:PetQueryConfigAuthenticate;
-			};
 			'/':{
 				enabled:bool_t;
 			};
@@ -267,10 +263,6 @@ const settings:PetQueryConfigType = {
 			api:{
 				 plugins:new Set<string>(['test'])
 				,enabled:true
-				,authenticate:authenticate
-			}
-			,json:{
-				enabled:true
 				,authenticate:authenticate
 			}
 			,"/":{

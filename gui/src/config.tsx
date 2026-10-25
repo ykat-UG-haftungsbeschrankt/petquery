@@ -811,15 +811,6 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						}
 					)}
 					{checkboxField(
-						'/json',
-						form.route.json.enabled,
-						(value)=>{
-							edit((draft)=>{
-								draft.route.json.enabled = value;
-							});
-						}
-					)}
-					{checkboxField(
 						'/ (this GUI)',
 						form.route.gui.enabled,
 						(value)=>{

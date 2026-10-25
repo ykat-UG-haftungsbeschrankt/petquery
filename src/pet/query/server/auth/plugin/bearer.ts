@@ -29,6 +29,10 @@ extends PetQueryServerAuthPluginLmdb{
 		return 'bearer';
 	}
 
+	override supportsUserManagement():bool_t{
+		return false;
+	}
+
 	override async authenticate(
 		req:PetQueryServerRequest
 	):Promise<PetQueryServerAuthUser|null>{

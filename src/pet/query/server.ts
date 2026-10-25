@@ -139,7 +139,8 @@ export class PetQueryServer extends PetQueryDestructor{
 
 		if(this._config.https.enabled){
 			this._httpsServer = NodeHttps.createServer(
-				this._config.https.certificate
+				this._config.https.certificate,
+				this._app
 			)
 				.listen(
 					this._config.https.port,

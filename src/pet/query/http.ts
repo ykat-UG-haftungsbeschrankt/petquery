@@ -405,16 +405,20 @@ export class PetQueryHttp{
 		}
 	):Promise<json_t>{
 		const uri = PetQueryHttp._buildUrl(args.uri,args.params);
-		const response = await fetch(uri,{
+		const headers:Record<string,string> = {
+			...(args.headers ?? {}),
+			'Accept': 'application/json'
+		};
+		const init:RequestInit = {
 			method: method,
-			headers: {
-				...(args.headers ?? {})
-				,'Accept': 'application/json'
-				,'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(args.data),
+			headers,
 			signal: args.signal
-		});
+		};
+		if(PetQueryHttpMethod.GET !== method){
+			headers['Content-Type'] = 'application/json';
+			init.body = JSON.stringify(args.data);
+		}
+		const response = await fetch(uri,init);
 		if(!response.ok
 		|| statusCode !== response.status
 		){
