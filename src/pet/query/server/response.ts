@@ -30,9 +30,11 @@ type PetQueryServerResponseType = PetQuerySchemaStatic<typeof schema>;
 
 export class PetQueryServerResponse{
 	protected readonly _response:Express.Response;
+	protected readonly _errors:string[];
 
 	constructor(response:Express.Response){
 		this._response = response;
+		this._errors = [];
 	}
 
 	protected fromJson(
@@ -74,12 +76,18 @@ export class PetQueryServerResponse{
 		};
 		this.status(status).json(this.toJson(obj));
 	}
-
+	appendError(error:unknown):void{
+		this._errors.push(...(
+			  error instanceof Error
+			? error.message.split('\n')
+			: [NodeUtilInspect(error)]
+		));
+	}
 	sendApiSuccess(value:unknown):void{
 		this._sendApi(
 			 PetQueryHttpStatusCode.OK
 			,true
-			,[]
+			,this._errors
 			,value
 		);
 	}

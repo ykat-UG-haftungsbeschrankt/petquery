@@ -1144,7 +1144,7 @@ components:
       additionalProperties: true
     ConfigResponse:
       type: object
-      required: [active, saved, saved_error, plugins]
+      required: [active, saved, plugins]
       properties:
         active:
           $ref: "#/components/schemas/ServerConfig"
@@ -1152,10 +1152,6 @@ components:
           oneOf:
             - $ref: "#/components/schemas/ServerConfig"
             - type: "null"
-        saved_error:
-          type:
-            - string
-            - "null"
         plugins:
           type: array
           items:

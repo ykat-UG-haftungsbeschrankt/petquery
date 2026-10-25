@@ -374,7 +374,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 		}
 		run(async ()=>{
 			const saved = await saveConfig(token,values);
-			setState({...current,saved,savedError:null});
+			setState({...current,saved});
 			setForm(structuredClone(saved));
 			setPluginOptionsText(JSON.stringify(
 				saved.authenticate.plugin_options,
@@ -387,10 +387,6 @@ export function Config(props:{token:utf8_t}):ReactElement{
 	return (
 		<>
 			{null !== error && <pre className="error">{error}</pre>}
-			{null !== state.savedError && <pre className="error">
-				The config file cannot be read: {state.savedError}
-				{'\n'}Saving replaces it.
-			</pre>}
 			{0 < pending.length && <div className="banner">
 				Saved changes take effect when the server restarts:{' '}
 				<code>{pending.join(', ')}</code>

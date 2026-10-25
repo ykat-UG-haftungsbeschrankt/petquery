@@ -394,7 +394,6 @@ type ConfigValuesInput = Omit<ConfigValues,'authenticate'> & {
 export type ConfigState = {
 	active:ConfigValues;
 	saved:ConfigValues|null;
-	savedError:utf8_t|null;
 	plugins:Array<utf8_t>;
 };
 
@@ -403,7 +402,6 @@ export async function getConfig(token:utf8_t):Promise<ConfigState>{
 	if(!isRecord(data)){
 		throw new Error('Invalid config response');
 	}
-	const savedError = data.saved_error;
 	const active = normalizeConfigValues(data.active);
 	if(null === active){
 		throw new Error('Invalid active config response');
@@ -415,13 +413,9 @@ export async function getConfig(token:utf8_t):Promise<ConfigState>{
 			throw new Error('Invalid saved config response');
 		}
 	}
-	if(null !== savedError && 'string' !== typeof savedError){
-		throw new Error('Invalid config error response');
-	}
 	return {
 		active,
 		saved:savedConfig,
-		savedError,
 		plugins:readStringArray(data.plugins,'config plugins')
 	};
 }

@@ -150,12 +150,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		const config = server._getConfig();
 		const trace = request.tracerouteUuid ?? [];
 		if(trace.includes(server._getUuid())){
-			res.json({
-				success:false,
-				error:['Circular query detected'],
-				data:[]
-			});
-			return [];
+			throw new Error('Circular query detected');
 		}
 		const query:PetQuerySchemaPluginRequestType = {
 			query:searchQuery,
@@ -176,10 +171,9 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		}
 		const results = await Promise.allSettled(tasks);
 		const data:PetQuerySchemaApiPetSearchResponseType = [];
-		const error:Array<utf8_t> = [];
 		for(const result of results){
 			if('rejected' === result.status){
-				error.push(this._getErrorMessage(result.reason));
+				res.appendError(result.reason);
 			}else{
 				data.push(...result.value.slice(
 					0,config.max_results_per_module

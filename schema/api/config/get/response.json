@@ -4,7 +4,6 @@
 	"required": [
 		"active",
 		"saved",
-		"saved_error",
 		"plugins"
 	],
 	"properties": {
@@ -659,16 +658,6 @@
 						}
 					},
 					"additionalProperties": false
-				},
-				{
-					"type": "null"
-				}
-			]
-		},
-		"saved_error": {
-			"anyOf": [
-				{
-					"type": "string"
 				},
 				{
 					"type": "null"

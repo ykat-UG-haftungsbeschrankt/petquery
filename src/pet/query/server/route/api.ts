@@ -131,18 +131,10 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		const active = configFile.fromServerConfig(
 			this.getServer()._getConfig()
 		);
-		let saved:PetQuerySchemaServerDatabaseConfigEntryType|null = null;
-		let savedError:utf8_t|null = null;
-
-		try{
-			saved = await configFile.load();
-		}catch(error){
-			savedError = this._getErrorMessage(error);
-		}
+		const saved = await configFile.load();
 		return {
 			active,
 			saved,
-			saved_error:savedError,
 			plugins:PetQueryConfig.getPluginNames()
 		};
 	}

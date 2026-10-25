@@ -18,8 +18,6 @@ const schema = T.Object({
 	active:PetQuerySchemaServerDatabaseConfigEntry.getSchema(),
 	// Type in the config file, applied on restart; null if none.
 	saved:T.Union([PetQuerySchemaServerDatabaseConfigEntry.getSchema(),T.Null()]),
-	// Why the config file could not be read, if it could not.
-	saved_error:T.Union([T.String(),T.Null()]),
 	// Plugin names allowed in route.api.plugins.
 	plugins:T.Array(T.String())
 },{
