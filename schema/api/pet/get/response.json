@@ -86,7 +86,7 @@
 				}
 			}
 		},
-		"title": "Search response of /api and /json",
+		"title": "Pet record",
 		"additionalProperties": false
 	},
 	"title": "GET /api/pets response"

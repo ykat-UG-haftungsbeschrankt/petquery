@@ -29,7 +29,7 @@ const schema = T.Object({
 		value:T.String()
 	},{additionalProperties:false}))
 },{
-	title:'Search response of /api and /json',
+	title:'Pet record',
 	additionalProperties:false
 });
 

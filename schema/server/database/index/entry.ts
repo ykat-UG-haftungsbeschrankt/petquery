@@ -16,7 +16,7 @@ const schema = T.Object({
 	 gid:T.String({format:'uuid'})
 	,uri:T.String({format:'uri'})
 },{
-	title:'Search response of /api and /json',
+	title:'Server index entry',
 	additionalProperties:false
 });
 
