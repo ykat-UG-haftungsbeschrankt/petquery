@@ -1,0 +1,81 @@
+{
+	"api": {
+		"endpoint": "http://127.0.0.1:50102"
+	},
+	"http": {
+		"host": "127.0.0.1",
+		"port": 50102,
+		"enabled": true
+	},
+	"https": {
+		"host": "127.0.0.1",
+		"port": 50102,
+		"enabled": false,
+		"certificate": {}
+	},
+	"authenticate": {
+		"mode": "bearer",
+		"providers": ["bearer"],
+		"plugin_options": {},
+		"bearer_env": "PETQUERY_DEBUG_SERVER_B_TOKEN",
+		"session": {
+			"cookie_name": "petquery_b",
+			"max_age": 28800000,
+			"secure": false
+		},
+		"lmdb": {
+			"users_name": "users",
+			"sessions_name": "sessions"
+		},
+		"ldap": {
+			"url": "",
+			"bind_dn": "",
+			"bind_password": "",
+			"base_dn": "",
+			"user_filter": "(uid={{username}})",
+			"admin_group": "admin"
+		},
+		"oidc": {
+			"issuer": "",
+			"client_id": "",
+			"client_secret": "",
+			"redirect_uri": "",
+			"scopes": "openid profile email groups",
+			"admin_group": "admin"
+		}
+	},
+	"file": {
+		"upload": {
+			"enabled": true,
+			"max_file_size": 10485760
+		}
+	},
+	"max_results_per_module": 10,
+	"max_results_total": 100,
+	"index": {
+		"sync": {
+			"enabled": true,
+			"interval": 5000,
+			"timeout": 1000,
+			"max_servers": 100
+		}
+	},
+	"database": {
+		"type": "lmdb",
+		"path": "../../var/debug/server-b/lmdb"
+	},
+	"ai_search_path": "../../var/debug/server-b/ai-search.sqlite3",
+	"route": {
+		"api": {
+			"plugins": [],
+			"enabled": true
+		},
+		"/": {
+			"enabled": true
+		},
+		"gui": {
+			"enabled": true,
+			"path": "../../dist/gui"
+		}
+	}
+}

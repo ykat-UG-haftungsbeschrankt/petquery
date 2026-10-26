@@ -13,6 +13,7 @@ import { PetQuerySchemaServerDatabasePetEntry } from '#schema/server/database/pe
 import { PetQueryServerDatabasePet } from '#petquery/server/database/pet.js';
 import { PetQueryServerDatabasePetSearchLoader } from '#petquery/server/database/pet/search/loader.js';
 import { open as LmdbOpen } from 'lmdb';
+import { resolve } from 'node:path';
 
 import type { PetQuerySchemaPluginFileType } from '#schema/plugin/file.js';
 import type { PetQuerySchemaServerDatabasePetEntryType } from '#schema/server/database/pet/entry.js';
@@ -26,14 +27,21 @@ implements PetQueryServerDatabasePet{
 		PetQueryServerDatabasePetSearchLoader;
 
 	// Opens the named database inside the LMDB environment at path.
-	constructor(config:PetQuerySchemaDatabaseConfigLmdbType){
+	constructor(
+		config:PetQuerySchemaDatabaseConfigLmdbType,
+		//FIXME
+		aiSearchPath:filename_t = resolve(
+			config.path,
+			'petquery-ai-search.sqlite3'
+		)
+	){
 		super();
 		this._db = LmdbOpen<utf8_t,utf8_t>({
 			path:config.path,
 			name:config.name
 		});
 		this._petSearchLoader = new PetQueryServerDatabasePetSearchLoader(
-			'var/petquery-ai-search.sqlite3'
+			aiSearchPath
 		);
 	}
 	protected async _destructor():Promise<void>{

@@ -135,6 +135,7 @@ export class PetQueryServer extends PetQueryDestructor{
 		if(this._config.http.enabled){
 			this._httpServer = this._app.listen(
 				this._config.http.port,
+				this._config.http.host,
 				this._onHttpListening.bind(this)
 			);
 		}
@@ -146,6 +147,7 @@ export class PetQueryServer extends PetQueryDestructor{
 			)
 				.listen(
 					this._config.https.port,
+					this._config.https.host,
 					this._onHttpsListening.bind(this)
 				);
 		}

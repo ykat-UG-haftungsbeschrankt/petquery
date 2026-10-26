@@ -62,7 +62,7 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 			}
 			try{
 				const remoteServerList = await PetQuerySchemaApiServerGetRequest.fetch(
-					server.uri,
+					this._getApiUri(server.uri,'/api/server/get'),
 					{},
 					this._abortController.getTimeoutSignal(this._timeout)
 				);
@@ -75,7 +75,10 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 					}
 					try{
 						const data = await PetQuerySchemaApiPingGetRequest.fetch(
-							remoteServer.uri,
+							this._getApiUri(
+								remoteServer.uri,
+								'/api/ping/get'
+							),
 							{},
 							this._abortController.getTimeoutSignal(this._timeout)
 						);
@@ -99,6 +102,14 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 				this._report(`Server index sync with ${server.uri} failed`,error);
 			}
 		}
+	}
+
+	protected _getApiUri(base:uri_t,path:utf8_t):uri_t{
+		const url = new URL(base);
+		url.pathname = url.pathname.replace(/\/+$/,'') + path;
+		url.search = '';
+		url.hash = '';
+		return url.toString();
 	}
 
 	protected _onError(error:unknown):void{

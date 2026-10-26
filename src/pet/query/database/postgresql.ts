@@ -80,14 +80,18 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 	protected readonly _petSearchLoader:
 		PetQueryServerDatabasePetSearchLoader;
 
-	constructor(config:PetQuerySchemaDatabaseConfigPostgresqlType){
+	constructor(
+		config:PetQuerySchemaDatabaseConfigPostgresqlType,
+		//FIXME
+		aiSearchPath:filename_t = 'var/petquery-ai-search.sqlite3'
+	){
 		super();
 		this._pool = new Pool({
 			connectionString:config.connectionString
 		});
 		this._readyPromise = null;
 		this._petSearchLoader = new PetQueryServerDatabasePetSearchLoader(
-			'var/petquery-ai-search.sqlite3'
+			aiSearchPath
 		);
 		this._pool.on('error',this._onPoolError.bind(this));
 	}

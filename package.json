@@ -14,8 +14,10 @@
 	},
 	"scripts": {
 		"build": "eslint . && tsc --project tsconfig.json && npm run build:schema && npm run build:gui",
+		"build:server": "tsc --project tsconfig.json",
 		"build:schema": "node dist/schema/build.js",
 		"build:gui": "npm --prefix gui run build",
+		"debug:multi": "sh scripts/debug-multi.sh",
 		"dev:gui": "npm --prefix gui run dev",
 		"install:gui": "npm --prefix gui ci",
 		"lint": "eslint .",

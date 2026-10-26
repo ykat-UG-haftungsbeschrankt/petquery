@@ -45,6 +45,7 @@ async function loadServerUuid(
 		return uuid;
 	}
 }
+await PetQueryConfig.loadFromCommandLine(process.argv.slice(2));
 const serverConfig = PetQueryConfig.getServerConfig();
 const indexConfig = serverConfig.index;
 const database = serverConfig.database;

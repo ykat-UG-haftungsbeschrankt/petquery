@@ -36,14 +36,14 @@ same time, and it returns a single combined result.
   or failing source never blocks the others.
 - 🌍 **Federated**: petquery servers can query *each other*, so authorities
   can share their local data without sharing their database.
-- 🔁 **Loop-safe**: each server has its own UUID, and queries carry a
+- 🔁 **Loop-safe**: each server has its own `gid`, and queries carry a
   traceroute of the servers they have passed through, so loops between
   federated servers can be spotted.
 - 🛡️ **Validated I/O**: incoming and remote JSON is checked with
   [`cast.ts`](https://www.npmjs.com/package/cast.ts) before it is used.
 - 🔐 **Bearer authentication** for the machine-facing endpoints.
-- 📎 **File uploads**: photos or documents can be attached to a query and are
-  passed on to the plugins.
+- 📎 **File uploads**: photos or documents can be attached to a search and
+  passed to plugins; data-image attachments also enable local AI image search.
 
 ## 🧭 How it works
 
@@ -64,62 +64,101 @@ flowchart LR
 git clone https://github.com/ykat-UG-haftungsbeschrankt/petquery.git
 cd petquery
 npm install
-npm start
+npm run install:gui
+npm run debug:multi
 ```
 
-`npm start` lints and compiles the TypeScript sources to native ES modules in
-`dist/`, then starts the server on <http://127.0.0.1:50000/>.
+`npm run debug:multi` builds the server and GUI, then starts three isolated
+servers on ports `50101`, `50102` and `50103`. They bind to loopback only,
+register each other as peers, and print their generated admin bearer tokens.
+Press Ctrl+C to stop all three.
+
+To start one server from its own JSON config, build the server and GUI, then
+run:
+
+```bash
+npm run build:server
+npm run build:gui
+node dist/index.js --config path/to/server.json
+```
+
+`node dist/index.js path/to/server.json` is also accepted.
 
 > [!TIP]
-> In VS Code, use the **Launch PetQuery** debug configuration. It builds the
-> project, starts the server and opens it in your browser.
+> The ready-to-run multi-server configs are in [`config/debug/`](config/debug).
+> `var/debug/` holds each server's separate LMDB files, AI-search SQLite index,
+> and a generated bearer token with restricted file permissions.
 
 ## ⚙️ Configuration
 
-All settings are in
-[`src/pet/query/config.ts`](src/pet/query/config.ts):
+The server requires a JSON config path on the command line. Its top-level
+fields are validated by [`src/pet/query/config.ts`](src/pet/query/config.ts).
+For example, [`server-a.json`](config/debug/server-a.json) configures an
+LMDB-backed server; the other two files provide the same setup on different
+ports and storage directories.
 
-| Setting | What it does |
+Important fields:
+
+| Field | Purpose |
 |---|---|
-| `server.http` / `server.https` | Ports, on/off switches and the TLS certificate |
-| `server.authenticate.bearer` | The bearer tokens accepted by `/json` and `/api` |
-| `server.index.database` | Server index and saved configuration storage |
-| `server.file.upload` | Upload switch and `max_file_size` (10 MB) |
-| `server.max_results_per_module` | Maximum number of results kept per plugin |
-| `server.max_results_total` | Maximum number of results in a response |
-| `server.index` | Database instance and peer sync of the server index |
-| `server.settings.database` | Database instance for local pet records |
-| `server.route` | Turns each endpoint on or off and sets its authentication |
-| `plugin` | One entry per plugin: on/off, timeout, source and settings |
+| `api.endpoint` | This server's advertised base URL for peer sync |
+| `http.host` / `http.port` | HTTP bind address and port |
+| `https.host` / `https.port` | HTTPS bind address and port |
+| `authenticate.bearer` | Literal bearer tokens |
+| `authenticate.bearer_env` | Environment variable containing one bearer token |
+| `database` | PostgreSQL connection string or LMDB directory |
+| `ai_search_path` | Per-server SQLite sidecar for image-search vectors |
+| `index.sync` | Whether and how often to sync the peer index |
+| `route` | Enables the root redirect, API and GUI routes |
 
-At startup, values saved by the [admin GUI](#admin-gui) in the configured
-database override these defaults. Configuration and the server UUID share the
-database's settings store; bearer tokens never need to be stored in a source
-file.
+Use exactly one of `authenticate.bearer` or `authenticate.bearer_env`.
+Prefer the environment-variable option for secrets. Paths for the database,
+AI-search index, and GUI are resolved relative to the JSON config file.
+`http.host` and `https.host` default to `0.0.0.0`; the debug configs explicitly
+bind to `127.0.0.1`.
 
-> [!IMPORTANT]
-> Replace the example bearer tokens with your own secrets before you deploy.
+The debug database, AI index, and generated tokens persist under
+`var/debug/`. Remove a server's directory to reset its data and identity.
+
+Supported database descriptors are:
+
+```json
+{"type": "lmdb", "path": "../../var/debug/server-a/lmdb"}
+```
+
+or:
+
+```json
+{
+	"type": "postgresql",
+	"connectionString": "postgresql://user:password@host/database"
+}
+```
+
+The admin GUI can save runtime settings to the configured database. Those
+saved settings are applied on restart and can override corresponding JSON
+values.
 
 ## 🌐 Endpoints
 
 | Endpoint | Auth | Returns | Turned on by |
 |---|:---:|---|---|
-| `/` | — | Redirects to `/gui` | — |
+| `/` | — | Redirects to `/gui` | `route['/'].enabled` |
 | `/gui/*` | —/🔐 | PetQuery GUI and Admin sections | `route.gui.enabled` |
-| `/json` | — | Merged results from all plugins and local pets | `route.json.enabled` |
-| `/api` | 🔐 user/admin | Results from the configured API plugins | `route.api.enabled` |
+| `POST /api/pets/search` | — | Local pet and plugin matches | `route.api.enabled` |
 | `/api/server/*` | varies | Read or manage the server index | `route.api.enabled` |
 | `/api/config/*` | 🔐 admin | Read or save the editable config | `route.api.enabled` |
 | `/api/pets` | 🔐 user/admin | Manage local pet JSON records | `route.api.enabled` |
 | `/auth/*` | varies | Login, sessions and user management | — |
 | `/docs/` | — | Generated API documentation | — |
 
-Every search endpoint accepts `GET` query strings, JSON or form `POST`
-bodies, and `multipart/form-data` file uploads.
+`POST /api/pets/search` accepts JSON or form bodies and
+`multipart/form-data` file uploads.
 
 | Parameter | Type | Description |
 |---|---|---|
-| `query` | `string` | The pet ID to look up, e.g. a microchip number |
+| `query` | `string` | Text to search, such as a microchip number |
+| `files` | `file[]` | Uploads used by plugins and local AI image search |
 | `tracerouteUuid` | `uuid[]` | Servers the query has passed through (federation) |
 
 ### API schemas
@@ -141,32 +180,30 @@ definitions. The complete schema index is:
 |---|---|---|
 | `GET /api/ping/get` | [`request.json`](schema/api/ping/get/request.json) | [`response.json`](schema/api/ping/get/response.json) |
 | `GET /api/server/get` | [`request.json`](schema/api/server/get/request.json) | [`response.json`](schema/api/server/get/response.json) |
-| `PUT /api/server/put/:uuid` | [`request.json`](schema/api/server/put/request.json) | [`response.json`](schema/api/server/put/response.json) |
-| `DELETE /api/server/delete/:uuid` | [`request.json`](schema/api/server/delete/request.json) | [`response.json`](schema/api/server/delete/response.json) |
+| `PUT /api/server/put/:gid` | [`request.json`](schema/api/server/put/request.json) | [`response.json`](schema/api/server/put/response.json) |
+| `DELETE /api/server/delete/:gid` | [`request.json`](schema/api/server/delete/request.json) | [`response.json`](schema/api/server/delete/response.json) |
 | `GET /api/config/get` | [`request.json`](schema/api/config/get/request.json) | [`response.json`](schema/api/config/get/response.json) |
 | `PUT /api/config/put` | [`request.json`](schema/api/config/put/request.json) | [`response.json`](schema/api/config/put/response.json) |
-| `POST /json` | [`request.json`](schema/search/request.json) | [`response.json`](schema/search/response.json) |
-| `POST /api` | [`request.json`](schema/search/request.json) | [`response.json`](schema/search/response.json) |
+| `POST /api/pets/search` | [`request.json`](schema/api/pet/search/request.json) | [`response.json`](schema/api/pet/search/response.json) |
+| `GET /api/pets` | [`request.json`](schema/api/pet/get/request.json) | [`response.json`](schema/api/pet/get/response.json) |
 
-The request-schema envelope mirrors the Express request parts:
+The search request body is a JSON object:
 
 ```json
 {
-	"params": {},
-	"query": {},
-	"body": {}
+	"query": "112093400000465",
+	"tracerouteUuid": []
 }
 ```
 
-For `POST /json` and `POST /api`, `body.query` is the search string.
-`body.tracerouteUuid` is an optional UUID array with at most 1000 entries.
-Query-string values are strings, so `query.iframe` accepts `"true"` or
-`"false"`, while JSON and form bodies accept a boolean.
+For `POST /api/pets/search`, `query` is required while `files` and
+`tracerouteUuid` are optional. Uploaded files can be sent as multipart form
+fields or included in the JSON `files` array.
 
 All generated schemas are also available as TypeScript sources under
 [`schema/`](schema) and can be regenerated with `npm run build:schema`.
 
-### `/json`: search everything
+### `POST /api/pets/search`: search pets and registries
 
 Use this to show petquery results on your own website or in your own
 application.
@@ -175,7 +212,7 @@ application.
 <summary><b>JavaScript</b></summary>
 
 ```js
-const response = await fetch('https://petquery.org/json', {
+const response = await fetch('https://petquery.org/api/pets/search', {
 	method: 'POST',
 	headers: {
 		'accept': 'application/json',
@@ -200,7 +237,7 @@ console.log(await response.json());
 <?php
 
 $result = file_get_contents(
-	'https://petquery.org/json',
+	'https://petquery.org/api/pets/search',
 	false,
 	stream_context_create([
 		'http' => [
@@ -221,7 +258,7 @@ print_r(json_decode($result, true));
 <summary><b>curl</b></summary>
 
 ```bash
-curl -X POST https://petquery.org/json \
+curl -X POST https://petquery.org/api/pets/search \
 	-H 'content-type: application/json' \
 	-H 'authorization: Bearer <your-token>' \
 	-d '{"query":"112093400000465"}'
@@ -244,41 +281,45 @@ Response:
 			},
 			"preview": "",
 			"files": [],
-			"attributes": {"name": {"first": "Bob", "last": "Smith"}}
+			"gid": "550e8400-e29b-41d4-a716-446655440000",
+			"name": "Bob",
+			"species": "dog",
+			"owner_contact": "owner@example.org",
+			"notes": "",
+			"attributes": [
+				{"key": "microchip", "value": "112093400000465"}
+			]
 		}
 	]
 }
 ```
 
-An invalid request, for example a `query` that is not a string or a
-`tracerouteUuid` that is not a UUID, returns `400` with the messages in
-`error`. An unexpected server error returns `500`. A circular query returns
-`200` with `success: false`. The request and response are described in
-[`schema/search/`](schema/search).
+Partial plugin or local-search failures are included in the envelope's
+`error` array while successful results are returned. Other handler failures
+use the standard error envelope. The request and response are described in
+[`schema/api/pet/search/`](schema/api/pet/search).
 
-The GUI uses the same public `POST /json` endpoint, so pet searches do not
-require a GUI login.
+The GUI uses the same public `POST /api/pets/search` endpoint, so searches
+do not require a GUI login.
 
-### `/api`: share your own registry
+### Federation: register a peer
 
-`/api` returns results from the plugins listed in `route.api.plugins`, in the
-same format as `/json`.
-
-This is how authorities share their data. Run petquery next to your local
-database, expose it through `/api`, and give other petquery servers a token.
-They add your server as a `petquery` plugin, with your URL and token in their
-config, and your registry becomes part of their search. Your database itself
-is never exposed.
+Peer sync shares base URLs and server index entries, not the underlying pet
+database. Register a peer with its `gid` and advertised base URI:
 
 ```js
-const response = await fetch('https://petquery.org/api', {
-	method: 'POST',
-	headers: {
-		'content-type': 'application/json',
+const response = await fetch(
+	'https://petquery.org/api/server/put/'
+		+ '550e8400-e29b-41d4-a716-446655440000',
+	{
+		method: 'PUT',
+		headers: {
+			'content-type': 'application/json',
 		'authorization': 'Bearer <your-token>'
-	},
-	body: JSON.stringify({query: '112093400000465'})
-});
+		},
+		body: JSON.stringify({uri: 'https://registry.example.org'})
+	}
+);
 console.log(await response.json());
 ```
 
@@ -291,17 +332,17 @@ method.
 
 | Method | Path | Body | Action |
 |---|---|---|---|
-| `GET` | `/api/ping/get` | — | Return this server's UUID as `data.uuid` |
+| `GET` | `/api/ping/get` | — | Return this server's `gid` and base URI |
 | `GET` | `/api/server/get` | — | List all servers |
-| `PUT` | `/api/server/put/:uuid` | `uri` (JSON or form) | Add or replace a server |
-| `DELETE` | `/api/server/delete/:uuid` | — | Delete a server |
+| `PUT` | `/api/server/put/:gid` | `uri` (JSON or form) | Add or replace a server |
+| `DELETE` | `/api/server/delete/:gid` | — | Delete a server |
 
 Responses are JSON with `success` and `error`; the list also has `data`, an
-array of `{uuid, uri}` objects. An invalid UUID or a missing or non-absolute
+array of `{gid, uri}` objects. An invalid UUID or a missing or non-absolute
 URI returns `400`, and a database error returns `500`. Deleting a missing
 UUID succeeds.
 
-The request and response of `PUT /api/server/put/:uuid` are described as
+The request and response of `PUT /api/server/put/:gid` are described as
 JSON Schema in [`schema/api/server/put/`](schema/api/server/put), see
 [Schemas](#schemas).
 
@@ -321,23 +362,10 @@ await fetch(
 
 ### `/api/config/*`: read and save configuration
 
-These routes require the `admin` group. `GET /api/config/get` returns:
-
-```json
-{
-	"success": true,
-	"error": [],
-	"data": {
-		"active": {},
-		"saved": null,
-		"saved_error": null,
-		"plugins": ["test"]
-	}
-}
-```
-
-`active` is the running configuration. `saved` is the configuration file
-that will be applied after restart, or `null` if it has not been saved.
+These routes require the `admin` group. `GET /api/config/get` returns the
+running configuration as `active`, the persisted configuration as `saved`,
+and the recognized plugin names. A failure to read persisted configuration
+is returned as a normal API error envelope.
 `PUT /api/config/put` accepts the same configuration shape as `data.saved`.
 The complete request and response definitions are in
 [`schema/api/config/`](schema/api/config).
@@ -376,37 +404,42 @@ The `authenticate` configuration contains:
 }
 ```
 
-The provider `mode` is one of `bearer`, `lmdb`, `ldap` or `oidc`.
-Secrets should be supplied through a protected configuration file and
-the server should use HTTPS when credentials are sent over the network.
+The provider `mode` is one of `bearer`, `lmdb`, `ldap` or `oidc`. Prefer
+`authenticate.bearer_env` in the startup JSON config instead of committing
+bearer tokens. Admin-saved settings can override JSON settings on restart.
 
 ### `/api/pets`: manage local pet records
 
 Authenticated `admin` and `user` accounts can manage the local pet database.
-The pet database is LMDB-backed and each record has this shape:
+Each record has this shape:
 
 ```json
 {
-	"pet_id": "112093400000465",
+	"gid": "550e8400-e29b-41d4-a716-446655440000",
 	"name": "Bob",
 	"species": "dog",
 	"owner_contact": "owner@example.org",
 	"notes": "Friendly and chipped.",
-	"files": [
-		"https://files.example.org/bob-photo.jpg"
+	"source": {"favicon": "", "url": "", "name": "Local"},
+	"preview": "",
+	"files": [],
+	"attributes": [
+		{"key": "microchip", "value": "112093400000465"}
 	]
 }
 ```
 
-All six fields are required. `files` may be an empty array.
+All fields are required. `preview` and `files` may contain URLs or
+`data:image/...;base64,...` image data. The GUI can upload preview and
+attachment images instead of requiring users to paste data URIs.
 
 | Method | Path | Request body | Result |
 |---|---|---|---|
 | `GET` | `/api/pets` | — | All pet records |
 | `POST` | `/api/pets` | Pet record | Create a record |
-| `GET` | `/api/pets/:pet_id` | — | One pet record |
-| `PUT` | `/api/pets/:pet_id` | Pet record | Replace a record |
-| `DELETE` | `/api/pets/:pet_id` | — | Delete a record |
+| `GET` | `/api/pets/:gid` | — | One pet record |
+| `PUT` | `/api/pets/:gid` | Pet record | Replace a record |
+| `DELETE` | `/api/pets/:gid` | — | Delete a record |
 
 Successful responses use the common envelope. Invalid fields return `400`,
 missing records return `404`, and authorization failures return `401` or
@@ -514,75 +547,30 @@ export class PetQueryPluginMyRegistry extends PetQueryPlugin{
 };
 ```
 
-Then add its config to the `plugin` map in `config.ts` and register it in
-`index.ts`:
+Register the plugin in `index.ts`, and list `my-registry` under
+`route.api.plugins` in the server JSON config. Plugin-specific settings are
+provided by the application code:
 
 ```ts
-server.addPlugin(new PetQueryPluginMyRegistry(
-	PetQueryConfig.getPluginConfig(
-		PetQueryPluginMyRegistryConfig,
-		'my-registry'
-	)
-));
+const pluginConfig = loadMyRegistryConfig();
+server.addPlugin(new PetQueryPluginMyRegistry(pluginConfig));
 ```
 
 ## Persistent server index
 
-`PetQueryDatabase` stores UUID-to-URI entries and local pet records through
-an asynchronous key-value backend.
-`PetQueryDatabaseLmdb` is the LMDB implementation. The runtime configuration
-creates the database instances:
+The server stores its own `gid` and peer `{gid, uri}` entries in its configured
+database. The `uri` is the peer's advertised base URL. A server generates its
+identity on first start and retains it across restarts as long as the same
+database is used.
 
-```ts
-import {PetQueryDatabaseLmdb} from '#petquery/database/lmdb.js';
+For independent servers, configure a separate database directory or
+PostgreSQL database for each instance. Reusing a database intentionally makes
+instances share their identity and saved runtime configuration. Also give
+each server a separate `ai_search_path`; the debug configs demonstrate this
+layout.
 
-const serverDatabase = new PetQueryDatabaseLmdb({
-	// LMDB environment directory, relative to the working directory.
-	 path:'var/lmdb' as filename_t
-	,name:'servers' as utf8_t
-	// Database in the same LMDB environment holding this server's UUID.
-	,settings_name:'settings' as utf8_t
-});
-const petDatabase = new PetQueryDatabaseLmdb({
-	 path:'var/lmdb' as filename_t
-	,name:'pets' as utf8_t
-});
-```
-
-The server's UUID is generated on first start and stored in the configured
-`settings_name` database, so it stays the same across restarts. Deleting that
-LMDB environment gives the server a new identity. Database instances are
-closed on `SIGINT` or `SIGTERM`.
-
-```ts
-import {PetQueryDatabaseLmdb} from '#petquery/database/lmdb.js';
-
-const db = new PetQueryDatabaseLmdb({
-	 path:'/var/lib/petquery' as filename_t
-	,name:'servers' as utf8_t
-	,settings_name:'settings' as utf8_t
-});
-try{
-	await db.addServer(
-		'550e8400-e29b-41d4-a716-446655440000',
-		'https://registry.example.org/'
-	);
-	const servers:Map<uuid_t,uri_t> = await db.getServerList();
-	console.log(servers);
-	await db.deleteServer('550e8400-e29b-41d4-a716-446655440000');
-}
-finally{
-	await db.destructor();
-}
-```
-
-`addServer()` persists an entry, replacing the URI when its UUID already
-exists. UUIDs must be valid and URIs must be absolute. `deleteServer()`
-removes an entry; a missing UUID is a no-op. `getServerList()` returns an
-independent `Map` snapshot, so modifying it does not modify the database.
-The index borrows the database, so the database's owner must await its
-`destructor()`. Database errors propagate to the caller, and operations after
-destruction reject. Keep the database directory outside the source tree.
+The index routes are documented in [`/api/server/*`](#apiserver-manage-the-server-index).
+The server closes its owned database resources on `SIGINT` or `SIGTERM`.
 
 ### Peer sync
 
@@ -611,9 +599,11 @@ most `sync.max_servers` entries per peer. Peers need `route.api.enabled`.
 
 | Command | What it does |
 |---|---|
-| `npm start` | Build, then start the server |
+| `npm start -- --config path.json` | Build, then start one configured server |
 | `npm run build` | Lint, compile, write the schemas, build the admin GUI |
+| `npm run build:server` | Compile the server TypeScript |
 | `npm run build:schema` | Write `schema/**/*.json` from the `.ts` schemas |
+| `npm run debug:multi` | Build and start three federated loopback servers |
 | `npm run lint` | ESLint: unused code and copyright headers |
 | `npm run doc` | Generate HTML API docs with the DMT theme into `docs/` |
 | `npm run doc:uml` | Generate HTML API docs with UML diagrams into `docs/` |
@@ -631,7 +621,7 @@ Request and response bodies are defined in [`schema/`](schema) with
 `PetQuerySchema`, a wrapper around
 [TypeBox](https://github.com/sinclairzx81/typebox).
 The path mirrors the route, for example
-`schema/api/server/put/request.ts` for `PUT /api/server/put/:uuid`.
+`schema/api/server/put/request.ts` for `PUT /api/server/put/:gid`.
 
 - Each `.ts` file exports a class with a static `schema`, a `fromJson()`
   that returns a typed instance or throws, and a `...Type` type. Import it
@@ -642,7 +632,7 @@ The path mirrors the route, for example
 
   ```ts
   app.put(
-  	'/api/server/put/:uuid',
+	'/api/server/put/:gid',
   	authenticate,
   	PetQuerySchemaApiServerPutRequest._handle.bind(
   		this,
@@ -674,8 +664,8 @@ It has its own dependencies, so install them once with
 
 The GUI has Home, Docs and Admin sections:
 
-- **Home** and the PetQuery logo open `/gui/search`, which queries the
-  `/json` endpoint with a bearer token and can upload supporting files.
+- **Home** and the PetQuery logo open `/gui/search`, which queries the public
+  `POST /api/pets/search` endpoint and can upload supporting files.
 - **Docs** embeds the generated API documentation served at `/docs/`.
 - **Admin** opens `/gui/admin/config` and contains Config, Servers, Users
   and Pets. Config selects bearer, LMDB, LDAP or OpenID Connect
@@ -688,13 +678,15 @@ The GUI has Home, Docs and Admin sections:
 - **Servers** lists, adds, edits and deletes entries in the server index.
 - **Users** manages local LMDB users with `admin` and `user` groups. LDAP and
   OpenID Connect users are displayed read-only from active sessions.
-- **Pets** manages JSON records with required `pet_id`, `name`, `species`,
-  `owner_contact`, `notes` and `files` fields.
+- **Pets** manages local records and lets admins upload preview and attachment
+  images. Uploaded images are stored as data URIs; AI search indexes those
+  local images and does not fetch remote image URLs.
 
-Docs are public. Search and Admin require authentication. The `admin` group
+Docs and search are public. Admin pages require authentication.
+The `admin` group
 has full access; the `user` group can search and manage only Pets. Bearer
 tokens remain supported for machine clients. GUI sessions use HttpOnly
-cookies and are kept in LMDB.
+cookies and are stored in the configured session database.
 Only the `admin` group can edit authentication settings. Turn the GUI off with
 `route.gui.enabled`.
 
