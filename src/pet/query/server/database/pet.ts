@@ -6,6 +6,7 @@
  */
 
 import { PetQueryDestructor } from '#petquery/destructor.js';
+import type { PetQuerySchemaPluginFileType } from '#schema/plugin/file.js';
 
 import type { PetQuerySchemaServerDatabasePetEntryType } from '#schema/server/database/pet/entry.js';
 
@@ -15,9 +16,7 @@ export abstract class PetQueryServerDatabasePet extends PetQueryDestructor{
 	abstract serverPetRemove(key:utf8_t):Promise<void>;
 	abstract serverPetGetEntries():Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>;
 	abstract serverPetSearch(query:utf8_t):Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>;
-	/*
 	abstract serverPetSearchByFile(
-		files:Array<PetQueryServerFile>
+		files:Array<PetQuerySchemaPluginFileType>
 	):Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>;
-*/
 };

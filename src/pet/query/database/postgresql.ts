@@ -19,11 +19,13 @@ import {
 import {
 	PetQuerySchemaServerDatabaseSessionEntry
 } from '#schema/server/database/session/entry.js';
+import { PetQueryServerDatabasePetSearchLoader } from '#petquery/server/database/pet/search/loader.js';
 import { Pool } from 'pg';
 
 import type {
 	PetQuerySchemaDatabaseConfigPostgresqlType
 } from '#schema/database/config/postgresql.js';
+import type { PetQuerySchemaPluginFileType } from '#schema/plugin/file.js';
 import type {
 	PetQuerySchemaServerDatabaseConfigEntryType
 } from '#schema/server/database/config/entry.js';
@@ -75,6 +77,8 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 	PetQueryServerDatabaseSession{
 	protected readonly _pool:Pool;
 	protected _readyPromise:Promise<void>|null;
+	protected readonly _petSearchLoader:
+		PetQueryServerDatabasePetSearchLoader;
 
 	constructor(config:PetQuerySchemaDatabaseConfigPostgresqlType){
 		super();
@@ -82,10 +86,24 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 			connectionString:config.connectionString
 		});
 		this._readyPromise = null;
+		this._petSearchLoader = new PetQueryServerDatabasePetSearchLoader(
+			'var/petquery-ai-search.sqlite3'
+		);
 		this._pool.on('error',this._onPoolError.bind(this));
 	}
 
 	protected override async _destructor():Promise<void>{
+		try{
+			await Promise.allSettled([
+				this._closePool(),
+				this._petSearchLoader.destructor()
+			]);
+		}
+		catch(UNUSED_e){
+		}
+	}
+
+	protected async _closePool():Promise<void>{
 		try{
 			try{
 				await this._readyPromise;
@@ -178,7 +196,13 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 	async serverPetAdd(
 		value:PetQuerySchemaServerDatabasePetEntryType
 	):Promise<void>{
-		await this._put('pet',value);
+		this._petSearchLoader._invalidate();
+		try{
+			await this._put('pet',value);
+		}
+		finally{
+			this._petSearchLoader._invalidate();
+		}
 	}
 
 	async serverPetGet(
@@ -191,7 +215,13 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 	}
 
 	async serverPetRemove(gid:utf8_t):Promise<void>{
-		await this._remove('pet',gid);
+		this._petSearchLoader._invalidate();
+		try{
+			await this._remove('pet',gid);
+		}
+		finally{
+			this._petSearchLoader._invalidate();
+		}
 	}
 
 	async serverPetGetEntries():Promise<
@@ -226,6 +256,16 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 		return this._parseRows(
 			result.rows,
 			PetQuerySchemaServerDatabasePetEntry.getValidator()
+		);
+	}
+
+	async serverPetSearchByFile(
+		files:Array<PetQuerySchemaPluginFileType>
+	):Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>{
+		const petSearch = await this._petSearchLoader._getSearch();
+		return petSearch._searchByFile(
+			files,
+			this.serverPetGetEntries.bind(this)
 		);
 	}
 

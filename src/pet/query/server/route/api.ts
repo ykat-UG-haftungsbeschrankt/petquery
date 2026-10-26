@@ -27,7 +27,6 @@ import type { PetQuerySchemaApiServerGetRequestType } from '#schema/api/server/g
 import type { PetQuerySchemaApiServerGetResponseType } from '#schema/api/server/get/response.js';
 import type { PetQuerySchemaApiServerPutRequestType } from '#schema/api/server/put/request.js';
 import type { PetQuerySchemaApiServerPutResponseType } from '#schema/api/server/put/response.js';
-import type { PetQuerySchemaServerDatabaseConfigEntryType } from '#schema/server/database/config/entry.js';
 
 export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	register():void{

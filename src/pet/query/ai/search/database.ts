@@ -104,6 +104,13 @@ export class PetQueryAiSearchDatabase extends PetQueryDestructor{
 		return PetQueryAiSearchVector.decodeVector(row.vector, model, path);
 	}
 
+	_removeFeature(path:utf8_t, model:utf8_t):void{
+		const statement = this._database.prepare(
+			'DELETE FROM features WHERE path = ? AND model = ?',
+		);
+		statement.run(path, model);
+	}
+
 	put(
 		path:utf8_t, model:utf8_t, digest:utf8_t,
 		vector:PetQueryAiSearchVector,

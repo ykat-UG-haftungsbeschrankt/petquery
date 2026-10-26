@@ -57,7 +57,9 @@ export class PetQueryServer extends PetQueryDestructor{
 		this._auth = auth;
 		this._petStore = petStore;
 		this._app = Express();
-		this._app.use(Express.json());
+		const jsonLimit = Math.ceil(upload.max_file_size * 4 / 3)
+			+ 256 * 1024;
+		this._app.use(Express.json({limit:jsonLimit}));
 		this._app.use(Express.urlencoded());
 		if(upload.enabled){
 			this._app.use(ExpressFileUpload({

@@ -11,8 +11,10 @@ import { PetQueryJson } from '#petquery/json.js';
 import { PetQueryRegexp } from '#petquery/regexp.js';
 import { PetQuerySchemaServerDatabasePetEntry } from '#schema/server/database/pet/entry.js';
 import { PetQueryServerDatabasePet } from '#petquery/server/database/pet.js';
+import { PetQueryServerDatabasePetSearchLoader } from '#petquery/server/database/pet/search/loader.js';
 import { open as LmdbOpen } from 'lmdb';
 
+import type { PetQuerySchemaPluginFileType } from '#schema/plugin/file.js';
 import type { PetQuerySchemaServerDatabasePetEntryType } from '#schema/server/database/pet/entry.js';
 import { PetQuerySchemaDatabaseConfigLmdbType } from '#schema/database/config/lmdb.js';
 	
@@ -20,6 +22,8 @@ export class PetQueryDatabasePetLmdb
 extends PetQueryDestructor
 implements PetQueryServerDatabasePet{
 	protected readonly _db;
+	protected readonly _petSearchLoader:
+		PetQueryServerDatabasePetSearchLoader;
 
 	// Opens the named database inside the LMDB environment at path.
 	constructor(config:PetQuerySchemaDatabaseConfigLmdbType){
@@ -28,14 +32,30 @@ implements PetQueryServerDatabasePet{
 			path:config.path,
 			name:config.name
 		});
+		this._petSearchLoader = new PetQueryServerDatabasePetSearchLoader(
+			'var/petquery-ai-search.sqlite3'
+		);
 	}
 	protected async _destructor():Promise<void>{
-		await this._db.close();
+		try{
+			await Promise.allSettled([
+				this._db.close(),
+				this._petSearchLoader.destructor()
+			]);
+		}
+		catch(UNUSED_e){
+		}
 	}
 
 	async serverPetAdd(value:PetQuerySchemaServerDatabasePetEntryType){
 		this._assertNotDestroyed();
-		await this._db.put('pet/' + value.gid,JSON.stringify(value));
+		this._petSearchLoader._invalidate();
+		try{
+			await this._db.put('pet/' + value.gid,JSON.stringify(value));
+		}
+		finally{
+			this._petSearchLoader._invalidate();
+		}
 	};
 	async serverPetGet(
 		gid:utf8_t
@@ -47,7 +67,13 @@ implements PetQueryServerDatabasePet{
 	}
 	async serverPetRemove(gid:utf8_t):Promise<void>{
 		this._assertNotDestroyed();
-		await this._db.remove('pet/' + gid);
+		this._petSearchLoader._invalidate();
+		try{
+			await this._db.remove('pet/' + gid);
+		}
+		finally{
+			this._petSearchLoader._invalidate();
+		}
 	}
 	async serverPetGetEntries():Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>{
 		this._assertNotDestroyed();
@@ -59,6 +85,16 @@ implements PetQueryServerDatabasePet{
 			entries.push(PetQuerySchemaServerDatabasePetEntry.fromJson(JSON.parse(value)));
 		}
 		return entries;
+	}
+	async serverPetSearchByFile(
+		files:Array<PetQuerySchemaPluginFileType>
+	):Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>{
+		this._assertNotDestroyed();
+		const petSearch = await this._petSearchLoader._getSearch();
+		return petSearch._searchByFile(
+			files,
+			this.serverPetGetEntries.bind(this)
+		);
 	}
 	async serverPetSearch(query:utf8_t):Promise<Array<PetQuerySchemaServerDatabasePetEntryType>>{
 		this._assertNotDestroyed();

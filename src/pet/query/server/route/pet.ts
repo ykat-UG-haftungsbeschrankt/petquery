@@ -164,6 +164,13 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		for(const plugin of plugins){
 			tasks.push(this._queryPlugin(plugin,query));
 		}
+		if(0 < files.length){
+			tasks.push(
+				server._getDatabase()
+					.getDbPet()
+					.serverPetSearchByFile(files)
+			);
+		}
 		if('' !== searchQuery){
 			tasks.push(
 				server._getDatabase().getDbPet().serverPetSearch(searchQuery)

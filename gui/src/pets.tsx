@@ -14,9 +14,15 @@ import { useCallback } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 
+import type { ChangeEvent } from 'react';
 import type { FormEvent } from 'react';
 import type { PetRecord } from '#gui/api';
 import type { ReactElement } from 'react';
+
+type PetImageAttachment = {
+	name:utf8_t;
+	uri:uri_t;
+};
 
 const EMPTY_PET:PetRecord = {
 	gid:'',
@@ -32,6 +38,41 @@ const EMPTY_PET:PetRecord = {
 const SOURCE_FIELDS:Array<keyof PetRecord['source']> = [
 	'favicon','url','name'
 ];
+const IMAGE_MIME_TYPES = new Set<utf8_t>([
+	'image/png',
+	'image/jpeg',
+	'image/gif',
+	'image/webp',
+	'image/avif',
+	'image/bmp'
+]);
+const IMAGE_ACCEPT = Array.from(IMAGE_MIME_TYPES).join(',');
+
+function isDataImageUri(uri:utf8_t):bool_t{
+	return uri.toLowerCase().startsWith('data:image/');
+}
+
+async function readImage(file:File):Promise<PetImageAttachment>{
+	if(!IMAGE_MIME_TYPES.has(file.type.toLowerCase())){
+		throw new Error('Choose a PNG, JPEG, GIF, WebP, AVIF, or BMP image.');
+	}
+	return new Promise((resolve,reject)=>{
+		const reader = new FileReader();
+		reader.onload = ()=>{
+			if('string' !== typeof reader.result){
+				reject(new Error(`Could not read image "${file.name}"`));
+				return;
+			}
+			resolve({name:file.name,uri:reader.result});
+		};
+		reader.onerror = ()=>{
+			reject(reader.error ?? new Error(
+				`Could not read image "${file.name}"`
+			));
+		};
+		reader.readAsDataURL(file);
+	});
+}
 
 export function Pets(props:{token:utf8_t}):ReactElement{
 	const {busy,error,run} = useAction();
@@ -39,6 +80,10 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 	const [editing,setEditing] = useState<utf8_t|null>(null);
 	const [form,setForm] = useState<PetRecord>(structuredClone(EMPTY_PET));
 	const [filesText,setFilesText] = useState<utf8_t>('');
+	const [uploadedImages,setUploadedImages] =
+		useState<Array<PetImageAttachment>>([]);
+	const [previewImageName,setPreviewImageName] =
+		useState<utf8_t|null>(null);
 
 	const refresh = useCallback(async ():Promise<void>=>{
 		setPets(await listPets(props.token));
@@ -52,12 +97,24 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 		setEditing(null);
 		setForm(structuredClone(EMPTY_PET));
 		setFilesText('');
+		setUploadedImages([]);
+		setPreviewImageName(null);
 	}
 
 	function editPet(pet:PetRecord):void{
 		setEditing(pet.gid);
 		setForm(structuredClone(pet));
-		setFilesText(pet.files.join('\n'));
+		const images = pet.files.filter(isDataImageUri);
+		const urls = pet.files.filter((file)=>{
+			return !isDataImageUri(file);
+		});
+		setUploadedImages(images.map((uri,index)=>{
+			return {name:`Saved image ${index + 1}`,uri};
+		}));
+		setFilesText(urls.join('\n'));
+		setPreviewImageName(
+			isDataImageUri(pet.preview) ? 'Saved preview image' : null
+		);
 	}
 
 	function setField(
@@ -102,8 +159,54 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 		});
 	}
 
+	function onPreviewImageChange(
+		event:ChangeEvent<HTMLInputElement>
+	):void{
+		const input = event.currentTarget;
+		const file = input.files?.[0];
+		input.value = '';
+		if(undefined === file){
+			return;
+		}
+		run(async ()=>{
+			const image = await readImage(file);
+			setField('preview',image.uri);
+			setPreviewImageName(image.name);
+		});
+	}
+
+	function onAttachmentImagesChange(
+		event:ChangeEvent<HTMLInputElement>
+	):void{
+		const input = event.currentTarget;
+		const files = Array.from(input.files ?? []);
+		input.value = '';
+		if(0 === files.length){
+			return;
+		}
+		run(async ()=>{
+			const images:Array<PetImageAttachment> = [];
+			for(const file of files){
+				images.push(await readImage(file));
+			}
+			setUploadedImages((current)=>{
+				return [...current,...images];
+			});
+		});
+	}
+
 	function onSubmit(event:FormEvent<HTMLFormElement>):void{
 		event.preventDefault();
+		const fileUrls = filesText.split('\n')
+			.map((value)=>{
+				return value.trim();
+			})
+			.filter((value)=>{
+				return '' !== value;
+			});
+		const imageUris = uploadedImages.map((image)=>{
+			return image.uri;
+		});
 		const values:PetRecord = {
 			...form,
 			gid:form.gid.trim(),
@@ -111,15 +214,16 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 			species:form.species.trim(),
 			owner_contact:form.owner_contact.trim(),
 			notes:form.notes.trim(),
-			files:filesText.split('\n')
-				.map((value)=>{
-					return value.trim();
-				})
-				.filter((value)=>{
-					return '' !== value;
-				})
+			files:[...fileUrls,...imageUris]
 		};
 		run(async ()=>{
+			if(fileUrls.some(isDataImageUri)
+			|| (isDataImageUri(values.preview)
+				&& null === previewImageName)){
+				throw new Error(
+					'Use an image upload control instead of pasting a data URI.'
+				);
+			}
 			if(null === editing){
 				await createPet(props.token,values);
 			}else{
@@ -271,14 +375,49 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						/>
 					</label>
 					<label className="field field-wide">
-						<span>Preview URI</span>
+						<span>Preview URL</span>
 						<input
-							value={form.preview}
+							value={
+								isDataImageUri(form.preview)
+									? ''
+									: form.preview
+							}
 							onChange={(event)=>{
 								setField('preview',event.target.value);
+								setPreviewImageName(null);
 							}}
 						/>
 					</label>
+					<label className="field field-wide">
+						<span>Upload preview image</span>
+						<input
+							className="file-input"
+							type="file"
+							accept={IMAGE_ACCEPT}
+							disabled={busy}
+							onChange={onPreviewImageChange}
+						/>
+					</label>
+					{null !== previewImageName && (
+						<div className="selected-files">
+							<span>{previewImageName}</span>
+							<img
+								className="attachment-preview"
+								src={form.preview}
+								alt="Pet preview"
+							/>
+							<button
+								type="button"
+								disabled={busy}
+								onClick={()=>{
+									setField('preview','');
+									setPreviewImageName(null);
+								}}
+							>
+								Remove preview image
+							</button>
+						</div>
+					)}
 					{SOURCE_FIELDS.map((field)=>{
 						return (
 							<label className="field" key={field}>
@@ -343,7 +482,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						</button>
 					</fieldset>
 					<label className="field field-wide">
-						<span>Files (one URI per line)</span>
+						<span>Attachment URLs (one per line)</span>
 						<textarea
 							value={filesText}
 							onChange={(event)=>{
@@ -351,6 +490,48 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 							}}
 						/>
 					</label>
+					<label className="field field-wide">
+						<span>Upload attachment images</span>
+						<input
+							className="file-input"
+							type="file"
+							accept={IMAGE_ACCEPT}
+							multiple
+							disabled={busy}
+							onChange={onAttachmentImagesChange}
+						/>
+					</label>
+					{0 < uploadedImages.length && (
+						<ul className="selected-files">
+							{uploadedImages.map((image,index)=>{
+								return (
+									<li key={`${image.name}-${index}`}>
+										<span>{image.name}</span>
+										<img
+											className="attachment-preview"
+											src={image.uri}
+											alt={image.name}
+										/>
+										<button
+											type="button"
+											disabled={busy}
+											onClick={()=>{
+												setUploadedImages((current)=>{
+													return current.filter(
+														(UNUSED_image,position)=>{
+															return position !== index;
+														}
+													);
+												});
+											}}
+										>
+											Remove image
+										</button>
+									</li>
+								);
+							})}
+						</ul>
+					)}
 					<button type="submit" disabled={busy}>
 						{null === editing ? 'Create pet' : 'Save pet'}
 					</button>
