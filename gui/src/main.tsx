@@ -5,13 +5,16 @@
  * free of charge, without warranty of any kind.
  */
 
-/// <reference path="../../types/index.d.ts" />
-
+import 'framework7/css';
 import '#gui/app.css';
 
 import { App } from '#gui/app';
-import { StrictMode } from 'react';
+import Framework7 from 'framework7/lite';
+import Framework7React from 'framework7-react';
 import { createRoot } from 'react-dom/client';
+import { StrictMode } from 'react';
+
+Framework7.use(Framework7React);
 
 const root = document.getElementById('root');
 if(null === root){

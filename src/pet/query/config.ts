@@ -35,6 +35,8 @@ export type PetQueryConfigAuthenticate = (
 
 export type PetQueryConfigServerType = {
 	api:{endpoint:uri_t};
+	adminContact:utf8_t;
+	companyAddress:utf8_t;
 	http:{
 		host:utf8_t;
 		port:port_t;
@@ -122,6 +124,8 @@ const configSchema = T.Object({
 	api:T.Object({
 		endpoint:T.String({format:'uri'})
 	},{additionalProperties:false}),
+	adminContact:T.String({maxLength:1024}),
+	companyAddress:T.String({maxLength:4096}),
 	http:T.Object({
 		host:T.Optional(T.String({minLength:1,maxLength:255})),
 		port:T.Integer({minimum:1,maximum:65535}),
@@ -330,6 +334,8 @@ function _createServerConfig(
 
 	return {
 		api:config.api,
+		adminContact:config.adminContact,
+		companyAddress:config.companyAddress,
 		http:{
 			host:config.http.host ?? '0.0.0.0',
 			port:config.http.port,

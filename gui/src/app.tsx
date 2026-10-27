@@ -6,19 +6,27 @@
  */
 
 import { Admin } from '#gui/admin';
+import { App as Framework7App } from 'framework7-react';
+import { Button } from 'framework7-react';
 import { Docs } from '#gui/docs';
+import { getAuthProviders } from '@petquery/api-client';
+import { getSession } from '@petquery/api-client';
 import { Login } from '#gui/login';
+import { loginUser } from '@petquery/api-client';
+import { logout } from '@petquery/api-client';
+import { Navbar } from 'framework7-react';
+import { NavLeft } from 'framework7-react';
+import { NavRight } from 'framework7-react';
+import { Page as Framework7Page } from 'framework7-react';
+import { Panel } from '#gui/panel';
 import { Search } from '#gui/search';
-import { getAuthProviders } from '#gui/api';
-import { getSession } from '#gui/api';
-import { loginUser } from '#gui/api';
-import { logout } from '#gui/api';
+import { Toolbar } from 'framework7-react';
 import { useEffect } from 'react';
 import { useState } from 'react';
+import { View } from 'framework7-react';
 
-import type { AuthProvider } from '#gui/api';
-import type { AuthUser } from '#gui/api';
-import type { MouseEvent } from 'react';
+import type { AuthProvider } from '@petquery/api-client';
+import type { AuthUser } from '@petquery/api-client';
 import type { ReactElement } from 'react';
 
 const TOKEN_KEY = 'petquery.admin.token';
@@ -131,23 +139,23 @@ export function App():ReactElement{
 		};
 	},[]);
 
-	function onNavigate(
-		event:MouseEvent<HTMLAnchorElement>,
-		next:Page
-	):void{
-		if('docs' === next){
-			return;
-		}
-		if(event.ctrlKey || event.metaKey || event.shiftKey
-		|| 0 !== event.button){
-			return;
-		}
-		event.preventDefault();
+	function changePage(next:Page):void{
 		if(next !== page){
 			window.history.pushState(null,'',pageUrl(next,user));
 			setPage(next);
 		}
 	}
+
+	useEffect(()=>{
+		function onPopState():void{
+			setPage(readPage());
+		}
+
+		window.addEventListener('popstate',onPopState);
+		return ()=>{
+			window.removeEventListener('popstate',onPopState);
+		};
+	},[]);
 
 	async function onLogin(credentials:{
 		provider:utf8_t;
@@ -208,10 +216,6 @@ export function App():ReactElement{
 		setAuthError(null);
 	}
 
-	function pageUrlWithUser(next:Page):utf8_t{
-		return pageUrl(next,user);
-	}
-
 	let content:ReactElement;
 	if('docs' === page){
 		content = <Docs/>;
@@ -219,9 +223,9 @@ export function App():ReactElement{
 		content = <Search token={token}/>;
 	}else if(checking){
 		content = (
-			<section className="login-card">
+			<Panel className="login-card">
 				<p className="muted">Checking your session...</p>
-			</section>
+			</Panel>
 		);
 	}else if(null === user){
 		content = (
@@ -242,58 +246,92 @@ export function App():ReactElement{
 	}
 
 	return (
-		<>
-			<header>
-				<h1 className="brand">
-					<a
-						className="brand-link"
-						href={pageUrlWithUser('search')}
-						onClick={(event)=>{
-							onNavigate(event,'search');
-						}}
-					>
-						<img src={LOGO_URL} alt="PetQuery"/>
-					</a>
-				</h1>
-				<nav aria-label="Primary navigation">
-					{PAGES.map((entry)=>{
-						return (
-							<a
-								key={entry.page}
-								href={pageUrlWithUser(entry.page)}
-								aria-current={
-									entry.page === page ? 'page' : undefined
-								}
-								onClick={(event)=>{
-									onNavigate(event,entry.page);
+		<Framework7App name="PetQuery" theme="auto">
+			<View main>
+				<Framework7Page>
+					<Navbar className="petquery-navbar">
+						<NavLeft>
+							<Button
+								type="button"
+								className="brand-button"
+								onClick={()=>{
+									changePage('search');
 								}}
 							>
-								{entry.label}
-							</a>
-						);
-					})}
-				</nav>
-				<div className="auth-controls">
-					{checking
-						? <span className="auth-state">Checking...</span>
-						: null !== user
-							? <>
-								<span className="auth-state">
-									{user.displayName}
-								</span>
-								<button
+								<img src={LOGO_URL} alt="PetQuery"/>
+							</Button>
+						</NavLeft>
+						<NavRight>
+							<div className="desktop-nav">
+								{PAGES.map((entry)=>{
+									return (
+										<Button
+											key={entry.page}
+											type="button"
+											small
+											fill={entry.page === page}
+											onClick={()=>{
+												changePage(entry.page);
+											}}
+										>
+											{entry.label}
+										</Button>
+									);
+								})}
+							</div>
+							<div className="auth-controls">
+								{checking
+									? <span className="auth-state">
+										Checking...
+									</span>
+									: null !== user
+										? <>
+											<span className="auth-state">
+												{user.displayName}
+											</span>
+											<Button
+												type="button"
+												outline
+												small
+												onClick={onLogout}
+											>
+												Sign out
+											</Button>
+										</>
+										: <span className="auth-state">
+											Public
+										</span>}
+							</div>
+						</NavRight>
+					</Navbar>
+					<main
+						className={
+							'docs' === page
+								? 'petquery-content docs-main'
+								: 'petquery-content'
+						}
+					>
+						{content}
+					</main>
+					<Toolbar bottom className="mobile-tabbar">
+						{PAGES.map((entry)=>{
+							return (
+								<Button
+									key={entry.page}
 									type="button"
-									onClick={onLogout}
+									className="mobile-tab"
+									fill={entry.page === page}
+									onClick={()=>{
+										changePage(entry.page);
+									}}
 								>
-									Sign out
-								</button>
-							</>
-							: <span className="auth-state">Public</span>}
-				</div>
-			</header>
-			<main className={'docs' === page ? 'docs-main' : undefined}>
-				{content}
-			</main>
-		</>
+									{entry.label}
+								</Button>
+							);
+						})}
+					</Toolbar>
+				</Framework7Page>
+			</View>
+		</Framework7App>
 	);
 }

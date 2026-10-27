@@ -5,16 +5,18 @@
  * free of charge, without warranty of any kind.
  */
 
-import { getConfig } from '#gui/api';
-import { saveConfig } from '#gui/api';
+import { Button as Framework7Button } from 'framework7-react';
+import { getConfig } from '@petquery/api-client';
+import { Panel } from '#gui/panel';
+import { saveConfig } from '@petquery/api-client';
 import { useAction } from '#gui/action';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 
 import type { ChangeEvent } from 'react';
-import type { ConfigState } from '#gui/api';
-import type { ConfigValues } from '#gui/api';
+import type { ConfigState } from '@petquery/api-client';
+import type { ConfigValues } from '@petquery/api-client';
 import type { FormEvent } from 'react';
 import type { ReactElement } from 'react';
 
@@ -267,12 +269,12 @@ export function Config(props:{token:utf8_t}):ReactElement{
 		return (
 			<>
 				{null !== error && <pre className="error">{error}</pre>}
-				<section>
+				<Panel>
 					<h2>Config</h2>
 					<p className="muted">
 						Viewing and editing the config requires the token.
 					</p>
-					<button
+					<Framework7Button
 						type="button"
 						disabled={busy || '' === token}
 						onClick={()=>{
@@ -282,8 +284,8 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						}}
 					>
 						Load
-					</button>
-				</section>
+					</Framework7Button>
+				</Panel>
 			</>
 		);
 	}
@@ -393,7 +395,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 			</div>}
 
 			<form onSubmit={onSubmit}>
-				<section>
+				<Panel>
 					<h2>HTTP</h2>
 					{numberField(
 						'Port',form.http.port,1,65535,'',
@@ -403,9 +405,9 @@ export function Config(props:{token:utf8_t}):ReactElement{
 							});
 						}
 					)}
-				</section>
+				</Panel>
 
-				<section>
+				<Panel>
 					<h2>Bearer tokens</h2>
 					<div className="auth-fields">
 						<label className="field">
@@ -676,7 +678,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 								/>
 								{token === value
 									&& <small className="muted">in use</small>}
-								<button
+								<Framework7Button
 									type="button"
 									disabled={
 										1 === form.authenticate.bearer.length
@@ -686,12 +688,12 @@ export function Config(props:{token:utf8_t}):ReactElement{
 									}}
 								>
 									Remove
-								</button>
+								</Framework7Button>
 							</div>
 						);
 						})}
 					{form.authenticate.providers.includes('bearer')
-						&& <button
+						&& <Framework7Button
 							type="button"
 							onClick={()=>{
 								const next = generateToken();
@@ -701,7 +703,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 							}}
 						>
 							Add generated token
-						</button>}
+						</Framework7Button>}
 					<label className="field">
 						<span>Provider options (JSON)</span>
 						<textarea
@@ -716,9 +718,9 @@ export function Config(props:{token:utf8_t}):ReactElement{
 					</label>
 					{null !== pluginOptionsError
 						&& <pre className="error">{pluginOptionsError}</pre>}
-				</section>
+				</Panel>
 
-				<section>
+				<Panel>
 					<h2>Results</h2>
 					{numberField(
 						'Max results per plugin',
@@ -738,9 +740,9 @@ export function Config(props:{token:utf8_t}):ReactElement{
 							});
 						}
 					)}
-				</section>
+				</Panel>
 
-				<section>
+				<Panel>
 					<h2>File upload</h2>
 					{checkboxField('Enabled',upload.enabled,(value)=>{
 						edit((draft)=>{
@@ -757,9 +759,9 @@ export function Config(props:{token:utf8_t}):ReactElement{
 							});
 						}
 					)}
-				</section>
+				</Panel>
 
-				<section>
+				<Panel>
 					<h2>Peer sync</h2>
 					{checkboxField('Enabled',sync.enabled,(value)=>{
 						edit((draft)=>{
@@ -793,9 +795,9 @@ export function Config(props:{token:utf8_t}):ReactElement{
 							});
 						}
 					)}
-				</section>
+				</Panel>
 
-				<section>
+				<Panel>
 					<h2>Routes</h2>
 					{checkboxField(
 						'/api (includes this page\'s API)',
@@ -829,25 +831,32 @@ export function Config(props:{token:utf8_t}):ReactElement{
 							</div>
 						);
 					})}
-				</section>
+				</Panel>
 
 				<div className="actions">
-					<button
+					<Framework7Button
 						type="submit"
 						disabled={busy || 0 === unsaved.length}
+						fill
 					>
 						Save
-					</button>
-					<button
+					</Framework7Button>
+					<Framework7Button
 						type="button"
 						disabled={busy || 0 === unsaved.length}
+						outline
 						onClick={onReset}
 					>
 						Reset
-					</button>
-					<button type="button" disabled={busy} onClick={onReload}>
+					</Framework7Button>
+					<Framework7Button
+						type="button"
+						disabled={busy}
+						outline
+						onClick={onReload}
+					>
 						Reload
-					</button>
+					</Framework7Button>
 					<span className="muted">
 						{0 < unsaved.length
 							? `Unsaved: ${unsaved.join(', ')}`

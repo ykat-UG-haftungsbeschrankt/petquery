@@ -5,7 +5,13 @@
 		"type": "object",
 		"required": [
 			"gid",
-			"uri"
+			"uri",
+			"adminContact",
+			"companyAddress",
+			"pingTimeMs",
+			"addedAt",
+			"updatedAt",
+			"lastPingAt"
 		],
 		"properties": {
 			"gid": {
@@ -25,15 +31,8 @@
 				"maxLength": 4096
 			},
 			"pingTimeMs": {
-				"anyOf": [
-					{
-						"type": "integer",
-						"minimum": 0
-					},
-					{
-						"type": "null"
-					}
-				]
+				"type": "integer",
+				"minimum": 0
 			},
 			"addedAt": {
 				"type": "string",
@@ -44,15 +43,8 @@
 				"format": "date-time"
 			},
 			"lastPingAt": {
-				"anyOf": [
-					{
-						"type": "string",
-						"format": "date-time"
-					},
-					{
-						"type": "null"
-					}
-				]
+				"type": "string",
+				"format": "date-time"
 			}
 		}
 	},

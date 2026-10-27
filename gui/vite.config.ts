@@ -12,7 +12,13 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
 	resolve:{
 		alias:{
-			'#gui':fileURLToPath(new URL('./src',import.meta.url))
+			'#gui':fileURLToPath(new URL('./src',import.meta.url)),
+			'@petquery/api-client':fileURLToPath(
+				new URL(
+					'../packages/api-client/src/index.ts',
+					import.meta.url
+				)
+			)
 		}
 	},
 	plugins:[react()],

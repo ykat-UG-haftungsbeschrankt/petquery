@@ -5,15 +5,16 @@
  * free of charge, without warranty of any kind.
  */
 
+import { Button } from 'framework7-react';
 import { Config } from '#gui/config';
+import { Panel } from '#gui/panel';
 import { Pets } from '#gui/pets';
 import { Servers } from '#gui/servers';
 import { Users } from '#gui/users';
 import { useEffect } from 'react';
 import { useState } from 'react';
 
-import type { AuthProvider } from '#gui/api';
-import type { MouseEvent } from 'react';
+import type { AuthProvider } from '@petquery/api-client';
 import type { ReactElement } from 'react';
 
 type AdminPage = 'home'|'config'|'pets'|'servers'|'users';
@@ -84,15 +85,7 @@ export function Admin(props:{
 		};
 	},[]);
 
-	function onNavigate(
-		event:MouseEvent<HTMLAnchorElement>,
-		next:AdminPage
-	):void{
-		if(event.ctrlKey || event.metaKey || event.shiftKey
-		|| 0 !== event.button){
-			return;
-		}
-		event.preventDefault();
+	function onNavigate(next:AdminPage):void{
 		if(next !== page){
 			window.history.pushState(null,'',pageUrl(next));
 			setPage(next);
@@ -118,29 +111,28 @@ export function Admin(props:{
 	return (
 		<>
 			{'home' === page && (
-				<section className="admin-home">
+				<Panel className="admin-home">
 					<div className="eyebrow">Administration</div>
 					<h2>Admin</h2>
 					<p className="muted">
 						Configure this server or manage federated peers.
 					</p>
-				</section>
+				</Panel>
 			)}
 			<nav className="admin-nav" aria-label="Admin sections">
 				{pages.map((entry)=>{
 					return (
-						<a
+						<Button
 							key={entry.page}
-							href={pageUrl(entry.page)}
-							aria-current={
-								entry.page === page ? 'page' : undefined
-							}
-							onClick={(event)=>{
-								onNavigate(event,entry.page);
+							type="button"
+							fill={entry.page === page}
+							outline={entry.page !== page}
+							onClick={()=>{
+								onNavigate(entry.page);
 							}}
 						>
 							{entry.label}
-						</a>
+						</Button>
 					);
 				})}
 			</nav>

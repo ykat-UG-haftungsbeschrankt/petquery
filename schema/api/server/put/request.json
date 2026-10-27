@@ -3,7 +3,13 @@
 	"type": "object",
 	"required": [
 		"gid",
-		"uri"
+		"uri",
+		"adminContact",
+		"companyAddress",
+		"pingTimeMs",
+		"addedAt",
+		"updatedAt",
+		"lastPingAt"
 	],
 	"properties": {
 		"gid": {
@@ -22,6 +28,22 @@
 		"companyAddress": {
 			"type": "string",
 			"maxLength": 4096
+		},
+		"pingTimeMs": {
+			"type": "integer",
+			"minimum": 0
+		},
+		"addedAt": {
+			"type": "string",
+			"format": "date-time"
+		},
+		"updatedAt": {
+			"type": "string",
+			"format": "date-time"
+		},
+		"lastPingAt": {
+			"type": "string",
+			"format": "date-time"
 		}
 	},
 	"title": "PUT /api/server/put/:gid request"

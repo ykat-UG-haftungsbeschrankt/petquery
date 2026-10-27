@@ -5,12 +5,14 @@
  * free of charge, without warranty of any kind.
  */
 
-import { getProviderLoginUrl } from '#gui/api';
+import { Button as Framework7Button } from 'framework7-react';
+import { getProviderLoginUrl } from '@petquery/api-client';
+import { Panel } from '#gui/panel';
 import { useAction } from '#gui/action';
 import { useEffect } from 'react';
 import { useState } from 'react';
 
-import type { AuthProvider } from '#gui/api';
+import type { AuthProvider } from '@petquery/api-client';
 import type { FormEvent } from 'react';
 import type { ReactElement } from 'react';
 
@@ -73,9 +75,8 @@ export function Login(props:LoginProps):ReactElement{
 	}
 
 	return (
-		<section className="login-card">
-			<div className="eyebrow">Protected area</div>
-			<h2>Sign in to PetQuery</h2>
+		<Panel className="login-card">
+			<h2>Sign in to PetQuery Admin</h2>
 			{null !== message && <pre className="error">{message}</pre>}
 			{0 === props.providers.length
 				? <p className="muted">No login providers are enabled.</p>
@@ -151,12 +152,16 @@ export function Login(props:LoginProps):ReactElement{
 										}}
 									/>
 								</>}
-							<button type="submit" disabled={busy}>
+							<Framework7Button
+								type="submit"
+								disabled={busy}
+								fill
+							>
 								{busy ? 'Signing in...' : 'Sign in'}
-							</button>
+							</Framework7Button>
 						</form>}
 				</>}
-		</section>
+		</Panel>
 	);
 }
 

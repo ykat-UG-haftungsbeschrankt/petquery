@@ -83,7 +83,14 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	): Promise<PetQuerySchemaApiPingGetResponseType>{
 		return {
 			gid:this.getServer()._getUuid(),
-			uri:this.getServer()._getConfig().api.endpoint
+			uri:this.getServer()._getConfig().api.endpoint,
+			adminContact:this.getServer()._getConfig().adminContact,
+			companyAddress:this.getServer()._getConfig().companyAddress,
+			pingTimeMs:-1,
+			addedAt:new Date().toISOString(),
+			updatedAt:new Date().toISOString(),
+			lastPingAt:new Date().toISOString()
+
 		};
 	}
 

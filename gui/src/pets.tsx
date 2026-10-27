@@ -5,18 +5,22 @@
  * free of charge, without warranty of any kind.
  */
 
-import { createPet } from '#gui/api';
-import { deletePet } from '#gui/api';
-import { listPets } from '#gui/api';
-import { updatePet } from '#gui/api';
+import { Button as Framework7Button } from 'framework7-react';
+import { createPet } from '@petquery/api-client';
+import { DataTable } from '#gui/data-table';
+import { deletePet } from '@petquery/api-client';
+import { listPets } from '@petquery/api-client';
+import { Panel } from '#gui/panel';
+import { updatePet } from '@petquery/api-client';
 import { useAction } from '#gui/action';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 
 import type { ChangeEvent } from 'react';
+import type { DataTableColumn } from '#gui/data-table';
 import type { FormEvent } from 'react';
-import type { PetRecord } from '#gui/api';
+import type { PetRecord } from '@petquery/api-client';
 import type { ReactElement } from 'react';
 
 type PetImageAttachment = {
@@ -47,6 +51,21 @@ const IMAGE_MIME_TYPES = new Set<utf8_t>([
 	'image/bmp'
 ]);
 const IMAGE_ACCEPT = Array.from(IMAGE_MIME_TYPES).join(',');
+const PET_COLUMNS:Array<DataTableColumn<PetRecord>> = [
+	{
+		key:'gid',
+		label:'Pet GID',
+		value:(pet)=>pet.gid,
+		render:(pet)=><code>{pet.gid}</code>
+	},
+	{key:'name',label:'Name',value:(pet)=>pet.name},
+	{key:'species',label:'Species',value:(pet)=>pet.species},
+	{
+		key:'owner_contact',
+		label:'Owner contact',
+		value:(pet)=>pet.owner_contact
+	}
+];
 
 function isDataImageUri(uri:utf8_t):bool_t{
 	return uri.toLowerCase().startsWith('data:image/');
@@ -250,7 +269,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 	return (
 		<>
 			{null !== error && <pre className="error">{error}</pre>}
-			<section>
+			<Panel>
 				<div className="page-heading">
 					<div>
 						<h2>Pets</h2>
@@ -258,7 +277,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 							Manage the local pet JSON database.
 						</p>
 					</div>
-					<button
+					<Framework7Button
 						type="button"
 						disabled={busy}
 						onClick={()=>{
@@ -266,56 +285,40 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						}}
 					>
 						Refresh
-					</button>
+					</Framework7Button>
 				</div>
-				{0 === pets.length
-					? <p className="muted">No pets found.</p>
-					: <table>
-						<thead>
-							<tr>
-								<th>Pet GID</th>
-								<th>Name</th>
-								<th>Species</th>
-								<th>Owner contact</th>
-								<th></th>
-							</tr>
-						</thead>
-						<tbody>
-							{pets.map((pet)=>{
-								return (
-									<tr key={pet.gid}>
-										<td><code>{pet.gid}</code></td>
-										<td>{pet.name}</td>
-										<td>{pet.species}</td>
-										<td>{pet.owner_contact}</td>
-										<td>
-											<button
-												type="button"
-												disabled={busy}
-												onClick={()=>{
-													editPet(pet);
-												}}
-											>
-												Edit
-											</button>
-											<button
-												type="button"
-												disabled={busy}
-												onClick={()=>{
-													onDelete(pet);
-												}}
-											>
-												Delete
-											</button>
-										</td>
-									</tr>
-								);
-							})}
-						</tbody>
-					</table>}
-			</section>
+				<DataTable
+					rows={pets}
+					columns={PET_COLUMNS}
+					filterLabel="pets"
+					emptyMessage="No pets found."
+					rowKey={(pet)=>pet.gid}
+					renderActions={(pet)=>(
+						<>
+							<Framework7Button
+								type="button"
+								disabled={busy}
+								onClick={()=>{
+									editPet(pet);
+								}}
+							>
+								Edit
+							</Framework7Button>
+							<Framework7Button
+								type="button"
+								disabled={busy}
+								onClick={()=>{
+									onDelete(pet);
+								}}
+							>
+								Delete
+							</Framework7Button>
+						</>
+					)}
+				/>
+			</Panel>
 
-			<section>
+			<Panel>
 				<h2>{null === editing ? 'Add pet' : 'Edit pet'}</h2>
 				<form onSubmit={onSubmit}>
 					<label className="field">
@@ -406,7 +409,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 								src={form.preview}
 								alt="Pet preview"
 							/>
-							<button
+							<Framework7Button
 								type="button"
 								disabled={busy}
 								onClick={()=>{
@@ -415,7 +418,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 								}}
 							>
 								Remove preview image
-							</button>
+							</Framework7Button>
 						</div>
 					)}
 					{SOURCE_FIELDS.map((field)=>{
@@ -461,7 +464,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 											setAttribute(index,'value',value);
 										}}
 									/>
-									<button
+									<Framework7Button
 										type="button"
 										disabled={busy}
 										onClick={()=>{
@@ -469,17 +472,17 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 										}}
 									>
 										Remove
-									</button>
+									</Framework7Button>
 								</div>
 							);
 						})}
-						<button
+						<Framework7Button
 							type="button"
 							disabled={busy}
 							onClick={addAttribute}
 						>
 							Add attribute
-						</button>
+						</Framework7Button>
 					</fieldset>
 					<label className="field field-wide">
 						<span>Attachment URLs (one per line)</span>
@@ -512,7 +515,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 											src={image.uri}
 											alt={image.name}
 										/>
-										<button
+										<Framework7Button
 											type="button"
 											disabled={busy}
 											onClick={()=>{
@@ -526,26 +529,26 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 											}}
 										>
 											Remove image
-										</button>
+										</Framework7Button>
 									</li>
 								);
 							})}
 						</ul>
 					)}
-					<button type="submit" disabled={busy}>
+					<Framework7Button type="submit" disabled={busy} fill>
 						{null === editing ? 'Create pet' : 'Save pet'}
-					</button>
+					</Framework7Button>
 					{null !== editing && (
-						<button
+						<Framework7Button
 							type="button"
 							disabled={busy}
 							onClick={resetForm}
 						>
 							Cancel
-						</button>
+						</Framework7Button>
 					)}
 				</form>
-			</section>
+			</Panel>
 		</>
 	);
 }

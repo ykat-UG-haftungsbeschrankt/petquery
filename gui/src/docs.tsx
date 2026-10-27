@@ -5,6 +5,11 @@
  * free of charge, without warranty of any kind.
  */
 
+import { Button } from 'framework7-react';
+import { Panel } from '#gui/panel';
+import { useEffect } from 'react';
+import { useState } from 'react';
+
 import type { ReactElement } from 'react';
 
 const DOCS_URL:utf8_t = '/docs/';
@@ -12,37 +17,60 @@ const API_URL:utf8_t = '/openapi/';
 
 export function Docs():ReactElement{
 	const base = import.meta.env.BASE_URL;
-	const apiSelected = `${base}docs/api` === window.location.pathname;
+	const [apiSelected,setApiSelected] = useState<bool_t>(
+		()=>`${base}docs/api` === window.location.pathname
+	);
 	const url = apiSelected ? API_URL : DOCS_URL;
 
+	useEffect(()=>{
+		function onPopState():void{
+			setApiSelected(`${base}docs/api` === window.location.pathname);
+		}
+
+		window.addEventListener('popstate',onPopState);
+		return ()=>{
+			window.removeEventListener('popstate',onPopState);
+		};
+	},[base]);
+
+	function onNavigate(nextApiSelected:bool_t):void{
+		const nextPath = nextApiSelected
+			? `${base}docs/api`
+			: `${base}docs`;
+		if(nextPath !== window.location.pathname){
+			window.history.pushState(null,'',nextPath);
+			setApiSelected(nextApiSelected);
+		}
+	}
+
 	return (
-		<section className="docs-page">
+		<Panel className="docs-page">
 			<div className="page-heading">
 				<div>
 					<h2>Documentation</h2>
 				</div>
-				<a
-					className="button-link"
-					href={url}
-					target="_blank"
-					rel="noreferrer"
-				>
-					Open in new tab
-				</a>
 			</div>
 			<nav className="admin-nav" aria-label="Documentation sections">
-				<a
-					href={`${base}docs`}
-					aria-current={!apiSelected ? 'page' : undefined}
+				<Button
+					type="button"
+					fill={!apiSelected}
+					outline={apiSelected}
+					onClick={()=>{
+						onNavigate(false);
+					}}
 				>
 					Documentation
-				</a>
-				<a
-					href={`${base}docs/api`}
-					aria-current={apiSelected ? 'page' : undefined}
+				</Button>
+				<Button
+					type="button"
+					fill={apiSelected}
+					outline={!apiSelected}
+					onClick={()=>{
+						onNavigate(true);
+					}}
 				>
 					API
-				</a>
+				</Button>
 			</nav>
 			<iframe
 				className="docs-frame"
@@ -51,6 +79,6 @@ export function Docs():ReactElement{
 					: 'PetQuery documentation'}
 				src={url}
 			/>
-		</section>
+		</Panel>
 	);
 }

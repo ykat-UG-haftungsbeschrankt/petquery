@@ -6,15 +6,17 @@
  */
 
 import { Attachment } from '#gui/attachment';
-import { searchPets } from '#gui/api';
+import { Button as Framework7Button } from 'framework7-react';
+import { Panel } from '#gui/panel';
+import { searchPets } from '@petquery/api-client';
 import { useAction } from '#gui/action';
 import { useState } from 'react';
 
 import type { ChangeEvent } from 'react';
 import type { FormEvent } from 'react';
 import type { ReactElement } from 'react';
-import type { SearchResponse } from '#gui/api';
-import type { SearchResult } from '#gui/api';
+import type { SearchResponse } from '@petquery/api-client';
+import type { SearchResult } from '@petquery/api-client';
 
 type SearchFeature = {
 	title:utf8_t;
@@ -28,15 +30,36 @@ const SEARCH_FEATURES:Array<SearchFeature> = [
 		title:'Search connected registries',
 		image:'feature-registries.svg',
 		alt:'Magnifying glass connected to three pet registries',
-		text:'One microchip ID can be checked across every enabled registry at'
-			+' once. PetQuery gathers the answers and brings them together.'
+		text:'One microchip ID is checked across enabled plugins in parallel.'
+			+' A slow source never blocks the others.'
+	},
+	{
+		title:'Search by image',
+		image:'feature-image-search.svg',
+		alt:'A pet photo matched against local records',
+		text:'Uploaded pet photos can be matched against local records with'
+			+' the built-in AI image search.'
 	},
 	{
 		title:'Share helpful files',
 		image:'feature-files.svg',
 		alt:'A document with a paw print and upload arrow',
-		text:'Add a photo or document to give registries more context when a'
-			+' text-only search is not enough.'
+		text:'Photos or documents can also be passed to configured plugins'
+			+' when a text-only search is not enough.'
+	},
+	{
+		title:'Federated and loop-safe',
+		image:'feature-reunite.svg',
+		alt:'Connected PetQuery servers sharing search results',
+		text:'Servers can query each other without sharing databases. A'
+			+' traceroute helps prevent query loops.'
+	},
+	{
+		title:'Validated and protected',
+		image:'feature-api.svg',
+		alt:'API brackets surrounding a paw print',
+		text:'Incoming and remote data is validated. Management endpoints'
+			+' require the appropriate sign-in.'
 	},
 	{
 		title:'Reunite pets and people',
@@ -81,80 +104,118 @@ export function Search(props:{token:utf8_t}):ReactElement{
 
 	return (
 		<>
-			<section className="search-card">
-				<div className="eyebrow">Federated pet lookup</div>
-				<h2>Find a pet</h2>
-				<p className="muted">
-					Search enabled registries with a microchip ID, files,
-					or both.
-				</p>
-				<form className="search-form" onSubmit={onSubmit}>
-					<label htmlFor="pet-query">Microchip ID</label>
-					<div className="search-controls">
-						<input
-							id="pet-query"
-							type="search"
-							autoComplete="off"
-							placeholder="112093400000465"
-							value={query}
-							onChange={(event)=>{
-								setQuery(event.target.value);
-							}}
-						/>
+			<Panel className="search-card">
+				<div className="search-card-content">
+					<div className="search-intro">
+						<div className="eyebrow">Federated pet lookup</div>
+						<h1>Find a pet. Bring them home.</h1>
+						<p className="muted">
+							Search enabled registries with a microchip ID,
+							files, or both.
+						</p>
+						<div className="search-hero-art" aria-hidden="true">
+							<div className="hero-art-glow"></div>
+							<img
+								src={`${import.meta.env.BASE_URL}`
+									+'feature-registries.svg'}
+								alt=""
+							/>
+							<div className="hero-art-caption">
+								<span className="hero-art-dot"></span>
+								<span>One search across trusted sources</span>
+							</div>
+						</div>
 					</div>
-					<label className="file-field" htmlFor="pet-files">
-						Files
-					</label>
-					<input
-						id="pet-files"
-						className="file-input"
-						type="file"
-						multiple
-						onChange={onFilesChange}
-					/>
-					{0 < files.length && (
-						<ul className="selected-files">
-							{files.map((file,index)=>{
-								return (
-									<li key={`${file.name}-${index}`}>
-										{file.name}
-									</li>
-								);
-							})}
-						</ul>
-					)}
-					<button
-						className="search-submit"
-						type="submit"
-						aria-busy={busy}
-						disabled={
-							busy || ('' === query.trim() && 0 === files.length)
-						}
-					>
-						<span className="search-submit-icon" aria-hidden="true">
-							<svg viewBox="0 0 24 24">
-								<circle cx="10.5" cy="10.5" r="6.5"/>
-								<path d="m16 16 5 5"/>
-							</svg>
-						</span>
-						<span>
-							{busy ? 'Searching...' : 'Search for a pet'}
-						</span>
-					</button>
-				</form>
-			</section>
-			{null === response && <section className="search-description">
+					<div className="search-form-shell">
+						<form className="search-form" onSubmit={onSubmit}>
+							<label htmlFor="pet-query">Microchip ID</label>
+							<div className="search-controls">
+								<input
+									id="pet-query"
+									type="search"
+									autoComplete="off"
+									placeholder="112093400000465"
+									value={query}
+									onChange={(event)=>{
+										setQuery(event.target.value);
+									}}
+								/>
+							</div>
+							<label className="file-field" htmlFor="pet-files">
+								Files
+							</label>
+							<input
+								id="pet-files"
+								className="file-input"
+								type="file"
+								multiple
+								onChange={onFilesChange}
+							/>
+							{0 < files.length && (
+								<ul className="selected-files">
+									{files.map((file,index)=>{
+										return (
+											<li key={`${file.name}-${index}`}>
+												{file.name}
+											</li>
+										);
+									})}
+								</ul>
+							)}
+							<Framework7Button
+								className="search-submit"
+								type="submit"
+								loading={busy}
+								disabled={
+									busy
+									|| ('' === query.trim()
+										&& 0 === files.length)
+								}
+							>
+								<span
+									className="search-submit-icon"
+									aria-hidden="true"
+								>
+									<svg viewBox="0 0 24 24">
+										<circle
+											cx="10.5"
+											cy="10.5"
+											r="6.5"
+										/>
+										<path d="m16 16 5 5"/>
+									</svg>
+								</span>
+								<span>
+									{busy
+										? 'Searching...'
+										: 'Search for a pet'}
+								</span>
+							</Framework7Button>
+						</form>
+					</div>
+				</div>
+			</Panel>
+			{null === response && <Panel className="search-description">
 				<div className="eyebrow">
 					One tiny chip. A whole lot of hope.
 				</div>
+				<h2>Why PetQuery?</h2>
 				<p>
-					PetQuery is a friendly, federated pet search. Enter a
-					microchip ID, upload photos or documents, or use both to
-					query connected registries and help lost pets find
-					their people.
+					When a pet goes missing, people often search only the
+					registries close to home. A pet that crosses a border can
+					be hard to find.
 				</p>
+				<p>
+					PetQuery is a plugin-based, federated search for pet
+					microchip IDs. It checks configured sources in parallel
+					and brings the results together.
+				</p>
+				<h3>Features</h3>
 				<div className="description-points">
-					<span>Search connected registries</span>
+					<span>Parallel plugin search</span>
+					<span>Search by image</span>
+					<span>Federated and loop-safe</span>
+					<span>Validated I/O</span>
 					<span>Share helpful files</span>
 					<span>Reunite pets and people</span>
 					<span>Build with the API</span>
@@ -176,7 +237,29 @@ export function Search(props:{token:utf8_t}):ReactElement{
 						);
 					})}
 				</div>
-			</section>}
+				<h3>How it works</h3>
+				<div className="workflow">
+					<div className="workflow-step">
+						<strong>1. Send a query</strong>
+						<span>Enter a chip ID, add a photo, or do both.</span>
+					</div>
+					<div className="workflow-arrow" aria-hidden="true">
+						&darr;
+					</div>
+					<div className="workflow-sources">
+						<div>Registry plugins</div>
+						<div>Local records and AI image search</div>
+						<div>Connected PetQuery servers</div>
+					</div>
+					<div className="workflow-arrow" aria-hidden="true">
+						&darr;
+					</div>
+					<div className="workflow-step">
+						<strong>2. Get combined results</strong>
+						<span>Matches return together in one response.</span>
+					</div>
+				</div>
+			</Panel>}
 
 			{null !== error && <pre className="error">{error}</pre>}
 			{null !== response && <SearchResults response={response}/>}
@@ -187,7 +270,7 @@ export function Search(props:{token:utf8_t}):ReactElement{
 function SearchResults(props:{response:SearchResponse}):ReactElement{
 	const response = props.response;
 	return (
-		<section>
+		<Panel>
 			<div className="page-heading">
 				<div>
 					<h2>
@@ -223,7 +306,7 @@ function SearchResults(props:{response:SearchResponse}):ReactElement{
 						);
 					})}
 				</div>}
-		</section>
+		</Panel>
 	);
 }
 

@@ -5,18 +5,83 @@
  * free of charge, without warranty of any kind.
  */
 
-import { addServer } from '#gui/api';
-import { deleteServer } from '#gui/api';
-import { listServers } from '#gui/api';
-import { ping } from '#gui/api';
+import { addServer } from '@petquery/api-client';
+import { Button as Framework7Button } from 'framework7-react';
+import { DataTable } from '#gui/data-table';
+import { deleteServer } from '@petquery/api-client';
+import { listServers } from '@petquery/api-client';
+import { Panel } from '#gui/panel';
+import { ping } from '@petquery/api-client';
 import { useAction } from '#gui/action';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 
+import type { DataTableColumn } from '#gui/data-table';
 import type { FormEvent } from 'react';
 import type { ReactElement } from 'react';
-import type { ServerEntry } from '#gui/api';
+import type { ServerEntry } from '@petquery/api-client';
+
+function formatTime(value:utf8_t|null):utf8_t{
+	return null === value ? 'Never' : new Date(value).toLocaleString();
+}
+
+const SERVER_COLUMNS:Array<DataTableColumn<ServerEntry>> = [
+	{
+		key:'gid',
+		label:'GID',
+		value:(server)=>server.gid,
+		render:(server)=><code>{server.gid}</code>
+	},
+	{
+		key:'uri',
+		label:'URI',
+		value:(server)=>server.uri,
+		render:(server)=>(
+			<a href={server.uri} target="_blank" rel="noreferrer">
+				{server.uri}
+			</a>
+		)
+	},
+	{
+		key:'adminContact',
+		label:'Admin contact',
+		value:(server)=>server.adminContact
+	},
+	{
+		key:'companyAddress',
+		label:'Company address',
+		value:(server)=>server.companyAddress
+	},
+	{
+		key:'pingTimeMs',
+		label:'Ping latency (ms)',
+		value:(server)=>server.pingTimeMs,
+		render:(server)=>{
+			return null === server.pingTimeMs
+				? 'Not pinged'
+				: `${server.pingTimeMs} ms`;
+		}
+	},
+	{
+		key:'addedAt',
+		label:'Added time',
+		value:(server)=>server.addedAt,
+		render:(server)=>formatTime(server.addedAt)
+	},
+	{
+		key:'updatedAt',
+		label:'Updated time',
+		value:(server)=>server.updatedAt,
+		render:(server)=>formatTime(server.updatedAt)
+	},
+	{
+		key:'lastPingAt',
+		label:'Last ping time',
+		value:(server)=>server.lastPingAt,
+		render:(server)=>formatTime(server.lastPingAt)
+	}
+];
 
 export function Servers(props:{token:utf8_t}):ReactElement{
 	const token = props.token;
@@ -25,6 +90,9 @@ export function Servers(props:{token:utf8_t}):ReactElement{
 	const [servers,setServers] = useState<Array<ServerEntry>>([]);
 	const [formGid,setFormGid] = useState<utf8_t>('');
 	const [formUri,setFormUri] = useState<utf8_t>('');
+	const [formAdminContact,setFormAdminContact] = useState<utf8_t>('');
+	const [formCompanyAddress,setFormCompanyAddress] =
+		useState<utf8_t>('');
 
 	const refresh = useCallback(async ():Promise<void>=>{
 		const [gid,list] = await Promise.all([ping(),listServers()]);
@@ -40,10 +108,20 @@ export function Servers(props:{token:utf8_t}):ReactElement{
 		event.preventDefault();
 		const gid = formGid.trim();
 		const uri = formUri.trim();
+		const adminContact = formAdminContact.trim();
+		const companyAddress = formCompanyAddress.trim();
 		run(async ()=>{
-			await addServer(token,gid,uri);
+			await addServer(
+				token,
+				gid,
+				uri,
+				adminContact,
+				companyAddress
+			);
 			setFormGid('');
 			setFormUri('');
+			setFormAdminContact('');
+			setFormCompanyAddress('');
 			await refresh();
 		});
 	}
@@ -51,6 +129,8 @@ export function Servers(props:{token:utf8_t}):ReactElement{
 	function onEdit(server:ServerEntry):void{
 		setFormGid(server.gid);
 		setFormUri(server.uri);
+		setFormAdminContact(server.adminContact);
+		setFormCompanyAddress(server.companyAddress);
 	}
 
 	function onDelete(server:ServerEntry):void{
@@ -73,9 +153,13 @@ export function Servers(props:{token:utf8_t}):ReactElement{
 
 			{null !== error && <pre className="error">{error}</pre>}
 
-			<section>
+			<Panel>
 				<h2>Servers</h2>
-				<button
+				<p className="muted">
+					Ping latency is measured from this server. Contact and
+					address details are shared with connected peers.
+				</p>
+				<Framework7Button
 					type="button"
 					disabled={busy}
 					onClick={()=>{
@@ -83,77 +167,93 @@ export function Servers(props:{token:utf8_t}):ReactElement{
 					}}
 				>
 					Refresh
-				</button>
-				{0 === servers.length
-					? <p className="muted">No servers known.</p>
-					: <table>
-						<thead>
-							<tr><th>GID</th><th>URI</th><th></th></tr>
-						</thead>
-						<tbody>
-							{servers.map((server)=>{
-								return (
-									<tr key={server.gid}>
-										<td><code>{server.gid}</code></td>
-										<td>
-											<a
-												href={server.uri}
-												target="_blank"
-												rel="noreferrer"
-											>
-												{server.uri}
-											</a>
-										</td>
-										<td>
-											<button
-												type="button"
-												disabled={busy}
-												onClick={()=>{
-													onEdit(server);
-												}}
-											>
-												Edit
-											</button>
-											<button
-												type="button"
-												disabled={!canWrite}
-												onClick={()=>{
-													onDelete(server);
-												}}
-											>
-												Delete
-											</button>
-										</td>
-									</tr>
-								);
-							})}
-						</tbody>
-					</table>}
-			</section>
+				</Framework7Button>
+				<DataTable
+					rows={servers}
+					columns={SERVER_COLUMNS}
+					filterLabel="servers"
+					emptyMessage="No servers known."
+					rowKey={(server)=>server.gid}
+					renderActions={(server)=>(
+						<>
+							<Framework7Button
+								type="button"
+								disabled={busy}
+								onClick={()=>{
+									onEdit(server);
+								}}
+							>
+								Edit
+							</Framework7Button>
+							<Framework7Button
+								type="button"
+								disabled={!canWrite}
+								onClick={()=>{
+									onDelete(server);
+								}}
+							>
+								Delete
+							</Framework7Button>
+						</>
+					)}
+				/>
+			</Panel>
 
-			<section>
+			<Panel>
 				<h2>Add or replace server</h2>
 				<form onSubmit={onSubmit}>
-					<input
-						required
-						placeholder="GID"
-						value={formGid}
-						onChange={(event)=>{
-							setFormGid(event.target.value);
-						}}
-					/>
-					<input
-						required
-						type="url"
-						placeholder="https://registry.example.org/"
-						value={formUri}
-						onChange={(event)=>{
-							setFormUri(event.target.value);
-						}}
-					/>
-					<button type="submit" disabled={!canWrite}>Save</button>
+					<label className="field">
+						<span>GID</span>
+						<input
+							required
+							value={formGid}
+							onChange={(event)=>{
+								setFormGid(event.target.value);
+							}}
+						/>
+					</label>
+					<label className="field">
+						<span>URI</span>
+						<input
+							required
+							type="url"
+							placeholder="https://registry.example.org/"
+							value={formUri}
+							onChange={(event)=>{
+								setFormUri(event.target.value);
+							}}
+						/>
+					</label>
+					<label className="field">
+						<span>Admin contact</span>
+						<input
+							maxLength={1024}
+							value={formAdminContact}
+							onChange={(event)=>{
+								setFormAdminContact(event.target.value);
+							}}
+						/>
+					</label>
+					<label className="field field-wide">
+						<span>Company address</span>
+						<textarea
+							rows={3}
+							maxLength={4096}
+							value={formCompanyAddress}
+							onChange={(event)=>{
+								setFormCompanyAddress(event.target.value);
+							}}
+						/>
+					</label>
+					<Framework7Button
+						type="submit"
+						disabled={!canWrite}
+						fill
+					>
+						Save
+					</Framework7Button>
 				</form>
-			</section>
+			</Panel>
 		</>
 	);
 }

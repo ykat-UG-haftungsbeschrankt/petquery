@@ -5,23 +5,39 @@
  * free of charge, without warranty of any kind.
  */
 
-import { createUser } from '#gui/api';
-import { deleteUser } from '#gui/api';
-import { listUsers } from '#gui/api';
-import { updateUser } from '#gui/api';
+import { Button as Framework7Button } from 'framework7-react';
+import { createUser } from '@petquery/api-client';
+import { DataTable } from '#gui/data-table';
+import { deleteUser } from '@petquery/api-client';
+import { listUsers } from '@petquery/api-client';
+import { Panel } from '#gui/panel';
+import { updateUser } from '@petquery/api-client';
 import { useAction } from '#gui/action';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
 import { useMemo } from 'react';
 import { useState } from 'react';
 
-import type { AuthProvider } from '#gui/api';
+import type { AuthProvider } from '@petquery/api-client';
 import type { ChangeEvent } from 'react';
+import type { DataTableColumn } from '#gui/data-table';
 import type { FormEvent } from 'react';
-import type { ManagedUser } from '#gui/api';
+import type { ManagedUser } from '@petquery/api-client';
 import type { ReactElement } from 'react';
 
-type UserGroup = 'admin'|'user';
+type UserGroup = ManagedUser['group'];
+
+const USER_COLUMNS:Array<DataTableColumn<ManagedUser>> = [
+	{
+		key:'username',
+		label:'Username',
+		value:(user)=>user.username,
+		render:(user)=><code>{user.username}</code>
+	},
+	{key:'displayName',label:'Name',value:(user)=>user.displayName},
+	{key:'group',label:'Group',value:(user)=>user.group},
+	{key:'provider',label:'Provider',value:(user)=>user.provider}
+];
 
 export function Users(props:{
 	token:utf8_t;
@@ -119,7 +135,7 @@ export function Users(props:{
 	return (
 		<>
 			{null !== error && <pre className="error">{error}</pre>}
-			<section>
+			<Panel>
 				<div className="page-heading">
 					<div>
 						<h2>Users</h2>
@@ -127,7 +143,7 @@ export function Users(props:{
 							Manage local users and review external identities.
 						</p>
 					</div>
-					<button
+					<Framework7Button
 						type="button"
 						disabled={busy}
 						onClick={()=>{
@@ -135,7 +151,7 @@ export function Users(props:{
 						}}
 					>
 						Refresh
-					</button>
+					</Framework7Button>
 				</div>
 				{0 < props.providers.length && (
 					<label className="field">
@@ -160,61 +176,45 @@ export function Users(props:{
 						</select>
 					</label>
 				)}
-				{0 === users.length
-					? <p className="muted">No users found.</p>
-					: <table>
-						<thead>
-							<tr>
-								<th>Username</th>
-								<th>Name</th>
-								<th>Group</th>
-								<th>Provider</th>
-								<th></th>
-							</tr>
-						</thead>
-						<tbody>
-							{users.map((user)=>{
-								return (
-									<tr key={`${user.provider}:${user.username}`}>
-										<td><code>{user.username}</code></td>
-										<td>{user.displayName}</td>
-										<td>{user.group}</td>
-										<td>{user.provider}</td>
-										<td>
-											<button
-												type="button"
-												disabled={
-													busy
-													|| provider !== user.provider
-												}
-												onClick={()=>{
-													editUser(user);
-												}}
-											>
-												Edit
-											</button>
-											<button
-												type="button"
-												disabled={
-													busy
-													|| provider !== user.provider
-												}
-												onClick={()=>{
-													onDelete(user);
-												}}
-											>
-												Delete
-											</button>
-										</td>
-									</tr>
-								);
-							})}
-						</tbody>
-					</table>}
-			</section>
+				<DataTable
+					rows={users}
+					columns={USER_COLUMNS}
+					filterLabel="users"
+					emptyMessage="No users found."
+					rowKey={(user)=>{
+						return `${user.provider}:${user.username}`;
+					}}
+					renderActions={(user)=>(
+						<>
+							<Framework7Button
+								type="button"
+								disabled={
+									busy || provider !== user.provider
+								}
+								onClick={()=>{
+									editUser(user);
+								}}
+							>
+								Edit
+							</Framework7Button>
+							<Framework7Button
+								type="button"
+								disabled={
+									busy || provider !== user.provider
+								}
+								onClick={()=>{
+									onDelete(user);
+								}}
+							>
+								Delete
+							</Framework7Button>
+						</>
+					)}
+				/>
+			</Panel>
 
 			{canManageUsers
-				? <section>
+				? <Panel>
 				<h2>{null === editing ? 'Add user' : 'Edit user'}</h2>
 				<form onSubmit={onSubmit}>
 					<label className="field">
@@ -266,20 +266,20 @@ export function Users(props:{
 							}}
 						/>
 					</label>
-					<button type="submit" disabled={busy}>
+					<Framework7Button type="submit" disabled={busy} fill>
 						{null === editing ? 'Create user' : 'Save user'}
-					</button>
+					</Framework7Button>
 					{null !== editing && (
-						<button
+						<Framework7Button
 							type="button"
 							disabled={busy}
 							onClick={resetForm}
 						>
 							Cancel
-						</button>
+						</Framework7Button>
 					)}
 				</form>
-				</section>
+				</Panel>
 				: <div className="banner">
 					No enabled provider supports user management.
 				</div>}
