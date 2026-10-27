@@ -42,19 +42,21 @@ same time, and it returns a single combined result.
 - 🛡️ **Validated I/O**: incoming and remote JSON is checked with
   [`cast.ts`](https://www.npmjs.com/package/cast.ts) before it is used.
 - 🔐 **Bearer authentication** for the machine-facing endpoints.
-- 📎 **File uploads**: photos or documents can be attached to a search and
-  passed to plugins; data-image attachments also enable local AI image search.
+- 📷 **Image search**: uploaded pet photos can be matched against local
+  records with the built-in AI search index.
+- 📎 **File uploads**: photos or documents can also be passed to plugins.
 
 ## 🧭 How it works
 
 ```mermaid
 flowchart LR
-    U([🧑 User / Authority]) -->|query| S[🐾 petquery server]
+    U([🧑 User / Authority]) -->|chip ID or photo| S[🐾 petquery server]
     S --> A[animalid.by]
     S --> M[(MySQL)]
     S --> D[(MongoDB)]
+    S --> I[(Local AI image search)]
     S --> P[🐾 another petquery server]
-    A & M & D & P -->|results| S
+    A & M & D & I & P -->|results| S
     S -->|merged result| U
 ```
 

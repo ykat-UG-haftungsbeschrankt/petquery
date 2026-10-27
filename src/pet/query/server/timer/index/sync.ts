@@ -74,7 +74,7 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 						continue;
 					}
 					try{
-						const data = await PetQuerySchemaApiPingGetRequest.fetch(
+						const data = await PetQuerySchemaApiPingGetRequest.fetchEx(
 							this._getApiUri(
 								remoteServer.uri,
 								'/api/ping/get'
@@ -82,14 +82,15 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 							{},
 							this._abortController.getTimeoutSignal(this._timeout)
 						);
-						if(remoteServer.gid !== data.gid){
+						if(remoteServer.gid !== data.result.gid){
 							throw new Error(
-								`Ping answered with UUID ${data.gid}, `
+								`Ping answered with UUID ${data.result.gid}, `
 								+ `expected ${remoteServer.gid}`
 							);
 						}
-						await this._database.serverIndexAddServer(data);
-						visited.add(data.gid);
+						data.result.pingTimeMs = data.duration;
+						await this._database.serverIndexAddServer(data.result);
+						visited.add(data.result.gid);
 					}catch(error){
 						this._report(`Server index sync with ${remoteServer.uri} failed`,error);
 					}

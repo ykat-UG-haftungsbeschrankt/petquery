@@ -69,6 +69,20 @@ export abstract class PetQueryServerRequestSchema<
 		);
 	}
 
+	async fetchEx(
+		uri:uri_t,
+		params:T_REQUEST,
+		signal:AbortSignal
+	):Promise<{duration: number,result: T_RESPONSE}>{
+		const startTs = Date.now();
+		const result = await this.fetch(uri,params,signal);
+		const endTs = Date.now();
+		return {
+			result: result,
+			duration: endTs - startTs
+		};
+	}
+
 	getHandle(
 		handler:(
 			request:T_REQUEST,

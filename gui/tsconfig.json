@@ -5,7 +5,12 @@
 		"module": "ESNext",
 		"moduleResolution": "Bundler",
 		"paths": {
-			"#gui/*": ["./src/*"]
+			"#gui/*": ["./src/*"],
+			"#petquery/*.js": ["../src/pet/query/*.ts"],
+			"#schema/*.js": ["../schema/*.ts"],
+			"@petquery/api-client": [
+				"../packages/api-client/src/index.ts"
+			]
 		},
 		"jsx": "react-jsx",
 		"types": ["vite/client"],
@@ -15,5 +20,5 @@
 		"noEmit": true,
 		"skipLibCheck": true
 	},
-	"include": ["src", "vite.config.ts"]
+	"include": ["src", "vite.config.ts", "../types/index.d.ts"]
 }

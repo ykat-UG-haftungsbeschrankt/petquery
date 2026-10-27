@@ -6,27 +6,14 @@
  */
 
 import { PetQueryHttpStatusCode } from '#petquery/http.js';
-import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaApiEnvelope } from '#schema/api/envelope.js';
 import { inspect as NodeUtilInspect } from 'node:util';
 
-import type { PetQuerySchemaStatic } from '#petquery/schema.js';
+import type { PetQuerySchemaApiEnvelopeType } from '#schema/api/envelope.js';
 import type { SendFileOptions as ExpressSendFileOptions } from 'express-serve-static-core';
 import type { default as Express } from 'express';
 
-const T = PetQuerySchema.type;
-
-const schema = T.Object({
-	success:T.Boolean(),
-	error:T.Array(T.String()),
-	data:T.Unknown()
-},{
-	title:'Error response of every route',
-	additionalProperties:false
-});
-
-const validator = PetQuerySchema.compile(schema);
-
-type PetQueryServerResponseType = PetQuerySchemaStatic<typeof schema>;
+type PetQueryServerResponseType = PetQuerySchemaApiEnvelopeType;
 
 export class PetQueryServerResponse{
 	protected readonly _response:Express.Response;
@@ -40,23 +27,19 @@ export class PetQueryServerResponse{
 	protected fromJson(
 		json:json_t
 	):PetQueryServerResponseType{
-		return PetQuerySchema.parse<
-			PetQueryServerResponseType
-		>(validator,json);
+		return PetQuerySchemaApiEnvelope.fromJson(json);
 	}
 
 	protected toJson(
 		params:PetQueryServerResponseType
 	):json_t{
-		return params as json_t;
+		return PetQuerySchemaApiEnvelope.toJson(params);
 	}
 
 	static parseApiResponse(
 		json:json_t
 	):unknown{
-		const ret = PetQuerySchema.parse<
-			PetQueryServerResponseType
-		>(validator,json);
+		const ret = PetQuerySchemaApiEnvelope.fromJson(json);
 		if(!ret.success){
 			throw new Error(ret.error.join('\n'));
 		}

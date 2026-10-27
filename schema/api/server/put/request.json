@@ -14,6 +14,14 @@
 			"type": "string",
 			"format": "uri",
 			"maxLength": 2048
+		},
+		"adminContact": {
+			"type": "string",
+			"maxLength": 1024
+		},
+		"companyAddress": {
+			"type": "string",
+			"maxLength": 4096
 		}
 	},
 	"title": "PUT /api/server/put/:gid request"

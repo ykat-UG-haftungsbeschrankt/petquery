@@ -101,12 +101,19 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 	protected async _handleAddServer(
 		request:PetQuerySchemaApiServerPutRequestType
 	):Promise<PetQuerySchemaApiServerPutResponseType>{
+		const now = new Date().toISOString();
 		await this.getServer()
 			._getDatabase()
 			.getDbIndex()
 			.serverIndexAddServer({
 				gid:request.gid,
-				uri:request.uri
+				uri:request.uri,
+				adminContact:request.adminContact,
+				companyAddress:request.companyAddress,
+				pingTimeMs:-1,
+				addedAt:now,
+				updatedAt:now,
+				lastPingAt:now
 			});
 		return [];
 	}
