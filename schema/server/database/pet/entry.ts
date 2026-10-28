@@ -7,6 +7,8 @@
 
 import { PetQuerySchema } from '#petquery/schema.js';
 import { PetQuerySchemaAbstract } from '#petquery/schema.js';
+import { PetQuerySchemaTypeLastSeen } from '#schema/type/last/seen.js';
+import { PetQuerySchemaTypeSource } from '#schema/type/source.js';
 
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
@@ -16,12 +18,9 @@ const schema = T.Object({
 	name:T.String({minLength:1,maxLength:256}),
 	species:T.String({minLength:1,maxLength:256}),
 	owner_contact:T.String({maxLength:4096}),
+	last_seen:T.Optional(PetQuerySchemaTypeLastSeen),
 	notes:T.String({maxLength:65536}),
-	source:T.Object({
-		favicon:T.String(),
-		url:T.String(),
-		name:T.String()
-	},{additionalProperties:false}),
+	source:PetQuerySchemaTypeSource,
 	preview:T.String(),
 	files:T.Array(T.String()),
 	attributes:T.Array(T.Object({

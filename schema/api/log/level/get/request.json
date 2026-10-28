@@ -1,0 +1,38 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"level": {
+			"anyOf": [
+				{
+					"type": "string",
+					"const": "error"
+				},
+				{
+					"type": "string",
+					"const": "warn"
+				},
+				{
+					"type": "string",
+					"const": "info"
+				},
+				{
+					"type": "string",
+					"const": "debug"
+				}
+			]
+		},
+		"query": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 256
+		},
+		"limit": {
+			"type": "string",
+			"pattern": "^(?:[1-9]|[1-9][0-9]|[1-4][0-9]{2}|500)$",
+			"maxLength": 3
+		}
+	},
+	"title": "GET /api/log/level/get request",
+	"additionalProperties": false
+}

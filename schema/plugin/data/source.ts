@@ -7,19 +7,14 @@
 
 import { PetQuerySchema } from '#petquery/schema.js';
 import { PetQuerySchemaAbstract } from '#petquery/schema.js';
+import { PetQuerySchemaTypeSource } from '#schema/type/source.js';
 
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
-const T = PetQuerySchema.type;
-
-const schema = T.Object({
-	favicon:T.String(),
-	url:T.String(),
-	name:T.String()
-},{
-	 title:'GET /api/DataSource/get DataSource'
-	,additionalProperties:false
-});
+const schema = {
+	...PetQuerySchemaTypeSource,
+	title:'GET /api/DataSource/get DataSource'
+};
 
 const validator = PetQuerySchema.compile(schema);
 

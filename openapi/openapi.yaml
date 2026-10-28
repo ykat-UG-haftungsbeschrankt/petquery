@@ -206,6 +206,123 @@ paths:
         "500":
           $ref: "#/components/responses/ServerError"
 
+  /api/log/level/get:
+    get:
+      tags: [API]
+      summary: Read recent application log entries
+      operationId: getLogEntries
+      description: |
+        Requires an administrator account. Entries are newest first.
+        `query` performs a case-insensitive substring search of messages.
+        The result is limited to 100 entries by default and 500 maximum.
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      parameters:
+        - name: level
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [error, warn, info, debug]
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 256
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 100
+      responses:
+        "200":
+          description: Recent log entries
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/LogEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Administrator access required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /api/log/request/get:
+    get:
+      tags: [API]
+      summary: Read recent HTTP request logs
+      operationId: getRequestLogs
+      description: |
+        Requires an administrator account. Entries are newest first.
+        Request lines omit query strings and bodies. `query` performs a
+        case-insensitive substring search. The default limit is 100; maximum
+        is 500.
+      security:
+        - bearerAuth: []
+        - sessionCookie: []
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 256
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 100
+      responses:
+        "200":
+          description: Recent request log entries
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/SuccessEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/LogEntry"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Administrator access required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
   /api/pets:
     get:
       tags: [Pets]
@@ -901,6 +1018,19 @@ components:
           type: string
           format: uri
           maxLength: 2048
+      additionalProperties: false
+    LogEntry:
+      type: object
+      required: [timestamp, level, message]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        level:
+          type: string
+          enum: [error, warn, info, debug]
+        message:
+          type: string
       additionalProperties: false
     PutServerRequest:
       type: object

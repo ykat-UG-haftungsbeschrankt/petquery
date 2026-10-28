@@ -33,6 +33,10 @@ import { PetQuerySchemaApiConfigGetRequest } from '#schema/api/config/get/reques
 import { PetQuerySchemaApiConfigGetResponse } from '#schema/api/config/get/response.js';
 import { PetQuerySchemaApiConfigPutRequest } from '#schema/api/config/put/request.js';
 import { PetQuerySchemaApiConfigPutResponse } from '#schema/api/config/put/response.js';
+import { PetQuerySchemaApiLogLevelGetRequest } from '#schema/api/log/level/get/request.js';
+import { PetQuerySchemaApiLogLevelGetResponse } from '#schema/api/log/level/get/response.js';
+import { PetQuerySchemaApiLogRequestGetRequest } from '#schema/api/log/request/get/request.js';
+import { PetQuerySchemaApiLogRequestGetResponse } from '#schema/api/log/request/get/response.js';
 import { PetQuerySchemaApiPetDeleteRequest } from '#schema/api/pet/delete/request.js';
 import { PetQuerySchemaApiPetDeleteResponse } from '#schema/api/pet/delete/response.js';
 import { PetQuerySchemaApiPetGetEntryRequest } from '#schema/api/pet/get/entry/request.js';
@@ -45,6 +49,7 @@ import { PetQuerySchemaApiPetPutRequest } from '#schema/api/pet/put/request.js';
 import { PetQuerySchemaApiPetPutResponse } from '#schema/api/pet/put/response.js';
 import { PetQuerySchemaApiPetSearchRequest } from '#schema/api/pet/search/request.js';
 import { PetQuerySchemaApiPetSearchResponse } from '#schema/api/pet/search/response.js';
+import { PetQuerySchemaApiPetSightingPostRequest } from '#schema/api/pet/sighting/post/request.js';
 import { PetQuerySchemaApiPingGetRequest } from '#schema/api/ping/get/request.js';
 import { PetQuerySchemaApiPingGetResponse } from '#schema/api/ping/get/response.js';
 import { PetQuerySchemaApiServerDeleteRequest } from '#schema/api/server/delete/request.js';
@@ -59,6 +64,10 @@ import type { PetQuerySchemaType } from '#petquery/schema.js';
 
 // Error responses of every route are described by schema/error.json.
 const schemas:Array<[utf8_t,PetQuerySchemaType]> = [
+	[
+		'schema/api/pet/sighting/post/request.json',
+		PetQuerySchemaApiPetSightingPostRequest.getSchema()
+	],
 	[
 		'schema/api/pet/search/request.json',
 		PetQuerySchemaApiPetSearchRequest.getSchema()
@@ -194,6 +203,22 @@ const schemas:Array<[utf8_t,PetQuerySchemaType]> = [
 	[
 		'schema/api/config/put/response.json',
 		PetQuerySchemaApiConfigPutResponse.getSchema()
+	],
+	[
+		'schema/api/log/level/get/request.json',
+		PetQuerySchemaApiLogLevelGetRequest.getSchema()
+	],
+	[
+		'schema/api/log/level/get/response.json',
+		PetQuerySchemaApiLogLevelGetResponse.getSchema()
+	],
+	[
+		'schema/api/log/request/get/request.json',
+		PetQuerySchemaApiLogRequestGetRequest.getSchema()
+	],
+	[
+		'schema/api/log/request/get/response.json',
+		PetQuerySchemaApiLogRequestGetResponse.getSchema()
 	],
 	[
 		'schema/api/pet/get/request.json',

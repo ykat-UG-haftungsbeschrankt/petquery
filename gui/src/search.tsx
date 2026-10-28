@@ -7,14 +7,21 @@
 
 import { Attachment } from '#gui/attachment';
 import { Button as Framework7Button } from 'framework7-react';
+import { distanceKm } from '#gui/geolocation';
+import { getServerEndpoint } from '@petquery/api-client';
+import { locateViewer } from '#gui/geolocation';
 import { Panel } from '#gui/panel';
 import { searchPets } from '@petquery/api-client';
+import { Sighting } from '#gui/sighting';
 import { useAction } from '#gui/action';
+import { useEffect } from 'react';
 import { useState } from 'react';
 
 import type { ChangeEvent } from 'react';
 import type { FormEvent } from 'react';
+import type { PetSighting } from '@petquery/api-client';
 import type { ReactElement } from 'react';
+import type { ReactNode } from 'react';
 import type { SearchResponse } from '@petquery/api-client';
 import type { SearchResult } from '@petquery/api-client';
 
@@ -77,7 +84,10 @@ const SEARCH_FEATURES:Array<SearchFeature> = [
 	}
 ];
 
-export function Search(props:{token:utf8_t}):ReactElement{
+export function Search(props:{
+	token:utf8_t;
+	onEdit:(gid:utf8_t)=>void;
+}):ReactElement{
 	const {busy,error,run} = useAction();
 	const [query,setQuery] = useState<utf8_t>('');
 	const [files,setFiles] = useState<Array<File>>([]);
@@ -108,7 +118,7 @@ export function Search(props:{token:utf8_t}):ReactElement{
 				<div className="search-card-content">
 					<div className="search-intro">
 						<div className="eyebrow">Federated pet lookup</div>
-						<h1>Find a pet. Bring them home.</h1>
+						<h2>Find a pet. Bring them home.</h2>
 						<p className="muted">
 							Search enabled registries with a microchip ID,
 							files, or both.
@@ -262,13 +272,40 @@ export function Search(props:{token:utf8_t}):ReactElement{
 			</Panel>}
 
 			{null !== error && <pre className="error">{error}</pre>}
-			{null !== response && <SearchResults response={response}/>}
+			{null !== response && (
+				<SearchResults
+					response={response}
+					onEdit={props.onEdit}
+				/>
+			)}
 		</>
 	);
 }
 
-function SearchResults(props:{response:SearchResponse}):ReactElement{
+function SearchResults(props:{
+	response:SearchResponse;
+	onEdit:(gid:utf8_t)=>void;
+}):ReactElement{
 	const response = props.response;
+	const {error,run} = useAction();
+	const endpointAction = useAction();
+	const runEndpoint = endpointAction.run;
+	const [serverEndpoint,setServerEndpoint] = useState<uri_t|null>(null);
+	const [location,setLocation] =
+		useState<PetSighting['location']|null>(null);
+
+	useEffect(()=>{
+		runEndpoint(async ()=>{
+			setServerEndpoint(await getServerEndpoint());
+		});
+	},[runEndpoint]);
+
+	useEffect(()=>{
+		run(async ()=>{
+			setLocation(await locateViewer());
+		});
+	},[run]);
+
 	return (
 		<Panel>
 			<div className="page-heading">
@@ -278,6 +315,12 @@ function SearchResults(props:{response:SearchResponse}):ReactElement{
 						{1 === response.data.length ? '' : 's'}
 					</h2>
 				</div>
+				{null !== error && <p className="error" role="alert">{error}</p>}
+				{null !== endpointAction.error && (
+					<p className="error" role="alert">
+						{endpointAction.error}
+					</p>
+				)}
 				<span className={
 					response.success ? 'status status-ok' : 'status status-warn'
 				}>
@@ -302,6 +345,11 @@ function SearchResults(props:{response:SearchResponse}):ReactElement{
 							<SearchResultCard
 								key={`${result.source.name}-${index}`}
 								result={result}
+								location={location}
+								onEdit={props.onEdit}
+								editable={null !== serverEndpoint
+									&& serverEndpoint
+										=== result.source.apiEndpoint}
 							/>
 						);
 					})}
@@ -310,8 +358,19 @@ function SearchResults(props:{response:SearchResponse}):ReactElement{
 	);
 }
 
-function SearchResultCard(props:{result:SearchResult}):ReactElement{
+function SearchResultCard(props:{
+	result:SearchResult;
+	location:PetSighting['location']|null;
+	editable:bool_t;
+	onEdit:(gid:utf8_t)=>void;
+}):ReactElement{
 	const result = props.result;
+	const [reporting,setReporting] = useState<bool_t>(false);
+	const [reported,setReported] = useState<PetSighting|null>(null);
+	const lastSeen = reported ?? result.last_seen;
+	const distance = null !== props.location && undefined !== lastSeen
+		? distanceKm(props.location,lastSeen.location)
+		: null;
 	const source = '' === result.source.url
 		? <span>{result.source.name}</span>
 		: <a
@@ -321,21 +380,64 @@ function SearchResultCard(props:{result:SearchResult}):ReactElement{
 		>
 			{result.source.name}
 		</a>;
-	const attributes = JSON.stringify(result.attributes,null,2) ?? '';
+	const rows:Array<{key:utf8_t;value:ReactNode}> = [
+		{key:'Species',value:result.species},
+		{key:'Pet GID',value:<code>{result.gid}</code>}
+	];
+	if('' !== result.owner_contact){
+		rows.push({key:'Owner contact',value:result.owner_contact});
+	}
+	if('' !== result.notes){
+		rows.push({key:'Notes',value:result.notes});
+	}
+	if(undefined === lastSeen){
+		rows.push({key:'Distance',value:'No last seen location'});
+	}else{
+		rows.push({
+			key:'Last seen',
+			value:new Date(lastSeen.timestamp).toLocaleString()
+		});
+		rows.push({
+			key:'Distance',
+			value:null === distance
+				? 'Enable your location to calculate'
+				: `${distance.toFixed(1)} km`
+		});
+		rows.push({
+			key:'Last seen contact',
+			value:`${lastSeen.contact.name} - ${lastSeen.contact.email}`
+				+` - ${lastSeen.contact.phone}`
+		});
+	}
+	for(const attribute of result.attributes){
+		rows.push({key:attribute.key,value:attribute.value});
+	}
+
+	function onSaved(sighting:PetSighting):void{
+		setReported(sighting);
+		setReporting(false);
+	}
+
+	function onCancel():void{
+		setReporting(false);
+	}
+
+	function onEdit():void{
+		props.onEdit(result.gid);
+	}
+
+	const canReport = undefined !== result.source.apiEndpoint;
 
 	return (
 		<article className="result-card">
-			{'' !== result.preview && (
-				<img
-					className="result-preview"
-					src={result.preview}
-					alt={`Preview from ${result.source.name}`}
-					loading="lazy"
+			{reporting && undefined !== result.source.apiEndpoint && (
+				<Sighting
+					gid={result.gid}
+					endpoint={result.source.apiEndpoint}
+					onSaved={onSaved}
+					onCancel={onCancel}
 				/>
-			)}<h3>{result.name}</h3>
-			<p>{result.species} - <code>{result.gid}</code></p>
-			{'' !== result.owner_contact && <p>{result.owner_contact}</p>}
-			{'' !== result.notes && <p>{result.notes}</p>}
+			)}
 			<div className="result-source">
 				{'' !== result.source.favicon && (
 					<img
@@ -346,8 +448,53 @@ function SearchResultCard(props:{result:SearchResult}):ReactElement{
 				)}
 				{source}
 			</div>
-			
-			<pre className="result-attributes">{attributes}</pre>
+
+			{(canReport || props.editable) && (
+				<div className="result-actions">
+					{canReport && !reporting && (
+						<Framework7Button
+							type="button"
+							small
+							onClick={()=>{
+								setReporting(true);
+							}}
+						>
+							Report last seen
+						</Framework7Button>
+					)}
+					{props.editable && (
+						<Framework7Button
+							type="button"
+							small
+							onClick={onEdit}
+						>
+							Edit
+						</Framework7Button>
+					)}
+				</div>
+			)}
+			{'' !== result.preview && (
+				<img
+					className="result-preview"
+					src={result.preview}
+					alt={`Preview from ${result.source.name}`}
+					loading="lazy"
+				/>
+			)}
+			<h3>{result.name}</h3>
+			{null !== reported && <p role="status">Last seen saved.</p>}
+			<table className="result-fields">
+				<tbody>
+					{rows.map((row,index)=>{
+						return (
+							<tr key={`${row.key}-${index}`}>
+								<th scope="row">{row.key}</th>
+								<td>{row.value}</td>
+							</tr>
+						);
+					})}
+				</tbody>
+			</table>
 			{0 < result.files.length && (
 				<ul className="result-files">
 					{result.files.map((file,index)=>{

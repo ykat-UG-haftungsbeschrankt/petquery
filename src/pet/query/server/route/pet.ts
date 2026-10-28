@@ -12,6 +12,7 @@ import { PetQuerySchemaApiPetGetRequest } from '#schema/api/pet/get/request.js';
 import { PetQuerySchemaApiPetPostRequest } from '#schema/api/pet/post/request.js';
 import { PetQuerySchemaApiPetPutRequest } from '#schema/api/pet/put/request.js';
 import { PetQuerySchemaApiPetSearchRequest } from '#schema/api/pet/search/request.js';
+import { PetQuerySchemaApiPetSightingPostRequest } from '#schema/api/pet/sighting/post/request.js';
 import { PetQuerySchemaPluginResponse } from '#schema/plugin/response.js';
 import { PetQueryServerRoute } from '#petquery/server/route.js';
 import { PetQueryServerRouteAccessGroup } from '#petquery/server/route.js';
@@ -30,9 +31,13 @@ import type { PetQuerySchemaApiPetPutRequestType } from '#schema/api/pet/put/req
 import type { PetQuerySchemaApiPetPutResponseType } from '#schema/api/pet/put/response.js';
 import type { PetQuerySchemaApiPetSearchRequestType } from '#schema/api/pet/search/request.js';
 import type { PetQuerySchemaApiPetSearchResponseType } from '#schema/api/pet/search/response.js';
+import type { PetQuerySchemaApiPetSightingPostRequestType } from '#schema/api/pet/sighting/post/request.js';
 import type { PetQuerySchemaPluginRequestType } from '#schema/plugin/request.js';
 import type { PetQueryServerRequest } from '#petquery/server/request.js';
 import type { PetQueryServerResponse } from '#petquery/server/response.js';
+import type { NextFunction } from 'express';
+import type { Request } from 'express';
+import type { Response } from 'express';
 
 export class PetQueryServerRoutePet extends PetQueryServerRoute{
 	register():void{
@@ -40,6 +45,17 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			return;
 		}
 		const accessGroup = PetQueryServerRouteAccessGroup.User;
+		this.getServer().useExpress(
+			'/api/pets/:gid/sightings',
+			this._sightingCors.bind(this)
+		);
+		this.getServer().post(
+			'/api/pets/:gid/sightings',
+			this._disableCache.bind(this),
+			PetQuerySchemaApiPetSightingPostRequest.getHandle(
+				this._handleSighting.bind(this)
+			)
+		);
 		this.getServer().post(
 			'/api/pets/search',
 			this._disableCache.bind(this),
@@ -87,6 +103,51 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 				this._handleDelete.bind(this)
 			)
 		);
+	}
+
+	protected _sightingCors(
+		req:Request,
+		res:Response,
+		next:NextFunction
+	):void{
+		res.setHeader('Access-Control-Allow-Origin','*');
+		res.setHeader('Access-Control-Allow-Methods','POST, OPTIONS');
+		res.setHeader('Access-Control-Allow-Headers','Content-Type');
+		if('OPTIONS' === req.method){
+			res.status(204);
+			res.end();
+			return;
+		}
+		next();
+	}
+
+	protected async _handleSighting(
+		request:PetQuerySchemaApiPetSightingPostRequestType
+	):Promise<PetQuerySchemaApiPetGetEntryResponseType>{
+		const database = this.getServer()._getDatabase().getDbPet();
+		const pet = await database.serverPetGet(request.gid);
+		const updated = {...pet,last_seen:request.last_seen};
+		await database.serverPetAdd(updated);
+		return updated;
+	}
+
+	protected _localResults(
+		pets:PetQuerySchemaApiPetGetResponseType
+	):PetQuerySchemaApiPetGetResponseType{
+		const apiEndpoint = this.getServer()._getConfig().api.endpoint;
+		return pets.map((pet)=>{
+			return {...pet,source:{...pet.source,apiEndpoint}};
+		});
+	}
+
+	protected async _searchLocal(
+		query:PetQuerySchemaPluginRequestType
+	):Promise<PetQuerySchemaApiPetGetResponseType>{
+		const database = this.getServer()._getDatabase().getDbPet();
+		const pets = 0 < query.files.length
+			? await database.serverPetSearchByFile(query.files)
+			: await database.serverPetSearch(query.query);
+		return this._localResults(pets);
 	}
 
 	protected async _handleList(
@@ -165,16 +226,10 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 			tasks.push(this._queryPlugin(plugin,query));
 		}
 		if(0 < files.length){
-			tasks.push(
-				server._getDatabase()
-					.getDbPet()
-					.serverPetSearchByFile(files)
-			);
+			tasks.push(this._searchLocal({...query,query:''}));
 		}
 		if('' !== searchQuery){
-			tasks.push(
-				server._getDatabase().getDbPet().serverPetSearch(searchQuery)
-			);
+			tasks.push(this._searchLocal({...query,files:[]}));
 		}
 		const results = await Promise.allSettled(tasks);
 		const data:PetQuerySchemaApiPetSearchResponseType = [];

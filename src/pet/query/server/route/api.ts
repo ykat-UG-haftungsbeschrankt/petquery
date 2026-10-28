@@ -6,8 +6,11 @@
  */
 
 import { PetQueryConfig } from '#petquery/config.js';
+import { PetQueryLog } from '#petquery/log.js';
 import { PetQuerySchemaApiConfigGetRequest } from '#schema/api/config/get/request.js';
 import { PetQuerySchemaApiConfigPutRequest } from '#schema/api/config/put/request.js';
+import { PetQuerySchemaApiLogLevelGetRequest } from '#schema/api/log/level/get/request.js';
+import { PetQuerySchemaApiLogRequestGetRequest } from '#schema/api/log/request/get/request.js';
 import { PetQuerySchemaApiPingGetRequest } from '#schema/api/ping/get/request.js';
 import { PetQuerySchemaApiServerDeleteRequest } from '#schema/api/server/delete/request.js';
 import { PetQuerySchemaApiServerGetRequest } from '#schema/api/server/get/request.js';
@@ -15,10 +18,15 @@ import { PetQuerySchemaApiServerPutRequest } from '#schema/api/server/put/reques
 import { PetQueryServerRoute } from '#petquery/server/route.js';
 import { PetQueryServerRouteAccessGroup } from '#petquery/server/route.js';
 
+import type { PetQueryLogReadOptions } from '#petquery/log.js';
 import type { PetQuerySchemaApiConfigGetRequestType } from '#schema/api/config/get/request.js';
 import type { PetQuerySchemaApiConfigGetResponseType } from '#schema/api/config/get/response.js';
 import type { PetQuerySchemaApiConfigPutRequestType } from '#schema/api/config/put/request.js';
 import type { PetQuerySchemaApiConfigPutResponseType } from '#schema/api/config/put/response.js';
+import type { PetQuerySchemaApiLogLevelGetRequestType } from '#schema/api/log/level/get/request.js';
+import type { PetQuerySchemaApiLogLevelGetResponseType } from '#schema/api/log/level/get/response.js';
+import type { PetQuerySchemaApiLogRequestGetRequestType } from '#schema/api/log/request/get/request.js';
+import type { PetQuerySchemaApiLogRequestGetResponseType } from '#schema/api/log/request/get/response.js';
 import type { PetQuerySchemaApiPingGetRequestType } from '#schema/api/ping/get/request.js';
 import type { PetQuerySchemaApiPingGetResponseType } from '#schema/api/ping/get/response.js';
 import type { PetQuerySchemaApiServerDeleteRequestType } from '#schema/api/server/delete/request.js';
@@ -46,6 +54,22 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 			'/api/server/get',
 			PetQuerySchemaApiServerGetRequest.getHandle(
 				this._handleListServer.bind(this)
+			)
+		);
+		this.getServer().get(
+			'/api/log/level/get',
+			this._disableCache.bind(this),
+			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
+			PetQuerySchemaApiLogLevelGetRequest.getHandle(
+				this._handleGetLogEntries.bind(this)
+			)
+		);
+		this.getServer().get(
+			'/api/log/request/get',
+			this._disableCache.bind(this),
+			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
+			PetQuerySchemaApiLogRequestGetRequest.getHandle(
+				this._handleGetRequestLogEntries.bind(this)
 			)
 		);
 		this.getServer().put(
@@ -92,6 +116,39 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 			lastPingAt:new Date().toISOString()
 
 		};
+	}
+
+	protected async _handleGetLogEntries(
+		request:PetQuerySchemaApiLogLevelGetRequestType
+	):Promise<PetQuerySchemaApiLogLevelGetResponseType>{
+		const options:PetQueryLogReadOptions = {
+			category:'application',
+			limit:undefined === request.limit
+				? 100
+				: Number(request.limit)
+		};
+		if(undefined !== request.level){
+			options.level = PetQueryLog._parseLevel(request.level);
+		}
+		if(undefined !== request.query){
+			options.query = request.query;
+		}
+		return PetQueryLog.getInstance()._readEntries(options);
+	}
+
+	protected async _handleGetRequestLogEntries(
+		request:PetQuerySchemaApiLogRequestGetRequestType
+	):Promise<PetQuerySchemaApiLogRequestGetResponseType>{
+		const options:PetQueryLogReadOptions = {
+			category:'request',
+			limit:undefined === request.limit
+				? 100
+				: Number(request.limit)
+		};
+		if(undefined !== request.query){
+			options.query = request.query;
+		}
+		return PetQueryLog.getInstance()._readEntries(options);
 	}
 
 	protected async _handleListServer(

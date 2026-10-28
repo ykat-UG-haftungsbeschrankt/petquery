@@ -8,10 +8,10 @@
 import { PetQueryHttp } from '#petquery/http.js';
 import { PetQueryHttpMethod } from '#petquery/http.js';
 import { PetQueryHttpStatusCode } from '#petquery/http.js';
+import { PetQueryLog } from '#petquery/log.js';
 import { PetQuerySchema } from '#petquery/schema.js';
 import { PetQueryServerResponse } from '#petquery/server/response.js';
 import { PetQuerySingleton } from '#petquery/singleton.js';
-import util from 'node:util';
 
 import type { PetQuerySchemaCheck } from '#petquery/schema.js';
 import type { PetQuerySchemaType } from '#petquery/schema.js';
@@ -125,7 +125,10 @@ export abstract class PetQueryServerRequestSchema<
 				this._sendRequestError(res,error);
 			}
 		}catch(error){
-			console.error(`Sending the response failed: ${util.inspect(error)}`);
+			PetQueryLog.getInstance().error(
+				'Sending the response failed',
+				error
+			);
 		}
 	}
 

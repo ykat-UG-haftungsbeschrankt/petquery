@@ -13,13 +13,17 @@ import { PetQueryDatabasePostgresql } from '#petquery/database/postgresql.js';
 import { PetQueryDatabaseSessionLmdb } from '#petquery/database/session/lmdb.js';
 import { PetQueryDatabase } from '#petquery/database.js';
 import { PetQueryDatabaseEx } from '#petquery/database.js';
+import { PetQueryLog } from '#petquery/log.js';
+import { PetQueryLogLevel } from '#petquery/log/level.js';
 import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaTypeLogLevel } from '#schema/type/log/level.js';
 import { PetQueryTypes } from '#petquery/types.js';
 import { readFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { resolve } from 'node:path';
 import fileUpload from 'express-fileupload';
 
+import type { PetQueryLogConfig } from '#petquery/log.js';
 import type { PetQueryPluginConfig } from '#petquery/plugin.js';
 import type { PetQueryServerRequest } from '#petquery/server/request.js';
 import type { PetQueryServerResponse } from '#petquery/server/response.js';
@@ -86,6 +90,7 @@ export type PetQueryConfigServerType = {
 			options:fileUpload.Options;
 		};
 	};
+	logging:PetQueryLogConfig;
 	max_results_per_module:uint_t;
 	max_results_total:uint_t;
 	index:{
@@ -188,6 +193,23 @@ const configSchema = T.Object({
 			})
 		},{additionalProperties:false})
 	},{additionalProperties:false}),
+	logging:T.Optional(T.Object({
+		level:T.Optional(PetQuerySchemaTypeLogLevel),
+		request:T.Optional(T.Object({
+			enabled:T.Optional(T.Boolean())
+		},{additionalProperties:false})),
+		file:T.Optional(T.Object({
+			path:T.Optional(T.String({minLength:1,maxLength:4096})),
+			max_size:T.Optional(T.Integer({
+				minimum:1024,
+				maximum:10485760
+			})),
+			max_files:T.Optional(T.Integer({
+				minimum:2,
+				maximum:5
+			}))
+		},{additionalProperties:false}))
+	},{additionalProperties:false})),
 	max_results_per_module:T.Integer({minimum:1,maximum:1000000}),
 	max_results_total:T.Integer({minimum:1,maximum:1000000}),
 	index:T.Object({
@@ -331,6 +353,21 @@ function _createServerConfig(
 		configDirectory,
 		config.ai_search_path
 	);
+	const logging:PetQueryLogConfig = {
+		level:config.logging?.level ?? PetQueryLogLevel.Info,
+		request:{
+			enabled:config.logging?.request?.enabled ?? true
+		},
+		file:{
+			path:resolve(
+				configDirectory,
+				config.logging?.file?.path ?? 'petquery.log'
+			),
+			max_size:config.logging?.file?.max_size ?? 10485760,
+			max_files:config.logging?.file?.max_files ?? 5
+		}
+	};
+	PetQueryLog._initialize(logging);
 
 	return {
 		api:config.api,
@@ -364,6 +401,7 @@ function _createServerConfig(
 				options:uploadOptions
 			}
 		},
+		logging,
 		max_results_per_module:config.max_results_per_module,
 		max_results_total:config.max_results_total,
 		index:config.index,

@@ -6,6 +6,7 @@
  */
 
 import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaTypeServer } from '#schema/type/server.js';
 import { PetQueryServerResponseSchema } from '#petquery/server/response/schema.js';
 
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
@@ -13,16 +14,7 @@ import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 const T = PetQuerySchema.type;
 
 const schema = T.Array(
-	T.Object({
-		gid:T.String({format:'uuid'}),
-		uri:T.String({format:'uri'}),
-		adminContact:T.String({maxLength:1024}),
-		companyAddress:T.String({maxLength:4096}),
-		pingTimeMs:T.Integer({minimum:0}),
-		addedAt:T.String({format:'date-time'}),
-		updatedAt:T.String({format:'date-time'}),
-		lastPingAt:T.String({format:'date-time'})
-	})
+	PetQuerySchemaTypeServer
 ,{
 	title:'GET /api/server/get response',
 	additionalProperties:false

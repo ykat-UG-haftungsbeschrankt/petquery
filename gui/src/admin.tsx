@@ -7,6 +7,7 @@
 
 import { Button } from 'framework7-react';
 import { Config } from '#gui/config';
+import { Logs } from '#gui/logs';
 import { Panel } from '#gui/panel';
 import { Pets } from '#gui/pets';
 import { Servers } from '#gui/servers';
@@ -17,10 +18,13 @@ import { useState } from 'react';
 import type { AuthProvider } from '@petquery/api-client';
 import type { ReactElement } from 'react';
 
-type AdminPage = 'home'|'config'|'pets'|'servers'|'users';
+type AdminPage =
+	'home'|'config'|'logs'|'pets'|'request-logs'|'servers'|'users';
 
 const ADMIN_PAGES:Array<{page:AdminPage;label:utf8_t}> = [
 	{page:'config',label:'Config'},
+	{page:'logs',label:'Logs'},
+	{page:'request-logs',label:'Request logs'},
 	{page:'servers',label:'Servers'},
 	{page:'users',label:'Users'},
 	{page:'pets',label:'Pets'}
@@ -33,7 +37,13 @@ function readPage(group:'admin'|'user'):AdminPage{
 		? path.slice(base.length).split('/')
 		: [];
 	if('admin' === parts[0]){
+		if('log' === parts[1]
+		&& 'request' === parts[2]
+		&& 'get' === parts[3]){
+			return 'user' === group ? 'pets' : 'request-logs';
+		}
 		if('config' === parts[1]
+		|| 'logs' === parts[1]
 		|| 'servers' === parts[1]
 		|| 'users' === parts[1]
 		|| 'pets' === parts[1]){
@@ -45,6 +55,7 @@ function readPage(group:'admin'|'user'):AdminPage{
 		return 'home';
 	}
 	if('config' === parts[0]
+	|| 'logs' === parts[0]
 	|| 'servers' === parts[0]
 	|| 'users' === parts[0]
 	|| 'pets' === parts[0]){
@@ -57,6 +68,9 @@ function readPage(group:'admin'|'user'):AdminPage{
 }
 
 function pageUrl(page:AdminPage):utf8_t{
+	if('request-logs' === page){
+		return `${import.meta.env.BASE_URL}admin/log/request/get`;
+	}
 	return `${import.meta.env.BASE_URL}admin/${page}`;
 }
 
@@ -95,6 +109,10 @@ export function Admin(props:{
 	let content:ReactElement|null = null;
 	if('config' === page){
 		content = <Config token={props.token}/>;
+	}else if('logs' === page){
+		content = <Logs token={props.token}/>;
+	}else if('request-logs' === page){
+		content = <Logs token={props.token} requestOnly/>;
 	}else if('pets' === page){
 		content = <Pets token={props.token}/>;
 	}else if('servers' === page){

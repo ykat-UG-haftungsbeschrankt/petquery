@@ -6,6 +6,7 @@
  */
 
 import { PetQueryDestructor } from '#petquery/destructor.js';
+import { PetQueryLog } from '#petquery/log.js';
 import { PetQuerySchema } from '#petquery/schema.js';
 import {
 	PetQuerySchemaServerDatabaseConfigEntry
@@ -440,7 +441,10 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 	}
 
 	protected _onPoolError(error:Error):void{
-		console.error('PostgreSQL idle connection error:',error);
+		PetQueryLog.getInstance().error(
+			'PostgreSQL idle connection error',
+			error
+		);
 	}
 
 	static buildConnectionString(config:{

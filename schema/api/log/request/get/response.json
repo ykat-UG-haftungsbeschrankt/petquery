@@ -1,0 +1,43 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "array",
+	"items": {
+		"type": "object",
+		"required": [
+			"timestamp",
+			"level",
+			"message"
+		],
+		"properties": {
+			"timestamp": {
+				"type": "string",
+				"format": "date-time"
+			},
+			"level": {
+				"anyOf": [
+					{
+						"type": "string",
+						"const": "error"
+					},
+					{
+						"type": "string",
+						"const": "warn"
+					},
+					{
+						"type": "string",
+						"const": "info"
+					},
+					{
+						"type": "string",
+						"const": "debug"
+					}
+				]
+			},
+			"message": {
+				"type": "string"
+			}
+		},
+		"additionalProperties": false
+	},
+	"title": "GET /api/log/request/get response"
+}

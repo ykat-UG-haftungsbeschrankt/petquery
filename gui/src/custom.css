@@ -1,1 +1,213 @@
 /* Add CSS overrides here. This stylesheet loads after app.css. */
+.auth-state{
+	display:none;
+}
+
+.petquery-navbar .brand-button.button,
+.petquery-navbar .brand-button.button:hover:not(:disabled),
+.petquery-navbar .brand-button.button:active{
+	width:auto;
+	background:transparent;
+	box-shadow:none;
+}
+
+.petquery-navbar .desktop-nav .button:not(.button-fill),
+.petquery-navbar .auth-controls .button:not(.button-fill){
+	border-color:transparent;
+	background:transparent;
+	box-shadow:none;
+	color:#adc2ca;
+}
+
+.petquery-navbar .desktop-nav .button:not(.button-fill):hover,
+.petquery-navbar .auth-controls .button:not(.button-fill):hover{
+	border-color:transparent;
+	background:transparent;
+	color:#adc2ca;
+}
+
+button {
+  width: auto;
+}
+.location-map{
+	width:100%;
+	height:260px;
+	margin:12px 0 6px;
+	border:1px solid var(--line);
+	border-radius:14px;
+	z-index:0;
+}
+
+.result-card .result-actions{
+	position:absolute;
+	top:14px;
+	right:14px;
+	display:flex;
+	gap:6px;
+}
+
+.result-card .result-actions .button{
+	margin:0;
+}
+
+.result-card h3{
+	padding-right:230px;
+}
+
+.result-fields{
+	width:100%;
+	margin:8px 0 12px;
+	border:0;
+	border-collapse:collapse;
+	border-radius:0;
+	background:transparent;
+	font-size:.92rem;
+}
+
+.result-fields th,
+.result-fields td{
+	padding:4px 10px 4px 0;
+	border:0;
+	background:transparent;
+	text-align:left;
+	vertical-align:top;
+	white-space:normal;
+	overflow-wrap:anywhere;
+}
+
+.result-fields tbody tr:hover td{
+	background:transparent;
+}
+
+.result-fields th{
+	width:34%;
+	color:var(--ink-soft);
+	font-size:.92rem;
+	font-weight:700;
+	letter-spacing:normal;
+	text-transform:none;
+}
+
+.result-fields td{
+	color:var(--ink);
+	font-size:.92rem;
+}
+
+@media (max-width:700px){
+	.result-card .result-actions{
+		position:static;
+		flex-wrap:wrap;
+		margin-bottom:12px;
+	}
+
+	.result-card h3{
+		padding-right:0;
+	}
+}
+
+.sighting{
+	margin-bottom: 22px;
+}
+
+.sighting-actions{
+	display:flex;
+	flex-wrap:wrap;
+	align-items:center;
+	gap:8px;
+}
+
+.sighting-actions .button{
+	margin:0;
+}
+
+.log-filters{
+	display:grid;
+	grid-template-columns:minmax(140px,.7fr) minmax(200px,2fr) auto;
+	align-items:end;
+	gap:12px;
+	margin-bottom:16px;
+}
+
+.log-filters-request{
+	grid-template-columns:minmax(200px,1fr) auto;
+}
+
+.log-filters .button{
+	margin:0 0 16px;
+}
+
+.log-entries{
+	display:grid;
+	gap:10px;
+}
+
+.log-entry{
+	padding:12px 14px;
+	border:1px solid var(--line);
+	border-left:4px solid var(--line-strong);
+	border-radius:10px;
+	background:var(--surface-soft);
+}
+
+.log-level-error{
+	border-left-color:var(--danger);
+}
+
+.log-level-warn{
+	border-left-color:var(--gold);
+}
+
+.log-level-info{
+	border-left-color:var(--teal);
+}
+
+.log-level-debug{
+	border-left-color:var(--ink-soft);
+}
+
+.log-entry-meta{
+	display:flex;
+	flex-wrap:wrap;
+	justify-content:space-between;
+	gap:6px 12px;
+	color:var(--ink-soft);
+	font-size:.82rem;
+}
+
+.log-entry-meta strong{
+	color:var(--ink);
+	text-transform:uppercase;
+}
+
+.log-entry pre{
+	margin:8px 0 0;
+	white-space:pre-wrap;
+	overflow-wrap:anywhere;
+}
+
+@media (max-width:700px){
+	.log-filters{
+		grid-template-columns:1fr;
+	}
+
+	.log-filters-request{
+		grid-template-columns:1fr;
+	}
+
+	.log-filters .button{
+		margin:0;
+	}
+}
+
+.result-source{
+	margin-top: 0;
+	margin-bottom: 12px;
+}
+
+.search-hero-art{
+	min-height: 150px;
+}
+
+.search-hero-art img{
+	width: min(100%,160px);
+}

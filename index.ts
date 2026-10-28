@@ -6,6 +6,7 @@
  */
 
 import { PetQueryConfig } from '#petquery/config.js';
+import { PetQueryLog } from '#petquery/log.js';
 import { PetQueryServer } from '#petquery/server.js';
 import { PetQueryServerAuth } from '#petquery/server/auth.js';
 import { PetQueryServerConfig } from '#petquery/server/config.js';
@@ -58,7 +59,10 @@ try{
 	const savedServerConfig = await serverServerConfig.load();
 	serverServerConfig.applyToServerConfig(serverConfig,savedServerConfig);
 }catch(error){
-	console.error('Failed to load server config:',error);
+	PetQueryLog.getInstance().error(
+		'Failed to load saved server config',
+		error
+	);
 }
 
 const auth = new PetQueryServerAuth(
@@ -99,7 +103,7 @@ function onSignal():void{
 }
 
 function onShutdownError(error:unknown):void{
-	console.error(error);
+	PetQueryLog.getInstance().error('Shutdown failed',error);
 	process.exit(1);
 }
 

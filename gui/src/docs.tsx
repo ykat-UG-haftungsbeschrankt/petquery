@@ -45,11 +45,6 @@ export function Docs():ReactElement{
 
 	return (
 		<Panel className="docs-page">
-			<div className="page-heading">
-				<div>
-					<h2>Documentation</h2>
-				</div>
-			</div>
 			<nav className="admin-nav" aria-label="Documentation sections">
 				<Button
 					type="button"

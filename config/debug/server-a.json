@@ -52,6 +52,17 @@
 			"max_file_size": 10485760
 		}
 	},
+	"logging": {
+		"level": "info",
+		"request": {
+			"enabled": true
+		},
+		"file": {
+			"path": "../../var/debug/server-a/petquery.log",
+			"max_size": 10485760,
+			"max_files": 5
+		}
+	},
 	"max_results_per_module": 10,
 	"max_results_total": 100,
 	"index": {

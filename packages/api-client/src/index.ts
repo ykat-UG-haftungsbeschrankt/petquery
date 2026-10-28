@@ -11,6 +11,7 @@ import type { PetQuerySchemaApiAuthUserType } from '#schema/api/auth/user.js';
 import type { PetQuerySchemaApiAuthUsersGetResponseType } from '#schema/api/auth/users/get/response.js';
 import type { PetQuerySchemaApiConfigGetResponseType } from '#schema/api/config/get/response.js';
 import type { PetQuerySchemaApiEnvelopeType } from '#schema/api/envelope.js';
+import type { PetQuerySchemaApiLogLevelGetResponseType } from '#schema/api/log/level/get/response.js';
 import type { PetQuerySchemaApiPetGetResponseType } from '#schema/api/pet/get/response.js';
 import type { PetQuerySchemaApiPetSearchResponseType } from '#schema/api/pet/search/response.js';
 import type { PetQuerySchemaServerDatabaseConfigEntryType } from '#schema/server/database/config/entry.js';
@@ -32,6 +33,8 @@ export type AuthUser = PetQuerySchemaApiAuthUserType;
 export type ManagedUser = PetQuerySchemaApiAuthManagedUserType;
 
 export type PetRecord = PetQuerySchemaServerDatabasePetEntryType;
+
+export type PetSighting = NonNullable<PetRecord['last_seen']>;
 
 export type SearchResult =
 	PetQuerySchemaApiPetSearchResponseType[number];
@@ -66,6 +69,15 @@ export type ConfigState =
 		active:ConfigValues;
 		saved:ConfigValues|null;
 	};
+
+export type LogLevel = 'error'|'warn'|'info'|'debug';
+
+export type LogEntry =
+	Omit<PetQuerySchemaApiLogLevelGetResponseType[number],'level'> & {
+		level:LogLevel;
+	};
+
+export type RequestLogEntry = LogEntry;
 
 export async function authenticate(token:utf8_t):Promise<void>{
 	await getConfig(token);
@@ -253,6 +265,42 @@ export async function updatePet(
 	return readSearchResult(data);
 }
 
+export async function reportPetSighting(
+	endpoint:utf8_t,
+	gid:utf8_t,
+	lastSeen:PetSighting
+):Promise<PetRecord>{
+	const base = new URL(endpoint);
+	if(('https:' !== base.protocol && 'http:' !== base.protocol)
+	|| '' !== base.username || '' !== base.password){
+		throw new Error('Unsupported PetQuery reporting endpoint');
+	}
+	const url = new URL(
+		`/api/pets/${encodeURIComponent(gid)}/sightings`,base
+	);
+	const response = await fetch(url,{
+		method:'POST',
+		credentials:'omit',
+		redirect:'error',
+		headers:{
+			accept:'application/json',
+			'content-type':'application/json'
+		},
+		body:JSON.stringify({last_seen:lastSeen})
+	});
+	const envelope = parseJson(await response.text());
+	if(!isRecord(envelope)){
+		throw new Error(`Invalid sighting response (HTTP ${response.status})`);
+	}
+	if(!response.ok || true !== envelope.success){
+		throw new Error(
+			readErrorMessage(envelope.error)
+			|| `Sighting failed (HTTP ${response.status})`
+		);
+	}
+	return readSearchResult(envelope.data);
+}
+
 export async function deletePet(
 	token:utf8_t,
 	gid:utf8_t
@@ -268,6 +316,12 @@ export async function deletePet(
 export async function ping():Promise<uuid_t>{
 	const data = await request('GET','/api/ping/get','',undefined);
 	return readStringFromRecord(data,'gid');
+}
+
+// Returns the public API endpoint this server advertises for its own pets.
+export async function getServerEndpoint():Promise<uri_t>{
+	const data = await request('GET','/api/ping/get','',undefined);
+	return readStringFromRecord(data,'uri');
 }
 
 export async function listServers():Promise<Array<ServerEntry>>{
@@ -384,6 +438,64 @@ export async function getConfig(token:utf8_t):Promise<ConfigState>{
 		saved:savedConfig,
 		plugins:readStringArray(data.plugins,'config plugins')
 	};
+}
+
+export async function getLogEntries(
+	token:utf8_t,
+	level?:LogLevel,
+	query:utf8_t = '',
+	limit:size_t = 100
+):Promise<Array<LogEntry>>{
+	const params = new URLSearchParams();
+	if(undefined !== level){
+		params.set('level',level);
+	}
+	if('' !== query){
+		params.set('query',query);
+	}
+	params.set('limit',String(limit));
+
+	const data = await request(
+		'GET',
+		`/api/log/level/get?${params.toString()}`,
+		token,
+		undefined
+	);
+	if(!Array.isArray(data)){
+		throw new Error('Invalid log entries response');
+	}
+	const entries:Array<LogEntry> = [];
+	for(const entry of data){
+		entries.push(readLogEntry(entry));
+	}
+	return entries;
+}
+
+export async function getRequestLogEntries(
+	token:utf8_t,
+	query:utf8_t = '',
+	limit:size_t = 100
+):Promise<Array<RequestLogEntry>>{
+	const params = new URLSearchParams();
+	if('' !== query){
+		params.set('query',query);
+	}
+	params.set('limit',String(limit));
+
+	const data = await request(
+		'GET',
+		`/api/log/request/get?${params.toString()}`,
+		token,
+		undefined
+	);
+	if(!Array.isArray(data)){
+		throw new Error('Invalid request log response');
+	}
+	const entries:Array<RequestLogEntry> = [];
+	for(const entry of data){
+		entries.push(readLogEntry(entry));
+	}
+	return entries;
 }
 
 // Saves values to the config file and returns them as the server stored
@@ -527,6 +639,13 @@ function isAuthLogin(
 		|| 'redirect' === value;
 }
 
+function isLogLevel(value:unknown):value is LogLevel{
+	return 'error' === value
+		|| 'warn' === value
+		|| 'info' === value
+		|| 'debug' === value;
+}
+
 function isUserGroup(
 	value:unknown
 ):value is PetQuerySchemaApiAuthUserType['group']{
@@ -560,11 +679,67 @@ function readSearchResult(value:unknown):SearchResult{
 		source:{
 			favicon:readString(source.favicon,'result favicon'),
 			url:readString(source.url,'result URL'),
-			name:readString(source.name,'result source name')
+			name:readString(source.name,'result source name'),
+			...(undefined === source.apiEndpoint ? {} : {
+				apiEndpoint:readString(
+					source.apiEndpoint,'reporting endpoint'
+				)
+			})
 		},
+		...(undefined === value.last_seen ? {} : {
+			last_seen:readPetSighting(value.last_seen)
+		}),
 		preview:readString(value.preview,'result preview'),
 		files:readStringArray(value.files,'result files'),
 		attributes
+	};
+}
+
+function readLogEntry(value:unknown):LogEntry{
+	if(!isRecord(value)){
+		throw new Error('Invalid log entry');
+	}
+	const timestamp = readString(value.timestamp,'log timestamp');
+	if(!Number.isFinite(Date.parse(timestamp))){
+		throw new Error('Invalid log timestamp');
+	}
+	if(!isLogLevel(value.level)){
+		throw new Error('Invalid log level');
+	}
+	return {
+		timestamp,
+		level:value.level,
+		message:readString(value.message,'log message')
+	};
+}
+
+function readPetSighting(value:unknown):PetSighting{
+	if(!isRecord(value)
+	|| !isRecord(value.location)
+	|| !isRecord(value.contact)){
+		throw new Error('Invalid last seen sighting');
+	}
+	const latitude = value.location.latitude;
+	const longitude = value.location.longitude;
+	if('number' !== typeof latitude || !Number.isFinite(latitude)
+	|| latitude < -90 || latitude > 90
+	|| 'number' !== typeof longitude || !Number.isFinite(longitude)
+	|| longitude < -180 || longitude > 180){
+		throw new Error('Invalid sighting coordinates');
+	}
+	const timestamp = readString(value.timestamp,'sighting timestamp');
+	if(!/^\d{4}-\d{2}-\d{2}T/i.test(timestamp)
+	|| !Number.isFinite(Date.parse(timestamp))){
+		throw new Error('Invalid sighting timestamp');
+	}
+	return {
+		timestamp,
+		location:{latitude,longitude},
+		contact:{
+			name:readString(value.contact.name,'sighting contact name'),
+			email:readString(value.contact.email,'sighting contact email'),
+			phone:readString(value.contact.phone,'sighting contact phone')
+		}
 	};
 }
 

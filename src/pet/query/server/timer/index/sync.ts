@@ -6,11 +6,11 @@
  */
 
 import { PetQueryAbortController } from '#petquery/abort.js';
+import { PetQueryLog } from '#petquery/log.js';
 import { PetQuerySchemaApiPingGetRequest } from '#schema/api/ping/get/request.js';
 import { PetQuerySchemaApiServerGetRequest } from '#schema/api/server/get/request.js';
 import { PetQueryServerDatabaseIndex } from '#petquery/server/database/index.js';
 import { PetQueryTimer } from '#petquery/timer.js';
-import util from 'node:util';
 
 import type { PetQueryDatabase } from '#petquery/database.js';
 
@@ -118,6 +118,6 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 	}
 
 	protected _report(message:utf8_t,error:unknown):void{
-		console.error(`${message}: ${util.inspect(error)}`);
+		PetQueryLog.getInstance().error(message,error);
 	}
 };

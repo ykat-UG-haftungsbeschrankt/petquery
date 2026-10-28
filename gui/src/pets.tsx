@@ -102,6 +102,9 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 		useState<Array<PetImageAttachment>>([]);
 	const [previewImageName,setPreviewImageName] =
 		useState<utf8_t|null>(null);
+	const [pendingEdit,setPendingEdit] = useState<utf8_t|null>(()=>{
+		return new URLSearchParams(window.location.search).get('edit');
+	});
 
 	const refresh = useCallback(async ():Promise<void>=>{
 		setPets(await listPets(props.token));
@@ -129,6 +132,21 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 			isDataImageUri(pet.preview) ? 'Saved preview image' : null
 		);
 	}
+
+	useEffect(()=>{
+		if(null === pendingEdit){
+			return;
+		}
+		const pet = pets.find((entry)=>{
+			return pendingEdit === entry.gid;
+		});
+		if(undefined === pet){
+			return;
+		}
+		setPendingEdit(null);
+		window.history.replaceState(null,'',window.location.pathname);
+		editPet(pet);
+	},[pets,pendingEdit]);
 
 	function setField(
 		field:'gid'|'name'|'species'|'owner_contact'|'notes'|'preview',

@@ -46,7 +46,8 @@
 				"type": "string",
 				"format": "date-time"
 			}
-		}
+		},
+		"additionalProperties": false
 	},
 	"title": "GET /api/server/get response",
 	"additionalProperties": false

@@ -5,9 +5,9 @@
  * free of charge, without warranty of any kind.
  */
 
+import { PetQueryLog } from '#petquery/log.js';
 import { PetQueryServerDatabaseSession } from '#petquery/server/database/session.js';
 import { PetQueryTimer } from '#petquery/timer.js';
-import util from 'node:util';
 
 import type { PetQueryDatabase } from '#petquery/database.js';
 
@@ -31,6 +31,9 @@ export class PetQueryServerIndexSync extends PetQueryTimer{
 	}
 
 	protected _onError(error:unknown):void{
-		console.error(util.inspect(error));
+		PetQueryLog.getInstance().error(
+			'Expired session cleanup failed',
+			error
+		);
 	}
 };

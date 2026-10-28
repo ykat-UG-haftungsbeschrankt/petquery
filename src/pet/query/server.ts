@@ -6,11 +6,13 @@
  */
 
 import { PetQueryDestructor } from '#petquery/destructor.js';
+import { PetQueryLog } from '#petquery/log.js';
 import { PetQueryPlugin } from '#petquery/plugin.js';
 import { PetQueryServerRequest } from '#petquery/server/request.js';
 import { PetQueryServerResponse } from '#petquery/server/response.js';
 import { default as Express } from 'express';
 import { default as ExpressFileUpload } from 'express-fileupload';
+import { default as Morgan } from 'morgan';
 import { default as NodeHttps } from 'node:https';
 
 import type { PetQueryConfigServerType } from '#petquery/config.js';
@@ -57,6 +59,12 @@ export class PetQueryServer extends PetQueryDestructor{
 		this._auth = auth;
 		this._petStore = petStore;
 		this._app = Express();
+		if(config.logging.request.enabled){
+			this._app.use(Morgan<Express.Request,Express.Response>(
+				this._formatRequestLog.bind(this),
+				{stream:{write:this._writeRequestLog.bind(this)}}
+			));
+		}
 		const jsonLimit = Math.ceil(upload.max_file_size * 4 / 3)
 			+ 256 * 1024;
 		this._app.use(Express.json({limit:jsonLimit}));
@@ -189,6 +197,36 @@ export class PetQueryServer extends PetQueryDestructor{
 		});
 	}
 
+	protected _formatRequestLog(
+		tokens:Morgan.TokenIndexer<
+			Express.Request,
+			Express.Response
+		>,
+		req:Express.Request,
+		res:Express.Response
+	):utf8_t{
+		const method = tokens.method(req,res) ?? '-';
+		const status = tokens.status(req,res) ?? '-';
+		const responseTime = tokens['response-time'](req,res) ?? '-';
+		const contentLength = tokens.res(
+			req,
+			res,
+			'content-length'
+		) ?? '-';
+		// req.path excludes query strings, which may contain search terms.
+		return [
+			method,
+			req.path,
+			status,
+			`${responseTime} ms`,
+			contentLength
+		].join(' ');
+	}
+
+	protected _writeRequestLog(message:utf8_t):void{
+		PetQueryLog.getInstance()._request(message.trimEnd());
+	}
+
 	all(
 		path:string|string[],
 		...handlers:PetQueryServerHandler[]
@@ -263,14 +301,14 @@ export class PetQueryServer extends PetQueryDestructor{
 	}
 
 	protected _onHttpListening():void{
-		console.log(
+		PetQueryLog.getInstance().info(
 			`Express App running at http://127.0.0.1:`
 			+`${this._config.http.port}/`
 		);
 	}
 
 	protected _onHttpsListening():void{
-		console.log(
+		PetQueryLog.getInstance().info(
 			`Express App running at https://127.0.0.1:`
 			+`${this._config.https.port}/`
 		);

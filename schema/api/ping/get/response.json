@@ -45,6 +45,6 @@
 			"format": "date-time"
 		}
 	},
-	"title": "GET /api/ping/get response",
-	"additionalProperties": false
+	"additionalProperties": false,
+	"title": "GET /api/ping/get response"
 }

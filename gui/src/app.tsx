@@ -21,6 +21,7 @@ import { Page as Framework7Page } from 'framework7-react';
 import { Panel } from '#gui/panel';
 import { Search } from '#gui/search';
 import { Toolbar } from 'framework7-react';
+import { toMessage } from '#gui/action';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { View } from 'framework7-react';
@@ -79,6 +80,12 @@ function pageUrl(page:Page,user:AuthUser|null):utf8_t{
 	return `${base}${page}`;
 }
 
+function isAuthenticationFailure(error:unknown):bool_t{
+	return error instanceof Error
+		&& (error.message.startsWith('HTTP 401')
+		|| error.message.startsWith('HTTP 403'));
+}
+
 export function App():ReactElement{
 	const [page,setPage] = useState<Page>(readPage);
 	const [providers,setProviders] = useState<Array<AuthProvider>>([]);
@@ -92,6 +99,7 @@ export function App():ReactElement{
 		const storedProvider =
 			sessionStorage.getItem(PROVIDER_KEY) ?? 'bearer';
 		let active = true;
+		let restoringBearer = false;
 		async function restoreSession():Promise<void>{
 			const auth = await getAuthProviders();
 			if(!active){
@@ -107,12 +115,14 @@ export function App():ReactElement{
 				return provider.name === storedProvider
 					&& 'bearer' === provider.login;
 			}) && '' !== stored){
+				restoringBearer = true;
 				const authenticated = await loginUser(
 					storedProvider,
 					'',
 					'',
 					stored
 				);
+				restoringBearer = false;
 				setToken(stored);
 				setUser({
 					username:'bearer',
@@ -123,11 +133,18 @@ export function App():ReactElement{
 				setUser(authenticated);
 			}
 		}
-		restoreSession().catch(()=>{
+		restoreSession().catch((error:unknown)=>{
 			if(active){
-				sessionStorage.removeItem(TOKEN_KEY);
-				sessionStorage.removeItem(PROVIDER_KEY);
-				setAuthError('Your saved session has expired.');
+				if(restoringBearer && isAuthenticationFailure(error)){
+					sessionStorage.removeItem(TOKEN_KEY);
+					sessionStorage.removeItem(PROVIDER_KEY);
+					setAuthError(
+						'Your saved bearer token was rejected. '
+						+'Please sign in again.'
+					);
+				}else{
+					setAuthError(toMessage(error));
+				}
 			}
 		}).finally(()=>{
 			if(active){
@@ -144,6 +161,13 @@ export function App():ReactElement{
 			window.history.pushState(null,'',pageUrl(next,user));
 			setPage(next);
 		}
+	}
+
+	function onEditPet(gid:utf8_t):void{
+		const url = `${import.meta.env.BASE_URL}admin/pets`
+			+`?edit=${encodeURIComponent(gid)}`;
+		window.history.pushState(null,'',url);
+		setPage('admin');
 	}
 
 	useEffect(()=>{
@@ -220,7 +244,7 @@ export function App():ReactElement{
 	if('docs' === page){
 		content = <Docs/>;
 	}else if('search' === page){
-		content = <Search token={token}/>;
+		content = <Search token={token} onEdit={onEditPet}/>;
 	}else if(checking){
 		content = (
 			<Panel className="login-card">

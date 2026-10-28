@@ -7,6 +7,7 @@
 
 import { PetQuerySchema } from '#petquery/schema.js';
 import { PetQuerySchemaApiServerPutResponse } from '#schema/api/server/put/response.js';
+import { PetQuerySchemaTypeServer } from '#schema/type/server.js';
 import { PetQueryServerRequestSchema } from '#petquery/server/request/schema.js';
 
 import type { PetQuerySchemaApiServerPutResponseType } from '#schema/api/server/put/response.js';
@@ -15,14 +16,8 @@ import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
-	gid:T.String({format:'uuid'}),
-	uri:T.String({format:'uri',maxLength:2048}),
-	adminContact:T.String({maxLength:1024}),
-	companyAddress:T.String({maxLength:4096}),
-	pingTimeMs:T.Integer({minimum:0}),
-	addedAt:T.String({format:'date-time'}),
-	updatedAt:T.String({format:'date-time'}),
-	lastPingAt:T.String({format:'date-time'})
+	...PetQuerySchemaTypeServer.properties,
+	uri:T.String({format:'uri',maxLength:2048})
 },{title:'PUT /api/server/put/:gid request'});
 
 const validator = PetQuerySchema.compile(schema);
