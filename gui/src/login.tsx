@@ -23,14 +23,12 @@ export type LoginProps = {
 		provider:utf8_t;
 		username:utf8_t;
 		password:utf8_t;
-		token:utf8_t;
 	})=>Promise<void>;
 };
 
 export function Login(props:LoginProps):ReactElement{
 	const {busy,error,run} = useAction();
 	const [providerName,setProviderName] = useState<utf8_t>('');
-	const [token,setToken] = useState<utf8_t>('');
 	const [username,setUsername] = useState<utf8_t>('');
 	const [password,setPassword] = useState<utf8_t>('');
 	const message = error ?? props.error;
@@ -56,19 +54,13 @@ export function Login(props:LoginProps):ReactElement{
 		const values = {
 			provider:provider.name,
 			username:username.trim(),
-			password,
-			token:token.trim()
+			password
 		};
-		if('bearer' === provider.login && '' === values.token){
-			return;
-		}
-		if('password' === provider.login
-		&& ('' === values.username || '' === values.password)){
+		if('' === values.username || '' === values.password){
 			return;
 		}
 		run(async ()=>{
 			await props.onLogin(values);
-			setToken('');
 			setUsername('');
 			setPassword('');
 		});
@@ -111,47 +103,31 @@ export function Login(props:LoginProps):ReactElement{
 							Continue to {provider.name}
 						</a>
 						: <form className="login-form" onSubmit={onSubmit}>
-							{'bearer' === provider?.login
-								? <>
-									<label htmlFor="login-token">Token</label>
-									<input
-										id="login-token"
-										type="password"
-										required
-										autoComplete="off"
-										value={token}
-										onChange={(event)=>{
-											setToken(event.target.value);
-										}}
-									/>
-								</>
-								: <>
-									<label htmlFor="login-username">
-										Username
-									</label>
-									<input
-										id="login-username"
-										required
-										autoComplete="username"
-										value={username}
-										onChange={(event)=>{
-											setUsername(event.target.value);
-										}}
-									/>
-									<label htmlFor="login-password">
-										Password
-									</label>
-									<input
-										id="login-password"
-										type="password"
-										required
-										autoComplete="current-password"
-										value={password}
-										onChange={(event)=>{
-											setPassword(event.target.value);
-										}}
-									/>
-								</>}
+							<label htmlFor="login-username">
+								Username
+							</label>
+							<input
+								id="login-username"
+								required
+								autoComplete="username"
+								value={username}
+								onChange={(event)=>{
+									setUsername(event.target.value);
+								}}
+							/>
+							<label htmlFor="login-password">
+								Password
+							</label>
+							<input
+								id="login-password"
+								type="password"
+								required
+								autoComplete="current-password"
+								value={password}
+								onChange={(event)=>{
+									setPassword(event.target.value);
+								}}
+							/>
 							<Framework7Button
 								type="submit"
 								disabled={busy}
@@ -166,9 +142,6 @@ export function Login(props:LoginProps):ReactElement{
 }
 
 function loginDescription(provider:AuthProvider):utf8_t{
-	if('bearer' === provider.login){
-		return 'Use a configured bearer token to continue.';
-	}
 	if('redirect' === provider.login){
 		return `Continue with ${provider.name}.`;
 	}

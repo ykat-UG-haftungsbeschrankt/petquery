@@ -52,6 +52,9 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		this.getServer().post(
 			'/api/pets/:gid/sightings',
 			this._disableCache.bind(this),
+			this._getApiAccessHandler(
+				'POST /api/pets/:gid/sightings'
+			),
 			PetQuerySchemaApiPetSightingPostRequest.getHandle(
 				this._handleSighting.bind(this)
 			)
@@ -59,6 +62,7 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		this.getServer().post(
 			'/api/pets/search',
 			this._disableCache.bind(this),
+			this._getApiAccessHandler('POST /api/pets/search'),
 			PetQuerySchemaApiPetSearchRequest.getHandle(
 				this._handleSearch.bind(this)
 			)
@@ -66,7 +70,10 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		this.getServer().get(
 			'/api/pets',
 			this._disableCache.bind(this),
-			this._getAccessGroupHandler(accessGroup),
+			this._getApiAccessHandler(
+				'GET /api/pets',
+				accessGroup
+			),
 			PetQuerySchemaApiPetGetRequest.getHandle(
 				this._handleList.bind(this)
 			)
@@ -74,7 +81,10 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		this.getServer().post(
 			'/api/pets',
 			this._disableCache.bind(this),
-			this._getAccessGroupHandler(accessGroup),
+			this._getApiAccessHandler(
+				'POST /api/pets',
+				accessGroup
+			),
 			PetQuerySchemaApiPetPostRequest.getHandle(
 				this._handleCreate.bind(this)
 			)
@@ -82,7 +92,10 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		this.getServer().get(
 			'/api/pets/:gid',
 			this._disableCache.bind(this),
-			this._getAccessGroupHandler(accessGroup),
+			this._getApiAccessHandler(
+				'GET /api/pets/:gid',
+				accessGroup
+			),
 			PetQuerySchemaApiPetGetEntryRequest.getHandle(
 				this._handleGet.bind(this)
 			)
@@ -90,7 +103,10 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		this.getServer().put(
 			'/api/pets/:gid',
 			this._disableCache.bind(this),
-			this._getAccessGroupHandler(accessGroup),
+			this._getApiAccessHandler(
+				'PUT /api/pets/:gid',
+				accessGroup
+			),
 			PetQuerySchemaApiPetPutRequest.getHandle(
 				this._handleUpdate.bind(this)
 			)
@@ -98,7 +114,10 @@ export class PetQueryServerRoutePet extends PetQueryServerRoute{
 		this.getServer().delete(
 			'/api/pets/:gid',
 			this._disableCache.bind(this),
-			this._getAccessGroupHandler(accessGroup),
+			this._getApiAccessHandler(
+				'DELETE /api/pets/:gid',
+				accessGroup
+			),
 			PetQuerySchemaApiPetDeleteRequest.getHandle(
 				this._handleDelete.bind(this)
 			)

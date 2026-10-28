@@ -1,34 +1,92 @@
-import { randomBytes } from 'node:crypto';
-import { spawn } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { createInterface } from 'node:readline/promises';
 import { createServer } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
+import { resolve } from 'node:path';
+import { spawn } from 'node:child_process';
 
 const servers = [
 	{
 		name:'server-a',
 		config:'config/debug/server-a.json',
-		endpoint:'http://127.0.0.1:50101',
-		tokenEnv:'PETQUERY_DEBUG_SERVER_A_TOKEN'
+		endpoint:'http://127.0.0.1:50101'
 	},
 	{
 		name:'server-b',
 		config:'config/debug/server-b.json',
-		endpoint:'http://127.0.0.1:50102',
-		tokenEnv:'PETQUERY_DEBUG_SERVER_B_TOKEN'
+		endpoint:'http://127.0.0.1:50102'
 	},
 	{
 		name:'server-c',
 		config:'config/debug/server-c.json',
-		endpoint:'http://127.0.0.1:50103',
-		tokenEnv:'PETQUERY_DEBUG_SERVER_C_TOKEN'
+		endpoint:'http://127.0.0.1:50103'
 	}
 ];
 
 const children = [];
-const tokens = new Map();
-let stopping = false;
+const apiClients = new Map();
+
+async function promptPassword(){
+	if(!process.stdin.isTTY
+	|| 'function' !== typeof process.stdin.setRawMode){
+		throw new Error('debug:multi requires an interactive terminal');
+	}
+	process.stdout.write('Admin password: ');
+	process.stdin.setRawMode(true);
+	process.stdin.resume();
+	return new Promise((resolvePassword,rejectPassword)=>{
+		let password = '';
+		function cleanup(){
+			process.stdin.setRawMode(false);
+			process.stdin.pause();
+			process.stdin.removeListener('data',onData);
+		}
+		function onData(chunk){
+			for(const character of chunk.toString('utf8')){
+				if('\u0003' === character){
+					cleanup();
+					rejectPassword(new Error('Password entry cancelled'));
+					return;
+				}
+				if('\r' === character || '\n' === character){
+					process.stdout.write('\n');
+					cleanup();
+					resolvePassword(password);
+					return;
+				}
+				if('\u007f' === character || '\b' === character){
+					password = password.slice(0,-1);
+					continue;
+				}
+				password += character;
+			}
+		}
+		process.stdin.on('data',onData);
+	});
+}
+
+async function promptAdminCredentials(){
+	const terminal = createInterface({
+		input:process.stdin,
+		output:process.stdout
+	});
+	let username;
+	try{
+		username = (await terminal.question(
+			'Admin username [admin]: '
+		)).trim();
+	}
+	finally{
+		terminal.close();
+	}
+	if('' === username){
+		username = 'admin';
+	}
+	const password = await promptPassword();
+	if('' === password){
+		throw new Error('Admin password is required');
+	}
+	return {username,password};
+}
 
 async function assertPortFree(port){
 	const server = createServer();
@@ -46,69 +104,64 @@ async function assertPortFree(port){
 	});
 }
 
-async function getToken(server){
-	const path = resolve('var/debug',server.name,'bearer-token');
-	await mkdir(dirname(path),{recursive:true,mode:0o700});
-	try{
-		const token = (await readFile(path,'utf8')).trim();
-		if(!/^[0-9a-f]{64}$/.test(token)){
-			throw new Error(`Invalid saved bearer token for ${server.name}`);
-		}
-		return token;
-	}
-	catch(error){
-		if('object' !== typeof error || null === error
-		|| !('code' in error) || 'ENOENT' !== error.code){
-			throw error;
-		}
-	}
-	const token = randomBytes(32).toString('hex');
-	await writeFile(path,`${token}\n`,{flag:'wx',mode:0o600});
-	return token;
-}
-
 async function startServer(server){
-	const token = await getToken(server);
-	tokens.set(server.name,token);
 	const child = spawn(process.execPath,[
 		resolve('dist/index.js'),
 		'--config',
 		resolve(server.config)
 	],{
 		cwd:process.cwd(),
-		env:{
-			...process.env,
-			[server.tokenEnv]:token
-		},
+		env:process.env,
 		stdio:'inherit'
 	});
 	children.push({server,child});
 }
 
-async function getJson(url,options = {}){
-	const response = await fetch(url,{
+async function getEnvelope(
+	url,
+	options = {}
+){
+	const init = {
 		...options,
 		signal:AbortSignal.timeout(2000)
-	});
-	const value = await response.json();
+	};
+	const response = await fetch(url,init);
+	const envelope = await response.json();
 	if(!response.ok){
 		throw new Error(`HTTP ${response.status} for ${url}`);
 	}
-	return value;
+	if('object' !== typeof envelope || null === envelope
+	|| Array.isArray(envelope)){
+		throw new Error(`Invalid response from ${url}`);
+	}
+	if(true !== envelope.success){
+		const message = Array.isArray(envelope.error)
+			? envelope.error.join('\n')
+			: '';
+		throw new Error(
+			'' === message ? `Request failed for ${url}` : message
+		);
+	}
+	return {response,envelope};
 }
 
-async function waitForServer(server){
+async function getServerUid(server){
+	const result = await getEnvelope(`${server.endpoint}/api/ping/get`);
+	const data = result.envelope.data;
+	if('object' !== typeof data || null === data
+	|| Array.isArray(data) || 'string' !== typeof data.gid){
+		throw new Error(`Invalid ping response from ${server.name}`);
+	}
+	return data.gid;
+}
+
+async function waitForServer(
+	server
+){
 	let lastError;
 	for(let attempt = 0; attempt < 60; attempt++){
 		try{
-			const envelope = await getJson(
-				`${server.endpoint}/api/ping/get`
-			);
-			if(true !== envelope.success
-			|| 'string' !== typeof envelope.data?.gid){
-				throw new Error(`Invalid ping response from ${server.name}`);
-			}
-			return envelope.data.gid;
+			return await getServerUid(server);
 		}
 		catch(error){
 			lastError = error;
@@ -120,25 +173,135 @@ async function waitForServer(server){
 	});
 }
 
-async function registerPeer(target,peer){
-	const token = tokens.get(target.name);
-	if(undefined === token){
-		throw new Error(`Missing token for ${target.name}`);
+async function getAdminSession(
+	server,
+	credentials
+){
+	const modeResponse = await getEnvelope(
+		`${server.endpoint}/auth/mode`
+	);
+	const modeData = modeResponse.envelope.data;
+	if('object' !== typeof modeData || null === modeData
+	|| Array.isArray(modeData)
+	|| 'boolean' !== typeof modeData.setupRequired){
+		throw new Error(`Invalid auth mode response from ${server.name}`);
+	}
+	const setupRequired = modeData.setupRequired;
+	const path = setupRequired
+		? '/auth/setup'
+		: '/auth/login';
+	const body = setupRequired
+		? credentials
+		: {...credentials,provider:'lmdb'};
+	const result = await getEnvelope(`${server.endpoint}${path}`,{
+		method:'POST',
+		headers:{
+			accept:'application/json',
+			'content-type':'application/json',
+			origin:server.endpoint
+		},
+		body:JSON.stringify(body)
+	});
+	const setCookie = result.response.headers.get('set-cookie');
+	if(null === setCookie){
+		throw new Error(`No admin session cookie from ${server.name}`);
+	}
+	const separator = setCookie.indexOf(';');
+	const cookie = 0 > separator
+		? setCookie
+		: setCookie.slice(0,separator);
+	if('' === cookie){
+		throw new Error(`Empty admin session cookie from ${server.name}`);
+	}
+	return cookie;
+}
+
+async function createPeerApiClient(
+	server,
+	cookie
+){
+	const result = await getEnvelope(
+		`${server.endpoint}/auth/api-clients`,
+		{
+			method:'POST',
+			headers:{
+				accept:'application/json',
+				'content-type':'application/json',
+				cookie
+			},
+			body:JSON.stringify({
+				name:'debug-peer-registration',
+				allowedIps:['127.0.0.1'],
+				permissions:['PUT /api/server/put/:gid']
+			})
+		}
+	);
+	const data = result.envelope.data;
+	if('object' !== typeof data || null === data
+	|| Array.isArray(data)){
+		throw new Error(`Invalid API client response from ${server.name}`);
+	}
+	const client = data.client;
+	const token = data.token;
+	if('object' !== typeof client || null === client
+	|| Array.isArray(client) || 'string' !== typeof client.id
+	|| 'string' !== typeof token){
+		throw new Error(`Invalid API client response from ${server.name}`);
+	}
+	apiClients.set(server.name,{
+		server,
+		id:client.id,
+		token,
+		cookie
+	});
+}
+
+async function registerPeer(
+	target,
+	peer
+){
+	const client = apiClients.get(target.name);
+	if(undefined === client){
+		throw new Error(`Missing API client for ${target.name}`);
 	}
 	const path = `${target.endpoint}/api/server/put/`
 		+encodeURIComponent(peer.gid);
-	const envelope = await getJson(path,{
+	await getEnvelope(path,{
 		method:'PUT',
 		headers:{
-			authorization:`Bearer ${token}`,
+			authorization:`Bearer ${client.token}`,
 			'content-type':'application/json'
 		},
 		body:JSON.stringify({uri:peer.endpoint})
 	});
-	if(true !== envelope.success){
-		throw new Error(
-			`Could not register ${peer.name} with ${target.name}`
-		);
+}
+
+async function revokeApiClient(
+	client
+){
+	const path = `${client.server.endpoint}/auth/api-clients/`
+		+encodeURIComponent(client.id);
+	await getEnvelope(path,{
+		method:'DELETE',
+		headers:{cookie:client.cookie}
+	});
+}
+
+async function revokeApiClients(){
+	const pending = [];
+	for(const client of apiClients.values()){
+		pending.push(revokeApiClient(client));
+	}
+	const results = await Promise.allSettled(pending);
+	const errors = [];
+	for(const result of results){
+		if('rejected' === result.status){
+			errors.push(result.reason);
+		}
+	}
+	apiClients.clear();
+	if(0 < errors.length){
+		throw new AggregateError(errors,'Failed to revoke debug API clients');
 	}
 }
 
@@ -167,7 +330,6 @@ function watchChildExits(){
 }
 
 async function closeChildren(){
-	stopping = true;
 	for(const {child} of children){
 		if(null === child.exitCode && null === child.signalCode){
 			child.kill('SIGTERM');
@@ -179,7 +341,9 @@ async function closeChildren(){
 				resolveClose();
 				return;
 			}
-			child.once('close',resolveClose);
+			child.once('close',()=>{
+				resolveClose();
+			});
 		});
 	}));
 }
@@ -190,6 +354,7 @@ async function main(){
 		const port = Number(url.port);
 		await assertPortFree(port);
 	}
+	const credentials = await promptAdminCredentials();
 	for(const server of servers){
 		await startServer(server);
 	}
@@ -205,7 +370,7 @@ async function main(){
 	]);
 	if('ready' !== first.type){
 		if('exit' === first.type){
-			throw new Error(`A debug server exited unexpectedly`);
+			throw new Error('A debug server exited unexpectedly');
 		}
 		return;
 	}
@@ -216,6 +381,10 @@ async function main(){
 		throw new Error(
 			'Each debug server must have an isolated database and UUID'
 		);
+	}
+	for(const entry of first.entries){
+		const cookie = await getAdminSession(entry.server,credentials);
+		await createPeerApiClient(entry.server,cookie);
 	}
 	for(const target of first.entries){
 		for(const peer of first.entries){
@@ -230,7 +399,6 @@ async function main(){
 	}
 	for(const {server} of children){
 		console.log(`${server.name}: ${server.endpoint}`);
-		console.log(`  bearer token: ${tokens.get(server.name)}`);
 	}
 	const outcome = await Promise.race([
 		signal.then((value)=>({type:'signal',value})),
@@ -249,5 +417,10 @@ catch(error){
 	process.exitCode = 1;
 }
 finally{
-	await closeChildren();
+	try{
+		await revokeApiClients();
+	}
+	finally{
+		await closeChildren();
+	}
 }

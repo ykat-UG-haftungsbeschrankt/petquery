@@ -5,6 +5,7 @@
  * free of charge, without warranty of any kind.
  */
 
+import { ApiClients } from '#gui/api-clients';
 import { Button } from 'framework7-react';
 import { Config } from '#gui/config';
 import { Logs } from '#gui/logs';
@@ -19,9 +20,11 @@ import type { AuthProvider } from '@petquery/api-client';
 import type { ReactElement } from 'react';
 
 type AdminPage =
-	'home'|'config'|'logs'|'pets'|'request-logs'|'servers'|'users';
+	'home'|'api-clients'|'config'|'logs'|'pets'|'request-logs'
+		|'servers'|'users';
 
 const ADMIN_PAGES:Array<{page:AdminPage;label:utf8_t}> = [
+	{page:'api-clients',label:'API clients'},
 	{page:'config',label:'Config'},
 	{page:'logs',label:'Logs'},
 	{page:'request-logs',label:'Request logs'},
@@ -43,6 +46,7 @@ function readPage(group:'admin'|'user'):AdminPage{
 			return 'user' === group ? 'pets' : 'request-logs';
 		}
 		if('config' === parts[1]
+		|| 'api-clients' === parts[1]
 		|| 'logs' === parts[1]
 		|| 'servers' === parts[1]
 		|| 'users' === parts[1]
@@ -55,6 +59,7 @@ function readPage(group:'admin'|'user'):AdminPage{
 		return 'home';
 	}
 	if('config' === parts[0]
+	|| 'api-clients' === parts[0]
 	|| 'logs' === parts[0]
 	|| 'servers' === parts[0]
 	|| 'users' === parts[0]
@@ -107,7 +112,9 @@ export function Admin(props:{
 	}
 
 	let content:ReactElement|null = null;
-	if('config' === page){
+	if('api-clients' === page){
+		content = <ApiClients token={props.token}/>;
+	}else if('config' === page){
 		content = <Config token={props.token}/>;
 	}else if('logs' === page){
 		content = <Logs token={props.token}/>;

@@ -53,7 +53,7 @@ export class PetQueryServerAuthPluginLmdb extends PetQueryServerAuthPlugin{
 		return 'lmdb';
 	}
 
-	getLoginType():'bearer'|'password'|'redirect'{
+	getLoginType():'password'|'redirect'{
 		return 'password';
 	}
 
@@ -163,6 +163,58 @@ export class PetQueryServerAuthPluginLmdb extends PetQueryServerAuthPlugin{
 		right:PetQueryServerAuthManagedUser
 	):int_t{
 		return left.username.localeCompare(right.username);
+	}
+
+	override async _isInitialSetupRequired():Promise<bool_t>{
+		this._assertNotDestroyed();
+		const database = this._database.getDbAuth();
+		const marker = 'bootstrap:admin:lmdb:complete';
+		const completed = await database.serverAuthGet(marker);
+		this._assertNotDestroyed();
+		if(undefined !== completed){
+			if('true' !== completed){
+				throw new Error('Invalid initial setup marker');
+			}
+			return false;
+		}
+
+		const entries = await database.serverAuthGetEntries();
+		this._assertNotDestroyed();
+		for(const [key,value] of entries){
+			if(!key.startsWith('user:')){
+				continue;
+			}
+			const user = this._parseLocalUser(value);
+			if('admin' === user.group){
+				await database.serverAuthPut(marker,'true');
+				this._assertNotDestroyed();
+				return false;
+			}
+		}
+		return true;
+	}
+
+	override async _createInitialAdmin(
+		values:PetQueryServerAuthCreateUser
+	):Promise<PetQueryServerAuthUser>{
+		this._assertNotDestroyed();
+		if('admin' !== values.group){
+			throw new Error('Initial user must be an administrator');
+		}
+		if(!await this._isInitialSetupRequired()){
+			throw new Error('Initial admin setup is already complete');
+		}
+		const user = await this.createUser(values);
+		this._assertNotDestroyed();
+		const database = this._database.getDbAuth();
+		await database.serverAuthPut('bootstrap:admin:lmdb:complete','true');
+		this._assertNotDestroyed();
+		return {
+			username:user.username,
+			displayName:user.displayName,
+			group:user.group,
+			provider:user.provider
+		};
 	}
 
 	protected async _getLocalUser(

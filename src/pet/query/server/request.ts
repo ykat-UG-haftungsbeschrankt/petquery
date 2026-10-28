@@ -13,6 +13,9 @@ import type { UploadedFile } from 'express-fileupload';
 import type { default as Express } from 'express';
 
 export class PetQueryServerRequest{
+	protected static readonly _authenticatedUsers:
+		WeakMap<Express.Request,PetQueryServerAuthUser> = new WeakMap();
+
 	protected readonly _request:Express.Request;
 
 	readonly params:Express.Request['params'];
@@ -22,6 +25,7 @@ export class PetQueryServerRequest{
 	readonly headers:Express.Request['headers'];
 	readonly path:utf8_t;
 	readonly originalUrl:utf8_t;
+	readonly ip:ip_t;
 	petQueryUser?:PetQueryServerAuthUser;
 
 	constructor(request:Express.Request){
@@ -33,6 +37,9 @@ export class PetQueryServerRequest{
 		this.headers = request.headers;
 		this.path = request.path;
 		this.originalUrl = request.originalUrl;
+		this.ip = request.ip ?? '0.0.0.0';
+		this.petQueryUser =
+			PetQueryServerRequest._authenticatedUsers.get(request);
 	}
 
 	async _authenticateUser(
@@ -45,7 +52,7 @@ export class PetQueryServerRequest{
 			res.sendAuthUnauthorizedError('Authentication required');
 			return;
 		}
-		this.petQueryUser = user;
+		this._setAuthenticatedUser(user);
 		next();
 	}
 
@@ -63,8 +70,16 @@ export class PetQueryServerRequest{
 			res.sendAuthForbiddenError('Admin access required');
 			return;
 		}
-		this.petQueryUser = user;
+		this._setAuthenticatedUser(user);
 		next();
+	}
+
+	_setAuthenticatedUser(user:PetQueryServerAuthUser):void{
+		this.petQueryUser = user;
+		PetQueryServerRequest._authenticatedUsers.set(
+			this._request,
+			user
+		);
 	}
 
 	getHandlerArgs():json_t{

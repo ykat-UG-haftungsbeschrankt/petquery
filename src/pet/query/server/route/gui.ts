@@ -14,8 +14,8 @@ import type { PetQueryServerRequest } from '#petquery/server/request.js';
 import type { PetQueryServerResponse } from '#petquery/server/response.js';
 import type { ServerResponse } from 'node:http';
 
-// Serves the React GUI built from gui/ at /gui. Pages are public;
-// the GUI sends a bearer token to the authenticated API routes.
+// Serves the React GUI built from gui/ at /gui. Protected pages and APIs
+// require an authenticated admin or user session.
 export class PetQueryServerRouteGui extends PetQueryServerRoute{
 	protected readonly _root:filename_t;
 
@@ -86,6 +86,12 @@ export class PetQueryServerRouteGui extends PetQueryServerRoute{
 		}
 		const section = this._getAdminSection(req.path);
 		if(null === section || 'search' === section || 'docs' === section){
+			next();
+			return;
+		}
+		const server = this.getServer();
+		const auth = server.getAuth();
+		if(await auth._isInitialSetupRequired()){
 			next();
 			return;
 		}

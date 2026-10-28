@@ -9,6 +9,14 @@
 // are not written in TypeScript. Run with `npm run build:schema` from the
 // repository root; the .ts files are the source of truth.
 
+import { PetQuerySchemaApiAuthApiClientsDeleteRequest } from '#schema/api/auth/api-clients/delete/request.js';
+import { PetQuerySchemaApiAuthApiClientsDeleteResponse } from '#schema/api/auth/api-clients/delete/response.js';
+import { PetQuerySchemaApiAuthApiClientsGetRequest } from '#schema/api/auth/api-clients/get/request.js';
+import { PetQuerySchemaApiAuthApiClientsGetResponse } from '#schema/api/auth/api-clients/get/response.js';
+import { PetQuerySchemaApiAuthApiClientsPostRequest } from '#schema/api/auth/api-clients/post/request.js';
+import { PetQuerySchemaApiAuthApiClientsPostResponse } from '#schema/api/auth/api-clients/post/response.js';
+import { PetQuerySchemaApiAuthApiClientsPutRequest } from '#schema/api/auth/api-clients/put/request.js';
+import { PetQuerySchemaApiAuthApiClientsPutResponse } from '#schema/api/auth/api-clients/put/response.js';
 import { PetQuerySchemaApiAuthLoginPostRequest } from '#schema/api/auth/login/post/request.js';
 import { PetQuerySchemaApiAuthLoginPostResponse } from '#schema/api/auth/login/post/response.js';
 import { PetQuerySchemaApiAuthLogoutPostRequest } from '#schema/api/auth/logout/post/request.js';
@@ -21,6 +29,8 @@ import { PetQuerySchemaApiAuthOidcLoginGetRequest } from '#schema/api/auth/oidc/
 import { PetQuerySchemaApiAuthOidcLoginGetResponse } from '#schema/api/auth/oidc/login/get/response.js';
 import { PetQuerySchemaApiAuthSessionGetRequest } from '#schema/api/auth/session/get/request.js';
 import { PetQuerySchemaApiAuthSessionGetResponse } from '#schema/api/auth/session/get/response.js';
+import { PetQuerySchemaApiAuthSetupPostRequest } from '#schema/api/auth/setup/post/request.js';
+import { PetQuerySchemaApiAuthSetupPostResponse } from '#schema/api/auth/setup/post/response.js';
 import { PetQuerySchemaApiAuthUsersDeleteRequest } from '#schema/api/auth/users/delete/request.js';
 import { PetQuerySchemaApiAuthUsersDeleteResponse } from '#schema/api/auth/users/delete/response.js';
 import { PetQuerySchemaApiAuthUsersGetRequest } from '#schema/api/auth/users/get/request.js';
@@ -65,6 +75,38 @@ import type { PetQuerySchemaType } from '#petquery/schema.js';
 // Error responses of every route are described by schema/error.json.
 const schemas:Array<[utf8_t,PetQuerySchemaType]> = [
 	[
+		'schema/api/auth/api-clients/get/request.json',
+		PetQuerySchemaApiAuthApiClientsGetRequest.getSchema()
+	],
+	[
+		'schema/api/auth/api-clients/get/response.json',
+		PetQuerySchemaApiAuthApiClientsGetResponse.getSchema()
+	],
+	[
+		'schema/api/auth/api-clients/post/request.json',
+		PetQuerySchemaApiAuthApiClientsPostRequest.getSchema()
+	],
+	[
+		'schema/api/auth/api-clients/post/response.json',
+		PetQuerySchemaApiAuthApiClientsPostResponse.getSchema()
+	],
+	[
+		'schema/api/auth/api-clients/put/request.json',
+		PetQuerySchemaApiAuthApiClientsPutRequest.getSchema()
+	],
+	[
+		'schema/api/auth/api-clients/put/response.json',
+		PetQuerySchemaApiAuthApiClientsPutResponse.getSchema()
+	],
+	[
+		'schema/api/auth/api-clients/delete/request.json',
+		PetQuerySchemaApiAuthApiClientsDeleteRequest.getSchema()
+	],
+	[
+		'schema/api/auth/api-clients/delete/response.json',
+		PetQuerySchemaApiAuthApiClientsDeleteResponse.getSchema()
+	],
+	[
 		'schema/api/pet/sighting/post/request.json',
 		PetQuerySchemaApiPetSightingPostRequest.getSchema()
 	],
@@ -91,6 +133,14 @@ const schemas:Array<[utf8_t,PetQuerySchemaType]> = [
 	[
 		'schema/api/auth/session/get/response.json',
 		PetQuerySchemaApiAuthSessionGetResponse.getSchema()
+	],
+	[
+		'schema/api/auth/setup/post/request.json',
+		PetQuerySchemaApiAuthSetupPostRequest.getSchema()
+	],
+	[
+		'schema/api/auth/setup/post/response.json',
+		PetQuerySchemaApiAuthSetupPostResponse.getSchema()
 	],
 	[
 		'schema/api/auth/login/post/request.json',

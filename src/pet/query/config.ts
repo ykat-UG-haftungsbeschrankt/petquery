@@ -13,6 +13,7 @@ import { PetQueryDatabasePostgresql } from '#petquery/database/postgresql.js';
 import { PetQueryDatabaseSessionLmdb } from '#petquery/database/session/lmdb.js';
 import { PetQueryDatabase } from '#petquery/database.js';
 import { PetQueryDatabaseEx } from '#petquery/database.js';
+import { PetQueryIp } from '#petquery/ip.js';
 import { PetQueryLog } from '#petquery/log.js';
 import { PetQueryLogLevel } from '#petquery/log/level.js';
 import { PetQuerySchema } from '#petquery/schema.js';
@@ -25,17 +26,9 @@ import fileUpload from 'express-fileupload';
 
 import type { PetQueryLogConfig } from '#petquery/log.js';
 import type { PetQueryPluginConfig } from '#petquery/plugin.js';
-import type { PetQueryServerRequest } from '#petquery/server/request.js';
-import type { PetQueryServerResponse } from '#petquery/server/response.js';
 import type { PetQuerySchemaDatabaseConfigLmdbType } from '#schema/database/config/lmdb.js';
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 import type { ServerOptions } from 'node:https';
-
-export type PetQueryConfigAuthenticate = (
-	req:PetQueryServerRequest,
-	res:PetQueryServerResponse,
-	next:()=>void
-)=>void;
 
 export type PetQueryConfigServerType = {
 	api:{endpoint:uri_t};
@@ -45,6 +38,7 @@ export type PetQueryConfigServerType = {
 		host:utf8_t;
 		port:port_t;
 		enabled:bool_t;
+		trusted_proxies:Array<utf8_t>;
 	};
 	https:{
 		host:utf8_t;
@@ -56,7 +50,6 @@ export type PetQueryConfigServerType = {
 		mode:utf8_t;
 		providers:Array<utf8_t>;
 		plugin_options:Record<utf8_t,json_t>;
-		bearer:Set<utf8_t>;
 		session:{
 			cookie_name:utf8_t;
 			max_age:milliseconds_t;
@@ -106,7 +99,6 @@ export type PetQueryConfigServerType = {
 		api:{
 			plugins:Set<utf8_t>;
 			enabled:bool_t;
-			authenticate:PetQueryConfigAuthenticate;
 		};
 		'/':{enabled:bool_t};
 		gui:{
@@ -122,9 +114,6 @@ export type PetQueryConfigType = {
 };
 
 const T = PetQuerySchema.type;
-const bearerValidator = PetQuerySchema.compile(
-	T.String({pattern:'^[\\x21-\\x7e]{16,256}$'})
-);
 const configSchema = T.Object({
 	api:T.Object({
 		endpoint:T.String({format:'uri'})
@@ -134,7 +123,11 @@ const configSchema = T.Object({
 	http:T.Object({
 		host:T.Optional(T.String({minLength:1,maxLength:255})),
 		port:T.Integer({minimum:1,maximum:65535}),
-		enabled:T.Boolean()
+		enabled:T.Boolean(),
+		trusted_proxies:T.Optional(T.Array(
+			T.String({minLength:1,maxLength:64}),
+			{maxItems:64,uniqueItems:true}
+		))
 	},{additionalProperties:false}),
 	https:T.Object({
 		host:T.Optional(T.String({minLength:1,maxLength:255})),
@@ -251,28 +244,6 @@ type PetQueryConfigFileType =
 
 const configValidator = PetQuerySchema.compile(configSchema);
 
-function _createAuthenticate(
-	bearer:Set<utf8_t>
-):PetQueryConfigAuthenticate{
-	return (
-		req:PetQueryServerRequest,
-		res:PetQueryServerResponse,
-		next:()=>void
-	):void=>{
-		const value = req.headers.authorization;
-		const parts = 'string' === typeof value ? value.split(' ') : [];
-		const token = 2 === parts.length
-			&& 'bearer' === parts[0]?.toLowerCase()
-			? parts[1]
-			: undefined;
-		if(undefined === token || !bearer.has(token)){
-			res.sendAuthUnauthorizedError('Invalid bearer token');
-			return;
-		}
-		next();
-	};
-}
-
 function _createDatabase(
 	config:PetQueryConfigFileType['database'],
 	configDirectory:filename_t,
@@ -309,33 +280,13 @@ function _createServerConfig(
 	config:PetQueryConfigFileType,
 	configDirectory:filename_t
 ):PetQueryConfigServerType{
-	const bearer = new Set<utf8_t>();
-	const literalBearer = config.authenticate.bearer;
-	const bearerEnv = config.authenticate.bearer_env;
-	if(undefined !== literalBearer && undefined !== bearerEnv){
+	if(undefined !== config.authenticate.bearer
+	|| undefined !== config.authenticate.bearer_env){
 		throw new Error(
-			'Configure either authenticate.bearer or authenticate.bearer_env'
+			'Static bearer tokens are no longer supported. Remove '
+			+'authenticate.bearer and authenticate.bearer_env, then create '
+			+'API clients in the admin GUI.'
 		);
-	}
-	if(undefined === literalBearer && undefined === bearerEnv){
-		throw new Error(
-			'Configure authenticate.bearer or authenticate.bearer_env'
-		);
-	}
-	if(undefined !== literalBearer){
-		for(const token of literalBearer){
-			bearer.add(token);
-		}
-	}else{
-		const token = undefined === bearerEnv
-			? undefined
-			: process.env[bearerEnv];
-		if(undefined === token){
-			throw new Error(
-				`Environment variable "${bearerEnv}" is not set`
-			);
-		}
-		bearer.add(PetQuerySchema.parse(bearerValidator,token));
 	}
 
 	const certificate:ServerOptions = {};
@@ -349,6 +300,9 @@ function _createServerConfig(
 		abortOnLimit:true,
 		useTempFiles:false
 	};
+	const trustedProxies = PetQueryIp.validateTrustedProxies(
+		config.http.trusted_proxies ?? []
+	);
 	const aiSearchPath = resolve(
 		configDirectory,
 		config.ai_search_path
@@ -376,7 +330,8 @@ function _createServerConfig(
 		http:{
 			host:config.http.host ?? '0.0.0.0',
 			port:config.http.port,
-			enabled:config.http.enabled
+			enabled:config.http.enabled,
+			trusted_proxies:trustedProxies
 		},
 		https:{
 			host:config.https.host ?? '0.0.0.0',
@@ -388,7 +343,6 @@ function _createServerConfig(
 			mode:config.authenticate.mode,
 			providers:config.authenticate.providers,
 			plugin_options:config.authenticate.plugin_options,
-			bearer,
 			session:config.authenticate.session,
 			lmdb:config.authenticate.lmdb,
 			ldap:config.authenticate.ldap,
@@ -413,8 +367,7 @@ function _createServerConfig(
 		route:{
 			api:{
 				plugins:new Set(config.route.api.plugins),
-				enabled:config.route.api.enabled,
-				authenticate:_createAuthenticate(bearer)
+				enabled:config.route.api.enabled
 			},
 			'/':config.route['/'],
 			gui:{

@@ -74,7 +74,7 @@ export class PetQueryServerAuthPluginOidc extends PetQueryServerAuthPlugin{
 		return 'oidc';
 	}
 
-	getLoginType():'bearer'|'password'|'redirect'{
+	getLoginType():'password'|'redirect'{
 		return 'redirect';
 	}
 

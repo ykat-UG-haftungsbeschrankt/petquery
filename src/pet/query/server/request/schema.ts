@@ -20,7 +20,7 @@ import type { PetQueryServerResponseSchema } from '#petquery/server/response/sch
 
 export abstract class PetQueryServerRequestSchema<
 	 T_REQUEST
-	,T_RESPONSE
+	,T_RESPONSE extends json_t
 > extends PetQuerySingleton{
 	readonly schema:PetQuerySchemaType;
 

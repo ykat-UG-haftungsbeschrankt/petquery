@@ -19,7 +19,7 @@ export abstract class PetQueryServerAuthPlugin{
 	}
 
 	abstract getName():utf8_t;
-	abstract getLoginType():'bearer'|'password'|'redirect';
+	abstract getLoginType():'password'|'redirect';
 	abstract login(
 		req:PetQueryServerRequest
 	):Promise<PetQueryServerAuthUser>;
@@ -33,6 +33,18 @@ export abstract class PetQueryServerAuthPlugin{
 	):Promise<PetQueryServerAuthUser|null>{
 		this._assertNotDestroyed();
 		return null;
+	}
+
+	async _isInitialSetupRequired():Promise<bool_t>{
+		this._assertNotDestroyed();
+		return false;
+	}
+
+	async _createInitialAdmin(
+		UNUSED_values:PetQueryServerAuthCreateUser
+	):Promise<PetQueryServerAuthUser>{
+		this._assertNotDestroyed();
+		throw new Error('Initial admin setup is unsupported');
 	}
 
 	supportsUserManagement():bool_t{

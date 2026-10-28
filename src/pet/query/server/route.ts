@@ -6,6 +6,7 @@
  */
 
 import type { NextFunction } from 'express';
+import type { PetQuerySchemaApiAuthApiClientPermissionType } from '#schema/api/auth/api-client.js';
 import type { PetQueryServer } from '#petquery/server.js';
 import type { PetQueryServerRequest } from '#petquery/server/request.js';
 import type { PetQueryServerResponse } from '#petquery/server/response.js';
@@ -114,6 +115,54 @@ export abstract class PetQueryServerRoute{
 			default:
 				throw new Error(`Unknown authentication group: ${group}`);
 		}
+	}
+
+	protected _getApiAccessHandler(
+		permission:PetQuerySchemaApiAuthApiClientPermissionType,
+		group?:PetQueryServerRouteAccessGroup
+	):PetQueryServerHandler{
+		return this._authenticateApiAccess.bind(this,permission,group);
+	}
+
+	protected async _authenticateApiAccess(
+		permission:PetQuerySchemaApiAuthApiClientPermissionType,
+		group:PetQueryServerRouteAccessGroup|undefined,
+		req:PetQueryServerRequest,
+		res:PetQueryServerResponse,
+		next:PetQueryServerNext
+	):Promise<void>{
+		const server = this.getServer();
+		const auth = server.getAuth();
+		const user = await auth.authenticate(req);
+		if(null !== user){
+			if(PetQueryServerRouteAccessGroup.Admin === group
+			&& 'admin' !== user.group){
+				res.sendAuthForbiddenError('Admin access required');
+				return;
+			}
+			req._setAuthenticatedUser(user);
+			next();
+			return;
+		}
+		if(undefined === req.headers.authorization
+		&& undefined === group){
+			next();
+			return;
+		}
+		const result = await auth._authenticateApiClient(req,permission);
+		if('authenticated' === result){
+			next();
+			return;
+		}
+		if('unauthorized' === result){
+			res.sendAuthUnauthorizedError(
+				'Valid API-client bearer token required'
+			);
+			return;
+		}
+		res.sendAuthForbiddenError(
+			'API-client IP or API permission is not allowed'
+		);
 	}
 
 	protected _wrap(

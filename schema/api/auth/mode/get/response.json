@@ -3,11 +3,15 @@
 	"type": "object",
 	"required": [
 		"mode",
+		"setupRequired",
 		"providers"
 	],
 	"properties": {
 		"mode": {
 			"type": "string"
+		},
+		"setupRequired": {
+			"type": "boolean"
 		},
 		"providers": {
 			"type": "array",
@@ -25,10 +29,6 @@
 					},
 					"login": {
 						"anyOf": [
-							{
-								"type": "string",
-								"const": "bearer"
-							},
 							{
 								"type": "string",
 								"const": "password"

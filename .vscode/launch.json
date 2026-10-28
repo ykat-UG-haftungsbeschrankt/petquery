@@ -14,9 +14,6 @@
                 "${workspaceFolder}/config/debug/server-a.json"
             ],
             "cwd": "${workspaceFolder}",
-            "env": {
-                "PETQUERY_DEBUG_SERVER_A_TOKEN": "${input:petqueryDebugServerAToken}"
-            },
             "preLaunchTask": "npm: build",
             "serverReadyAction": {
                 "pattern": "Express App running at (https?://\\S+)",
@@ -47,14 +44,6 @@
             "skipFiles": [
                 "<node_internals>/**"
             ]
-        }
-    ],
-    "inputs": [
-        {
-            "id": "petqueryDebugServerAToken",
-            "type": "promptString",
-            "description": "Server-a auth value (16-256 non-space ASCII chars)",
-            "password": true
         }
     ]
 }

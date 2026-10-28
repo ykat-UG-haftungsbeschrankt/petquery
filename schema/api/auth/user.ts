@@ -19,7 +19,6 @@ export const PetQuerySchemaApiAuthMode = T.Union([
 ]);
 
 export const PetQuerySchemaApiAuthProviderLogin = T.Union([
-	T.Literal('bearer'),
 	T.Literal('password'),
 	T.Literal('redirect')
 ]);

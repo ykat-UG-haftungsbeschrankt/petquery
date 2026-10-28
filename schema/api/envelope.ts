@@ -6,25 +6,39 @@
  */
 
 import { PetQuerySchema } from '#petquery/schema.js';
+import { PetQuerySchemaTypeJson } from '#schema/type/json.js';
 import { PetQueryServerResponseSchema } from '#petquery/server/response/schema.js';
 
+import type { PetQuerySchemaCheck } from '#petquery/schema.js';
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
+import type { PetQuerySchemaTypeJsonType } from '#schema/type/json.js';
 
 const T = PetQuerySchema.type;
 
 const schema = T.Object({
 	success:T.Boolean(),
 	error:T.Array(T.String()),
-	data:T.Unknown()
+	data:PetQuerySchemaTypeJson
 },{
 	title:'Envelope response of every route',
 	additionalProperties:false
 });
 
-const validator = PetQuerySchema.compile(schema);
+const schemaValidator = PetQuerySchema.compile(schema);
 
 export type PetQuerySchemaApiEnvelopeType =
-	PetQuerySchemaStatic<typeof schema>;
+	Omit<PetQuerySchemaStatic<typeof schema>,'data'> & {
+		data:PetQuerySchemaTypeJsonType;
+	};
+
+const validator:PetQuerySchemaCheck<PetQuerySchemaApiEnvelopeType> = {
+	Check(value):value is PetQuerySchemaApiEnvelopeType{
+		return schemaValidator.Check(value);
+	},
+	Errors(value){
+		return schemaValidator.Errors(value);
+	}
+};
 
 class PetQuerySchemaApiEnvelope extends PetQueryServerResponseSchema<
 	PetQuerySchemaApiEnvelopeType

@@ -13,6 +13,7 @@ import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
 const schema = PetQuerySchema.type.Object({
 	mode:PetQuerySchema.type.String(),
+	setupRequired:PetQuerySchema.type.Boolean(),
 	providers:PetQuerySchema.type.Array(
 		PetQuerySchema.type.Object({
 			name:PetQuerySchema.type.String({minLength:1}),

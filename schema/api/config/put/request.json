@@ -26,6 +26,16 @@
 					"type": "integer",
 					"minimum": 1,
 					"maximum": 65535
+				},
+				"trusted_proxies": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 64
+					},
+					"maxItems": 64,
+					"uniqueItems": true
 				}
 			},
 			"additionalProperties": false
@@ -65,7 +75,7 @@
 						"type": "string",
 						"pattern": "^[\\x21-\\x7e]{16,256}$"
 					},
-					"minItems": 1,
+					"minItems": 0,
 					"maxItems": 100
 				},
 				"session": {

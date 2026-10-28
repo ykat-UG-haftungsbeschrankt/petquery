@@ -1,0 +1,106 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"required": [
+		"name",
+		"allowedIps",
+		"permissions"
+	],
+	"properties": {
+		"name": {
+			"type": "string",
+			"minLength": 1,
+			"maxLength": 128
+		},
+		"allowedIps": {
+			"type": "array",
+			"items": {
+				"type": "string",
+				"minLength": 1,
+				"maxLength": 64
+			},
+			"minItems": 1,
+			"maxItems": 64,
+			"uniqueItems": true
+		},
+		"permissions": {
+			"type": "array",
+			"items": {
+				"anyOf": [
+					{
+						"type": "string",
+						"const": "*"
+					},
+					{
+						"anyOf": [
+							{
+								"type": "string",
+								"const": "GET /api/ping/get"
+							},
+							{
+								"type": "string",
+								"const": "GET /api/server/get"
+							},
+							{
+								"type": "string",
+								"const": "PUT /api/server/put/:gid"
+							},
+							{
+								"type": "string",
+								"const": "DELETE /api/server/delete/:gid"
+							},
+							{
+								"type": "string",
+								"const": "GET /api/log/level/get"
+							},
+							{
+								"type": "string",
+								"const": "GET /api/log/request/get"
+							},
+							{
+								"type": "string",
+								"const": "GET /api/config/get"
+							},
+							{
+								"type": "string",
+								"const": "PUT /api/config/put"
+							},
+							{
+								"type": "string",
+								"const": "POST /api/pets/search"
+							},
+							{
+								"type": "string",
+								"const": "POST /api/pets/:gid/sightings"
+							},
+							{
+								"type": "string",
+								"const": "GET /api/pets"
+							},
+							{
+								"type": "string",
+								"const": "POST /api/pets"
+							},
+							{
+								"type": "string",
+								"const": "GET /api/pets/:gid"
+							},
+							{
+								"type": "string",
+								"const": "PUT /api/pets/:gid"
+							},
+							{
+								"type": "string",
+								"const": "DELETE /api/pets/:gid"
+							}
+						]
+					}
+				]
+			},
+			"minItems": 1,
+			"maxItems": 16,
+			"uniqueItems": true
+		}
+	},
+	"additionalProperties": false
+}

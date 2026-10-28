@@ -38,7 +38,7 @@ export class PetQueryServerResponse{
 
 	static parseApiResponse(
 		json:json_t
-	):unknown{
+	):json_t{
 		const ret = PetQuerySchemaApiEnvelope.fromJson(json);
 		if(!ret.success){
 			throw new Error(ret.error.join('\n'));
@@ -50,13 +50,13 @@ export class PetQueryServerResponse{
 		 status:PetQueryHttpStatusCode
 		,success:boolean
 		,error:string[]
-		,value:unknown
+		,value:json_t
 	):void{
-		const obj:PetQueryServerResponseType = {
+		const obj = PetQuerySchemaApiEnvelope.fromJson({
 			success:success,
 			error:error,
 			data:value
-		};
+		});
 		this.status(status).json(this.toJson(obj));
 	}
 	appendError(error:unknown):void{
@@ -66,7 +66,7 @@ export class PetQueryServerResponse{
 			: [NodeUtilInspect(error)]
 		));
 	}
-	sendApiSuccess(value:unknown):void{
+	sendApiSuccess(value:json_t):void{
 		this._sendApi(
 			 PetQueryHttpStatusCode.OK
 			,true

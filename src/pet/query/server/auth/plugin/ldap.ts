@@ -52,7 +52,7 @@ export class PetQueryServerAuthPluginLdap extends PetQueryServerAuthPlugin{
 		return 'ldap';
 	}
 
-	getLoginType():'bearer'|'password'|'redirect'{
+	getLoginType():'password'|'redirect'{
 		return 'password';
 	}
 

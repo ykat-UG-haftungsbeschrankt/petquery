@@ -16,10 +16,9 @@
 		"certificate": {}
 	},
 	"authenticate": {
-		"mode": "bearer",
-		"providers": ["bearer"],
+		"mode": "lmdb",
+		"providers": ["lmdb"],
 		"plugin_options": {},
-		"bearer_env": "PETQUERY_DEBUG_SERVER_C_TOKEN",
 		"session": {
 			"cookie_name": "petquery_c",
 			"max_age": 28800000,

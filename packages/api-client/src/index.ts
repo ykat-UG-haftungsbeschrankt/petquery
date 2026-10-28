@@ -5,10 +5,16 @@
  * free of charge, without warranty of any kind.
  */
 
+import { PetQuerySchemaApiAuthApiClientPermissionCatalog } from '#schema/api/auth/api-client.js';
+import { PetQuerySchemaApiAuthApiClientsDeleteResponse } from '#schema/api/auth/api-clients/delete/response.js';
+import { PetQuerySchemaApiAuthApiClientsGetResponse } from '#schema/api/auth/api-clients/get/response.js';
+import { PetQuerySchemaApiAuthApiClientsPostResponse } from '#schema/api/auth/api-clients/post/response.js';
+import { PetQuerySchemaApiAuthApiClientsPutResponse } from '#schema/api/auth/api-clients/put/response.js';
 import { PetQuerySchemaApiAuthLoginPostResponse } from '#schema/api/auth/login/post/response.js';
 import { PetQuerySchemaApiAuthLogoutPostResponse } from '#schema/api/auth/logout/post/response.js';
 import { PetQuerySchemaApiAuthModeGetResponse } from '#schema/api/auth/mode/get/response.js';
 import { PetQuerySchemaApiAuthSessionGetResponse } from '#schema/api/auth/session/get/response.js';
+import { PetQuerySchemaApiAuthSetupPostResponse } from '#schema/api/auth/setup/post/response.js';
 import { PetQuerySchemaApiAuthUsersDeleteResponse } from '#schema/api/auth/users/delete/response.js';
 import { PetQuerySchemaApiAuthUsersGetResponse } from '#schema/api/auth/users/get/response.js';
 import { PetQuerySchemaApiAuthUsersPostResponse } from '#schema/api/auth/users/post/response.js';
@@ -25,6 +31,11 @@ import { PetQuerySchemaApiServerGetResponse } from '#schema/api/server/get/respo
 import { PetQuerySchemaApiServerPutResponse } from '#schema/api/server/put/response.js';
 import { PetQuerySchemaServerDatabasePetEntry } from '#schema/server/database/pet/entry.js';
 
+import type { PetQuerySchemaApiAuthApiClientSettingsType } from '#schema/api/auth/api-client.js';
+import type { PetQuerySchemaApiAuthApiClientsGetResponseType } from '#schema/api/auth/api-clients/get/response.js';
+import type { PetQuerySchemaApiAuthApiClientsPostResponseType } from '#schema/api/auth/api-clients/post/response.js';
+import type { PetQuerySchemaApiAuthApiClientsPutResponseType } from '#schema/api/auth/api-clients/put/response.js';
+import type { PetQuerySchemaApiAuthApiClientType } from '#schema/api/auth/api-client.js';
 import type { PetQuerySchemaApiAuthManagedUserType } from '#schema/api/auth/user.js';
 import type { PetQuerySchemaApiAuthModeGetResponseType } from '#schema/api/auth/mode/get/response.js';
 import type { PetQuerySchemaApiAuthUserType } from '#schema/api/auth/user.js';
@@ -50,6 +61,17 @@ export type AuthUser = PetQuerySchemaApiAuthUserType;
 
 export type ManagedUser = PetQuerySchemaApiAuthManagedUserType;
 
+export type ApiClient = PetQuerySchemaApiAuthApiClientType;
+
+export type ApiClientSettings =
+	PetQuerySchemaApiAuthApiClientSettingsType;
+
+export type ApiClientCreateResponse =
+	PetQuerySchemaApiAuthApiClientsPostResponseType;
+
+export const API_CLIENT_PERMISSION_CATALOG =
+	PetQuerySchemaApiAuthApiClientPermissionCatalog;
+
 export type PetRecord = PetQuerySchemaServerDatabasePetEntryType;
 
 export type PetSighting = NonNullable<PetRecord['last_seen']>;
@@ -64,8 +86,15 @@ export type SearchResponse =
 export type ConfigValues =
 	Omit<
 		PetQuerySchemaServerDatabaseConfigEntryType,
-		'authenticate'
+		'authenticate'|'http'
 	> & {
+		http:
+			Omit<
+				PetQuerySchemaServerDatabaseConfigEntryType['http'],
+				'trusted_proxies'
+			> & {
+				trusted_proxies:Array<utf8_t>;
+			};
 		authenticate:
 			Omit<
 				PetQuerySchemaServerDatabaseConfigEntryType[
@@ -131,6 +160,19 @@ export async function getAuthMode():Promise<AuthMode>{
 	return (await getAuthProviders()).mode;
 }
 
+export async function setupInitialAdmin(
+	username:utf8_t,
+	password:utf8_t
+):Promise<void>{
+	await request(
+		'POST',
+		'/auth/setup',
+		'',
+		{username,password},
+		PetQuerySchemaApiAuthSetupPostResponse
+	);
+}
+
 export function getProviderLoginUrl(provider:utf8_t):utf8_t{
 	return `/auth/providers/${encodeURIComponent(provider)}/login`;
 }
@@ -158,8 +200,7 @@ export async function getSession():Promise<AuthUser|null>{
 export async function loginUser(
 	provider:utf8_t,
 	username:utf8_t = '',
-	password:utf8_t = '',
-	bearerToken:utf8_t = ''
+	password:utf8_t = ''
 ):Promise<AuthUser>{
 	const body:Pick<AuthUser,'provider'> & {
 		username?:AuthUser['username'];
@@ -170,13 +211,13 @@ export async function loginUser(
 	if('' !== username){
 		body.username = username;
 	}
-	if('' !== password && '' === bearerToken){
+	if('' !== password){
 		body.password = password;
 	}
 	const data = await request(
 		'POST',
 		'/auth/login',
-		bearerToken,
+		'',
 		body,
 		PetQuerySchemaApiAuthLoginPostResponse
 	);
@@ -265,6 +306,58 @@ export async function deleteUser(
 		token,
 		undefined,
 		PetQuerySchemaApiAuthUsersDeleteResponse
+	);
+}
+
+export async function listApiClients(
+	token:utf8_t
+):Promise<PetQuerySchemaApiAuthApiClientsGetResponseType>{
+	return request(
+		'GET',
+		'/auth/api-clients',
+		token,
+		undefined,
+		PetQuerySchemaApiAuthApiClientsGetResponse
+	);
+}
+
+export async function createApiClient(
+	token:utf8_t,
+	values:ApiClientSettings
+):Promise<ApiClientCreateResponse>{
+	return request(
+		'POST',
+		'/auth/api-clients',
+		token,
+		values,
+		PetQuerySchemaApiAuthApiClientsPostResponse
+	);
+}
+
+export async function updateApiClient(
+	token:utf8_t,
+	id:ApiClient['id'],
+	values:ApiClientSettings
+):Promise<PetQuerySchemaApiAuthApiClientsPutResponseType>{
+	return request(
+		'PUT',
+		`/auth/api-clients/${encodeURIComponent(id)}`,
+		token,
+		values,
+		PetQuerySchemaApiAuthApiClientsPutResponse
+	);
+}
+
+export async function deleteApiClient(
+	token:utf8_t,
+	id:ApiClient['id']
+):Promise<void>{
+	await request(
+		'DELETE',
+		`/auth/api-clients/${encodeURIComponent(id)}`,
+		token,
+		undefined,
+		PetQuerySchemaApiAuthApiClientsDeleteResponse
 	);
 }
 
@@ -595,7 +688,8 @@ async function requestEnvelope(
 		}
 		if(403 === response.status){
 			throw new Error(
-				'HTTP 403 Forbidden: check the bearer token'
+				'HTTP 403 Forbidden: check the bearer token, source IP, '
+				+'and API permissions'
 			);
 		}
 		throw new Error(status);
@@ -603,7 +697,7 @@ async function requestEnvelope(
 	return PetQuerySchemaApiEnvelope.fromJson(json);
 }
 
-function parseJson(text:utf8_t):unknown{
+function parseJson(text:utf8_t):json_t{
 	try{
 		return JSON.parse(text);
 	}
@@ -635,16 +729,37 @@ function toLogEntry(
 function normalizeConfigValues(
 	value:PetQuerySchemaServerDatabaseConfigEntryType
 ):ConfigValues{
-	const providers = Array.from(new Set(
-		value.authenticate.providers
-		?? [value.authenticate.mode,'bearer']
-	));
+	const authenticate = value.authenticate;
+	const configuredProviders = authenticate.providers
+		?? [authenticate.mode];
+	const providers:Array<utf8_t> = [];
+	for(const provider of configuredProviders){
+		if('bearer' !== provider && !providers.includes(provider)){
+			providers.push(provider);
+		}
+	}
+	let mode = authenticate.mode;
+	if('bearer' === mode){
+		const provider = providers[0];
+		if(undefined === provider){
+			throw new Error(
+				'No password or redirect authentication provider is enabled'
+			);
+		}
+		mode = provider;
+	}
 	return {
 		...value,
+		http:{
+			...value.http,
+			trusted_proxies:value.http.trusted_proxies ?? []
+		},
 		authenticate:{
-			...value.authenticate,
+			...authenticate,
+			mode,
+			bearer:[],
 			providers,
-			plugin_options:value.authenticate.plugin_options ?? {}
+			plugin_options:authenticate.plugin_options ?? {}
 		}
 	};
 }

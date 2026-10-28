@@ -59,6 +59,7 @@ export class PetQueryServer extends PetQueryDestructor{
 		this._auth = auth;
 		this._petStore = petStore;
 		this._app = Express();
+		this._app.set('trust proxy',config.http.trusted_proxies);
 		if(config.logging.request.enabled){
 			this._app.use(Morgan<Express.Request,Express.Response>(
 				this._formatRequestLog.bind(this),

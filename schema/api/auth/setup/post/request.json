@@ -1,0 +1,21 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"required": [
+		"username",
+		"password"
+	],
+	"properties": {
+		"username": {
+			"type": "string",
+			"pattern": "^[A-Za-z0-9_.@-]{1,128}$"
+		},
+		"password": {
+			"type": "string",
+			"minLength": 8,
+			"maxLength": 1024
+		}
+	},
+	"title": "POST /auth/setup request",
+	"additionalProperties": false
+}

@@ -70,14 +70,6 @@ function diffPaths(a:ConfigValues,b:ConfigValues):Array<utf8_t>{
 	return ret;
 }
 
-function generateToken():utf8_t{
-	const bytes = new Uint8Array(16);
-	crypto.getRandomValues(bytes);
-	return Array.from(bytes,(byte)=>{
-		return byte.toString(16).padStart(2,'0');
-	}).join('');
-}
-
 function formatMs(ms:uint_t):utf8_t{
 	if(!Number.isFinite(ms)){
 		return '';
@@ -133,17 +125,18 @@ function parsePluginOptions(text:utf8_t):Record<utf8_t,json_t>{
 	return value;
 }
 
+function generateToken():utf8_t{
+	const bytes = new Uint8Array(16);
+	crypto.getRandomValues(bytes);
+	return Array.from(bytes,(byte)=>{
+		return byte.toString(16).padStart(2,'0');
+	}).join('');
+}
+
 // Returns the reasons why saving values might lock the admin out.
-function getWarnings(values:ConfigValues,token:utf8_t):Array<utf8_t>{
+function getWarnings(values:ConfigValues):Array<utf8_t>{
 	const ret:Array<utf8_t> = [];
 
-	if(values.authenticate.providers.includes('bearer')
-	&& !values.authenticate.bearer.includes(token)){
-		ret.push(
-			'The token you are using is not in the list. After a restart'
-			+' it no longer gives access to this page.'
-		);
-	}
 	if(!values.route.api.enabled){
 		ret.push(
 			'Disabling the API route also disables /api/config/* and'
@@ -225,7 +218,6 @@ function textField(
 export function Config(props:{token:utf8_t}):ReactElement{
 	const token = props.token;
 	const {busy,error,run} = useAction();
-	const [initialToken] = useState<utf8_t>(token);
 	const [state,setState] = useState<ConfigState|null>(null);
 	const [form,setForm] = useState<ConfigValues|null>(null);
 	const [pluginOptionsText,setPluginOptionsText] = useState<utf8_t>('');
@@ -245,14 +237,12 @@ export function Config(props:{token:utf8_t}):ReactElement{
 		setPluginOptionsError(null);
 	},[]);
 
-	// Loads once on open; later token edits must not fire requests per key.
+	// Loads on open using the signed-in session cookie.
 	useEffect(()=>{
-		if('' !== initialToken){
-			run(async ()=>{
-				await load(initialToken);
-			});
-		}
-	},[run,load,initialToken]);
+		run(async ()=>{
+			await load(token);
+		});
+	},[run,load,token]);
 
 	function edit(change:(draft:ConfigValues)=>void):void{
 		setForm((current)=>{
@@ -265,6 +255,18 @@ export function Config(props:{token:utf8_t}):ReactElement{
 		});
 	}
 
+	function setTokenAt(index:size_t,value:utf8_t):void{
+		edit((draft)=>{
+			draft.authenticate.bearer[index] = value;
+		});
+	}
+
+	function removeTokenAt(index:size_t):void{
+		edit((draft)=>{
+			draft.authenticate.bearer.splice(index,1);
+		});
+	}
+
 	if(null === state || null === form){
 		return (
 			<>
@@ -272,11 +274,12 @@ export function Config(props:{token:utf8_t}):ReactElement{
 				<Panel>
 					<h2>Config</h2>
 					<p className="muted">
-						Viewing and editing the config requires the token.
+						Viewing and editing the config requires an admin
+						session.
 					</p>
 					<Framework7Button
 						type="button"
-						disabled={busy || '' === token}
+						disabled={busy}
 						onClick={()=>{
 							run(async ()=>{
 								await load(token);
@@ -297,18 +300,6 @@ export function Config(props:{token:utf8_t}):ReactElement{
 		: diffPaths(state.active,state.saved);
 	const sync = form.index.sync;
 	const upload = form.file.upload;
-
-	function setTokenAt(index:size_t,value:utf8_t):void{
-		edit((draft)=>{
-			draft.authenticate.bearer[index] = value;
-		});
-	}
-
-	function removeTokenAt(index:size_t):void{
-		edit((draft)=>{
-			draft.authenticate.bearer.splice(index,1);
-		});
-	}
 
 	function setPlugin(name:utf8_t,enabled:bool_t):void{
 		edit((draft)=>{
@@ -362,14 +353,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 			);
 			return;
 		}
-		values.authenticate.bearer = values.authenticate.bearer
-			.map((value)=>{
-				return value.trim();
-			})
-			.filter((value)=>{
-				return '' !== value;
-			});
-		const warnings = getWarnings(values,token);
+		const warnings = getWarnings(values);
 		if(0 < warnings.length
 		&& !window.confirm(`${warnings.join('\n\n')}\n\nSave anyway?`)){
 			return;
@@ -405,6 +389,33 @@ export function Config(props:{token:utf8_t}):ReactElement{
 							});
 						}
 					)}
+					<label className="field">
+						<span>Trusted proxy IPs/CIDRs</span>
+						<textarea
+							rows={4}
+							value={form.http.trusted_proxies.join('\n')}
+							onChange={(event)=>{
+								const entries =
+									event.target.value.split('\n');
+								const trustedProxies:Array<utf8_t> = [];
+								for(const entry of entries){
+									const proxy = entry.trim();
+									if('' !== proxy){
+										trustedProxies.push(proxy);
+									}
+								}
+								edit((draft)=>{
+									draft.http.trusted_proxies =
+										trustedProxies;
+								});
+							}}
+						/>
+						<small className="muted">
+							One trusted proxy IP or CIDR per line. Only trust
+							X-Forwarded-For from these proxies.
+							Leave empty for direct connections.
+						</small>
+					</label>
 				</Panel>
 
 				<Panel>
@@ -424,7 +435,8 @@ export function Config(props:{token:utf8_t}):ReactElement{
 											return provider.trim();
 										})
 										.filter((provider)=>{
-											return '' !== provider;
+											return '' !== provider
+												&& 'bearer' !== provider;
 										});
 									edit((draft)=>{
 										draft.authenticate.providers =
@@ -455,7 +467,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 								value={form.authenticate.mode}
 								onChange={(event)=>{
 									const value = event.target.value;
-									if('' !== value){
+									if('' !== value && 'bearer' !== value){
 										edit((draft)=>{
 											draft.authenticate.mode = value;
 										});
@@ -477,6 +489,10 @@ export function Config(props:{token:utf8_t}):ReactElement{
 								<option value="oidc">OpenID Connect</option>
 							</select>
 						</label>
+						<p className="muted">
+							Bearer credentials are managed under API clients.
+							They cannot sign in to the admin GUI.
+						</p>
 						{checkboxField(
 							'Secure session cookie',
 							form.authenticate.session.secure,

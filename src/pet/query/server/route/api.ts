@@ -45,6 +45,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 
 		this.getServer().get(
 			'/api/ping/get',
+			this._getApiAccessHandler('GET /api/ping/get'),
 			PetQuerySchemaApiPingGetRequest.getHandle(
 				this._handlePing.bind(this)
 			)
@@ -52,6 +53,7 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		// Public so that peers can sync their server index.
 		this.getServer().get(
 			'/api/server/get',
+			this._getApiAccessHandler('GET /api/server/get'),
 			PetQuerySchemaApiServerGetRequest.getHandle(
 				this._handleListServer.bind(this)
 			)
@@ -59,7 +61,10 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		this.getServer().get(
 			'/api/log/level/get',
 			this._disableCache.bind(this),
-			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
+			this._getApiAccessHandler(
+				'GET /api/log/level/get',
+				PetQueryServerRouteAccessGroup.Admin
+			),
 			PetQuerySchemaApiLogLevelGetRequest.getHandle(
 				this._handleGetLogEntries.bind(this)
 			)
@@ -67,35 +72,50 @@ export class PetQueryServerRouteApi extends PetQueryServerRoute{
 		this.getServer().get(
 			'/api/log/request/get',
 			this._disableCache.bind(this),
-			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
+			this._getApiAccessHandler(
+				'GET /api/log/request/get',
+				PetQueryServerRouteAccessGroup.Admin
+			),
 			PetQuerySchemaApiLogRequestGetRequest.getHandle(
 				this._handleGetRequestLogEntries.bind(this)
 			)
 		);
 		this.getServer().put(
 			'/api/server/put/:gid',
-			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
+			this._getApiAccessHandler(
+				'PUT /api/server/put/:gid',
+				PetQueryServerRouteAccessGroup.Admin
+			),
 			PetQuerySchemaApiServerPutRequest.getHandle(
 				this._handleAddServer.bind(this)
 			)
 		);
 		this.getServer().delete(
 			'/api/server/delete/:gid',
-			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
+			this._getApiAccessHandler(
+				'DELETE /api/server/delete/:gid',
+				PetQueryServerRouteAccessGroup.Admin
+			),
 			PetQuerySchemaApiServerDeleteRequest.getHandle(
 				this._handleDeleteServer.bind(this)
 			)
 		);
 		this.getServer().get(
 			'/api/config/get',
-			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
+			this._getApiAccessHandler(
+				'GET /api/config/get',
+				PetQueryServerRouteAccessGroup.Admin
+			),
 			PetQuerySchemaApiConfigGetRequest.getHandle(
 				this._handleGetConfig.bind(this)
 			)
 		);
 		this.getServer().put(
 			'/api/config/put',
-			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
+			this._getApiAccessHandler(
+				'PUT /api/config/put',
+				PetQueryServerRouteAccessGroup.Admin
+			),
 			PetQuerySchemaApiConfigPutRequest.getHandle(
 				this._handlePutConfig.bind(this)
 			)

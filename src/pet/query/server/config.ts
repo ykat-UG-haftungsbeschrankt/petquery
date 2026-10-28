@@ -7,6 +7,7 @@
 
 import { PetQueryDatabase } from '#petquery/database.js';
 import { PetQueryDestructor } from '#petquery/destructor.js';
+import { PetQueryIp } from '#petquery/ip.js';
 import { PetQuerySchemaServerDatabaseConfigEntry } from '#schema/server/database/config/entry.js';
 
 import type { PetQueryConfigServerType } from '#petquery/config.js';
@@ -37,15 +38,30 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 		config:PetQueryConfigServerType
 	):PetQuerySchemaServerDatabaseConfigEntryType{
 		const sync = config.index.sync;
+		const providers = this._getInteractiveProviders(
+			config.authenticate.providers
+		);
+		const firstProvider = providers[0];
+		if(undefined === firstProvider){
+			throw new Error(
+				'Enable a password or redirect authentication provider'
+			);
+		}
+		const mode = 'bearer' === config.authenticate.mode
+			? firstProvider
+			: config.authenticate.mode;
 
 		return {
 			 gid:this._gid
-			,http:{port:config.http.port}
+			,http:{
+				port:config.http.port,
+				trusted_proxies:config.http.trusted_proxies
+			}
 			,authenticate:{
-				 mode:config.authenticate.mode
-				,providers:Array.from(config.authenticate.providers)
+				 mode
+				,providers
 				,plugin_options:config.authenticate.plugin_options
-				,bearer:Array.from(config.authenticate.bearer)
+				,bearer:[]
 				,session:{
 					 cookie_name:config.authenticate.session.cookie_name
 					,max_age:config.authenticate.session.max_age
@@ -105,17 +121,23 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 		config:PetQueryConfigServerType,
 		values:PetQuerySchemaServerDatabaseConfigEntryType
 	):void{
+		values = this._sanitize(values);
 		const sync = config.index.sync;
+		const providers = values.authenticate.providers;
+		const trustedProxies = values.http.trusted_proxies;
+		if(undefined === providers){
+			throw new Error('Authentication providers are required');
+		}
+		if(undefined === trustedProxies){
+			throw new Error('Trusted proxies are required');
+		}
 
 		config.http.port = values.http.port;
+		config.http.trusted_proxies = trustedProxies;
 		config.authenticate.mode = values.authenticate.mode;
-		config.authenticate.providers = Array.from(new Set(
-			values.authenticate.providers
-			?? [values.authenticate.mode,'bearer']
-		));
+		config.authenticate.providers = providers;
 		config.authenticate.plugin_options =
 			values.authenticate.plugin_options ?? {};
-		config.authenticate.bearer = new Set(values.authenticate.bearer);
 		config.authenticate.session.cookie_name =
 			values.authenticate.session.cookie_name;
 		config.authenticate.session.max_age =
@@ -131,23 +153,27 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 			values.authenticate.ldap.bind_dn;
 		config.authenticate.ldap.bind_password =
 			values.authenticate.ldap.bind_password;
-		config.authenticate.ldap.base_dn = values.authenticate.ldap.base_dn;
+		config.authenticate.ldap.base_dn =
+			values.authenticate.ldap.base_dn;
 		config.authenticate.ldap.user_filter =
 			values.authenticate.ldap.user_filter;
 		config.authenticate.ldap.admin_group =
 			values.authenticate.ldap.admin_group;
-		config.authenticate.oidc.issuer = values.authenticate.oidc.issuer;
+		config.authenticate.oidc.issuer =
+			values.authenticate.oidc.issuer;
 		config.authenticate.oidc.client_id =
 			values.authenticate.oidc.client_id;
 		config.authenticate.oidc.client_secret =
 			values.authenticate.oidc.client_secret;
 		config.authenticate.oidc.redirect_uri =
 			values.authenticate.oidc.redirect_uri;
-		config.authenticate.oidc.scopes = values.authenticate.oidc.scopes;
+		config.authenticate.oidc.scopes =
+			values.authenticate.oidc.scopes;
 		config.authenticate.oidc.admin_group =
 			values.authenticate.oidc.admin_group;
 		config.file.upload.enabled = values.file.upload.enabled;
-		config.file.upload.max_file_size = values.file.upload.max_file_size;
+		config.file.upload.max_file_size =
+			values.file.upload.max_file_size;
 		config.max_results_per_module = values.max_results_per_module;
 		config.max_results_total = values.max_results_total;
 		sync.enabled = values.index.sync.enabled;
@@ -163,16 +189,69 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 	// Validates untrusted JSON. Throws an Error
 	// naming the invalid field.
 	parse(json:json_t):PetQuerySchemaServerDatabaseConfigEntryType{
-		return PetQuerySchemaServerDatabaseConfigEntry.fromJson(json);
+		return this._sanitize(
+			PetQuerySchemaServerDatabaseConfigEntry.fromJson(json)
+		);
 	}
 
 	// Returns the saved values, or null if nothing has been saved yet.
 	async load():Promise<PetQuerySchemaServerDatabaseConfigEntryType>{
-		return await this._database.serverConfigLoad(this._gid);
+		return this._sanitize(
+			await this._database.serverConfigLoad(this._gid)
+		);
 	}
 
 	// Saves values returned by normalize() through the database backend.
 	async save(values:PetQuerySchemaServerDatabaseConfigEntryType):Promise<void>{
-		return this._database.serverConfigSave(this._gid,values);
+		return this._database.serverConfigSave(
+			this._gid,
+			this._sanitize(values)
+		);
+	}
+
+	protected _sanitize(
+		values:PetQuerySchemaServerDatabaseConfigEntryType
+	):PetQuerySchemaServerDatabaseConfigEntryType{
+		const {bearer:UNUSED_bearer,...authenticate} =
+			values.authenticate;
+		const http = {
+			...values.http,
+			trusted_proxies:PetQueryIp.validateTrustedProxies(
+				values.http.trusted_proxies ?? []
+			)
+		};
+		const providers = this._getInteractiveProviders(
+			authenticate.providers ?? [authenticate.mode]
+		);
+		const firstProvider = providers[0];
+		if(undefined === firstProvider){
+			throw new Error(
+				'Enable a password or redirect authentication provider'
+			);
+		}
+		return {
+			...values,
+			http,
+			authenticate:{
+				...authenticate,
+				mode:'bearer' === authenticate.mode
+					? firstProvider
+					: authenticate.mode,
+				bearer:[],
+				providers
+			}
+		};
+	}
+
+	protected _getInteractiveProviders(
+		values:Array<utf8_t>
+	):Array<utf8_t>{
+		const providers:Array<utf8_t> = [];
+		for(const value of values){
+			if('bearer' !== value && !providers.includes(value)){
+				providers.push(value);
+			}
+		}
+		return providers;
 	}
 };

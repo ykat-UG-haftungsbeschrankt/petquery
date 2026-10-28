@@ -24,6 +24,10 @@ const schema = strict({
 	 gid:T.String({pattern:'^[\\x21-\\x7e]{16,256}$'})
 	,http:strict({
 		port:T.Integer({minimum:1,maximum:65535})
+		,trusted_proxies:T.Optional(T.Array(
+			T.String({minLength:1,maxLength:64}),
+			{maxItems:64,uniqueItems:true}
+		))
 	})
 	,authenticate:strict({
 		mode:T.String({minLength:1})
@@ -35,10 +39,10 @@ const schema = strict({
 			T.String({minLength:1}),
 			T.Any()
 		))
-		// Printable ASCII without spaces, see authenticate() in config.ts.
+		// Kept empty for compatibility with previously saved config records.
 		,bearer:T.Array(
 			T.String({pattern:'^[\\x21-\\x7e]{16,256}$'}),
-			{minItems:1,maxItems:100}
+			{minItems:0,maxItems:100}
 		)
 		,session:strict({
 			 cookie_name:T.String({
