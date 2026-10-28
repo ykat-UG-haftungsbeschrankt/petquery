@@ -14,7 +14,7 @@ export const PetQuerySchemaTypeServer = T.Object({
 	uri:T.String({format:'uri'}),
 	adminContact:T.String({maxLength:1024}),
 	companyAddress:T.String({maxLength:4096}),
-	pingTimeMs:T.Integer({minimum:0}),
+	pingTimeMs:T.Integer({minimum:-1}),
 	addedAt:T.String({format:'date-time'}),
 	updatedAt:T.String({format:'date-time'}),
 	lastPingAt:T.String({format:'date-time'})
