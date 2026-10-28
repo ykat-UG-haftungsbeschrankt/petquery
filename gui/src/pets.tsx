@@ -98,7 +98,6 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 	const [pets,setPets] = useState<Array<PetRecord>>([]);
 	const [editing,setEditing] = useState<utf8_t|null>(null);
 	const [form,setForm] = useState<PetRecord>(structuredClone(EMPTY_PET));
-	const [filesText,setFilesText] = useState<utf8_t>('');
 	const [uploadedImages,setUploadedImages] =
 		useState<Array<PetImageAttachment>>([]);
 	const [previewImageName,setPreviewImageName] =
@@ -115,7 +114,6 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 	function resetForm():void{
 		setEditing(null);
 		setForm(structuredClone(EMPTY_PET));
-		setFilesText('');
 		setUploadedImages([]);
 		setPreviewImageName(null);
 	}
@@ -124,13 +122,9 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 		setEditing(pet.gid);
 		setForm(structuredClone(pet));
 		const images = pet.files.filter(isDataImageUri);
-		const urls = pet.files.filter((file)=>{
-			return !isDataImageUri(file);
-		});
 		setUploadedImages(images.map((uri,index)=>{
 			return {name:`Saved image ${index + 1}`,uri};
 		}));
-		setFilesText(urls.join('\n'));
 		setPreviewImageName(
 			isDataImageUri(pet.preview) ? 'Saved preview image' : null
 		);
@@ -216,13 +210,6 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 
 	function onSubmit(event:FormEvent<HTMLFormElement>):void{
 		event.preventDefault();
-		const fileUrls = filesText.split('\n')
-			.map((value)=>{
-				return value.trim();
-			})
-			.filter((value)=>{
-				return '' !== value;
-			});
 		const imageUris = uploadedImages.map((image)=>{
 			return image.uri;
 		});
@@ -233,16 +220,14 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 			species:form.species.trim(),
 			owner_contact:form.owner_contact.trim(),
 			notes:form.notes.trim(),
-			files:[...fileUrls,...imageUris]
+			files:[
+				...form.files.filter((file)=>{
+					return !isDataImageUri(file);
+				}),
+				...imageUris
+			]
 		};
 		run(async ()=>{
-			if(fileUrls.some(isDataImageUri)
-			|| (isDataImageUri(values.preview)
-				&& null === previewImageName)){
-				throw new Error(
-					'Use an image upload control instead of pasting a data URI.'
-				);
-			}
 			if(null === editing){
 				await createPet(props.token,values);
 			}else{
@@ -378,20 +363,6 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						/>
 					</label>
 					<label className="field field-wide">
-						<span>Preview URL</span>
-						<input
-							value={
-								isDataImageUri(form.preview)
-									? ''
-									: form.preview
-							}
-							onChange={(event)=>{
-								setField('preview',event.target.value);
-								setPreviewImageName(null);
-							}}
-						/>
-					</label>
-					<label className="field field-wide">
 						<span>Upload preview image</span>
 						<input
 							className="file-input"
@@ -484,15 +455,6 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 							Add attribute
 						</Framework7Button>
 					</fieldset>
-					<label className="field field-wide">
-						<span>Attachment URLs (one per line)</span>
-						<textarea
-							value={filesText}
-							onChange={(event)=>{
-								setFilesText(event.target.value);
-							}}
-						/>
-					</label>
 					<label className="field field-wide">
 						<span>Upload attachment images</span>
 						<input

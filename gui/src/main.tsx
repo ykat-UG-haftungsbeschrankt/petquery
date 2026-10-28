@@ -7,6 +7,7 @@
 
 import 'framework7/css';
 import '#gui/app.css';
+import '#gui/custom.css';
 
 import { App } from '#gui/app';
 import Framework7 from 'framework7/lite';

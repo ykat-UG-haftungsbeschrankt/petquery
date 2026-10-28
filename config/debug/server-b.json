@@ -2,6 +2,8 @@
 	"api": {
 		"endpoint": "http://127.0.0.1:50102"
 	},
+	"adminContact": "admin@example.com",
+	"companyAddress": "Example Company",
 	"http": {
 		"host": "127.0.0.1",
 		"port": 50102,

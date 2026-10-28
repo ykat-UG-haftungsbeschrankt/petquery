@@ -757,7 +757,7 @@ legend{
 }
 
 .search-card{
-	max-width:1040px;
+	/*max-width:1040px;*/
 	margin:0 auto 24px;
 	background:
 		linear-gradient(135deg,rgba(255,255,255,.98),rgba(245,252,251,.98));
@@ -945,7 +945,7 @@ legend{
 }
 
 .search-description{
-	max-width:980px;
+	/*max-width:980px;*/
 	margin:0 auto 24px;
 }
 

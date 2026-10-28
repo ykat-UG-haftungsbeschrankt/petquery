@@ -37,7 +37,9 @@ export type SearchResult =
 	PetQuerySchemaApiPetSearchResponseType[number];
 
 export type SearchResponse =
-	PetQuerySchemaApiEnvelopeType<PetQuerySchemaApiPetSearchResponseType>;
+	Omit<PetQuerySchemaApiEnvelopeType,'data'> & {
+		data:PetQuerySchemaApiPetSearchResponseType;
+	};
 
 export type ConfigValues =
 	Omit<
@@ -280,11 +282,10 @@ export async function listServers():Promise<Array<ServerEntry>>{
 		|| 'string' !== typeof entry.uri
 		|| 'string' !== typeof entry.adminContact
 		|| 'string' !== typeof entry.companyAddress
-		|| !(null === entry.pingTimeMs || isInteger(entry.pingTimeMs))
+		|| !isInteger(entry.pingTimeMs)
 		|| 'string' !== typeof entry.addedAt
 		|| 'string' !== typeof entry.updatedAt
-		|| !(null === entry.lastPingAt
-			|| 'string' === typeof entry.lastPingAt)){
+		|| 'string' !== typeof entry.lastPingAt){
 			throw new Error('Invalid server list entry');
 		}
 		ret.push({
