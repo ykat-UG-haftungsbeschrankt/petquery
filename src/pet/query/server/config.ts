@@ -103,19 +103,10 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 				}
 			},
 			route:{
-				...defaults.route,
 				api:{
 					...defaults.route.api,
 					enabled:config.route.api.enabled,
 					plugins:Array.from(config.route.api.plugins)
-				},
-				'/':{
-					...defaults.route['/'],
-					enabled:config.route['/'].enabled
-				},
-				gui:{
-					...defaults.route.gui,
-					enabled:config.route.gui.enabled
 				}
 			}
 		}));
@@ -188,8 +179,6 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 		sync.max_servers = values.index.sync.max_servers;
 		config.route.api.enabled = values.route.api.enabled;
 		config.route.api.plugins = new Set(values.route.api.plugins);
-		config.route['/'].enabled = values.route['/'].enabled;
-		config.route.gui.enabled = values.route.gui.enabled;
 	}
 
 	// Validates untrusted JSON. Throws an Error
@@ -280,19 +269,9 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 				}
 			},
 			route:{
-				...defaults.route,
-				...values.route,
 				api:{
 					...defaults.route.api,
 					...values.route.api
-				},
-				'/':{
-					...defaults.route['/'],
-					...values.route['/']
-				},
-				gui:{
-					...defaults.route.gui,
-					...values.route.gui
 				}
 			},
 			...(undefined === logging ? {} : {logging})

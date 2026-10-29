@@ -50,6 +50,7 @@ export default tseslint.config(
 		ignores: [
 			'dist/**',
 			'docs/**',
+			'gui/public/typedoc/**',
 			'node_modules/**',
 			'gui/node_modules/**',
 			'**/.trash/**'

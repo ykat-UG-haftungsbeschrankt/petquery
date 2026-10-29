@@ -13,7 +13,7 @@ import { useState } from 'react';
 
 import type { ReactElement } from 'react';
 
-const DOCS_URL:utf8_t = '/docs/';
+const DOCS_URL:utf8_t = '/typedoc/';
 const API_URL:utf8_t = '/openapi/';
 
 export function Docs():ReactElement{

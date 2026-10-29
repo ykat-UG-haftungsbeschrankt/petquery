@@ -153,9 +153,6 @@ function getWarnings(
 			+'/api/server/*. This page will stop working after a restart.'
 		));
 	}
-	if(!values.route.gui.enabled){
-		ret.push(t('Disabling the admin route turns off this GUI.'));
-	}
 	return ret;
 }
 
@@ -815,15 +812,6 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						(value)=>{
 							edit((draft)=>{
 								draft.route.api.enabled = value;
-							});
-						}
-					)}
-					{checkboxField(
-						'/ (this GUI)',
-						form.route.gui.enabled,
-						(value)=>{
-							edit((draft)=>{
-								draft.route.gui.enabled = value;
 							});
 						}
 					)}

@@ -354,7 +354,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			res
 		);
 		const section = 'admin' === user.group ? 'config' : 'pets';
-		res.redirectUrl(`/gui/admin/${section}`);
+		res.redirectUrl(`/admin/${section}`);
 		return null;
 	}
 
@@ -485,7 +485,7 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 				res
 			);
 			const section = 'admin' === user.group ? 'config' : 'pets';
-			res.redirectUrl(`/gui/admin/${section}`);
+			res.redirectUrl(`/admin/${section}`);
 		}
 		catch(error){
 			res.sendApiError(error);

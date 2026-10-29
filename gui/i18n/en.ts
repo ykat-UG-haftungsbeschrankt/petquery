@@ -663,4 +663,26 @@ export const enMessages = {
 		"At least 16 printable characters, no spaces.",
 	"They cannot sign in to the admin GUI.":
 		"They cannot sign in to the admin GUI.",
+	"Connect to the PetQuery API":
+		"Connect to the PetQuery API",
+	"Enter the origin of the running API server.":
+		"Enter the origin of the running API server.",
+	"Vite saves the address in gui/.env.local for the local proxy.":
+		"Vite saves the address in gui/.env.local for the local proxy.",
+	"API server origin":
+		"API server origin",
+	"Use an HTTP(S) origin without a path, query, or credentials.":
+		"Use an HTTP(S) origin without a path, query, or credentials.",
+	"Enter a valid HTTP(S) API origin.":
+		"Enter a valid HTTP(S) API origin.",
+	"Unable to save the API endpoint.":
+		"Unable to save the API endpoint.",
+	"Unexpected API endpoint response.":
+		"Unexpected API endpoint response.",
+	"Endpoint saved. Restart Vite to connect.":
+		"Endpoint saved. Restart Vite to connect.",
+	"Save endpoint":
+		"Save endpoint",
+	"Saving endpoint...":
+		"Saving endpoint...",
 } as const;

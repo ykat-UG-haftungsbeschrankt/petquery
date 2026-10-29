@@ -19,6 +19,7 @@ import { PetQueryLogLevel } from '#petquery/log/level.js';
 import { PetQuerySchema } from '#petquery/schema.js';
 import { PetQuerySchemaTypeLogLevel } from '#schema/type/log/level.js';
 import { PetQueryTypes } from '#petquery/types.js';
+import { PetQueryArgs } from '#petquery/args.js';
 import { PetQueryAssert } from '#petquery/assert.js';
 import { readFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
@@ -101,11 +102,6 @@ export type PetQueryConfigServerType = {
 		api:{
 			plugins:Set<utf8_t>;
 			enabled:bool_t;
-		};
-		'/':{enabled:bool_t};
-		gui:{
-			enabled:bool_t;
-			path:filename_t;
 		};
 	};
 };
@@ -232,13 +228,6 @@ const configSchema = T.Object({
 			plugins:T.Array(T.String({minLength:1}),{maxItems:1000}),
 			enabled:T.Boolean()
 		},{additionalProperties:false}),
-		'/':T.Object({
-			enabled:T.Boolean()
-		},{additionalProperties:false}),
-		gui:T.Object({
-			enabled:T.Boolean(),
-			path:T.String({minLength:1})
-		},{additionalProperties:false})
 	},{additionalProperties:false})
 },{additionalProperties:false});
 
@@ -279,143 +268,32 @@ function _createDatabase(
 	});
 }
 
-function _createServerConfig(
-	config:PetQueryConfigFileType,
-	configDirectory:filename_t
-):PetQueryConfigServerType{
-	if(undefined !== config.authenticate.bearer
-	|| undefined !== config.authenticate.bearer_env){
-		throw new Error(
-			'Static bearer tokens are no longer supported. Remove '
-			+'authenticate.bearer and authenticate.bearer_env, then create '
-			+'API clients in the admin GUI.'
-		);
-	}
 
-	const certificate:ServerOptions = {};
-	if(undefined !== config.https.certificate.key){
-		certificate.key = config.https.certificate.key;
-	}
-	if(undefined !== config.https.certificate.cert){
-		certificate.cert = config.https.certificate.cert;
-	}
-	const uploadOptions:fileUpload.Options = {
-		abortOnLimit:true,
-		useTempFiles:false
-	};
-	const trustedProxies = PetQueryIp.validateTrustedProxies(
-		config.http.trusted_proxies ?? []
-	);
-	const aiSearchPath = resolve(
-		configDirectory,
-		config.ai_search_path
-	);
-	const logging:PetQueryLogConfig = {
-		level:config.logging?.level ?? PetQueryLogLevel.Info,
-		request:{
-			enabled:config.logging?.request?.enabled ?? true
-		},
-		file:{
-			path:resolve(
-				configDirectory,
-				config.logging?.file?.path ?? 'petquery.log'
-			),
-			max_size:config.logging?.file?.max_size ?? 10485760,
-			max_files:config.logging?.file?.max_files ?? 5
-		}
-	};
-	PetQueryLog._initialize(logging);
-
-	return {
-		api:config.api,
-		adminContact:config.adminContact,
-		companyAddress:config.companyAddress,
-		http:{
-			host:config.http.host ?? '0.0.0.0',
-			port:config.http.port,
-			enabled:config.http.enabled,
-			trusted_proxies:trustedProxies
-		},
-		https:{
-			host:config.https.host ?? '0.0.0.0',
-			port:config.https.port,
-			enabled:config.https.enabled,
-			certificate
-		},
-		authenticate:{
-			mode:config.authenticate.mode,
-			providers:config.authenticate.providers,
-			plugin_options:config.authenticate.plugin_options,
-			session:config.authenticate.session,
-			lmdb:config.authenticate.lmdb,
-			ldap:config.authenticate.ldap,
-			oidc:config.authenticate.oidc
-		},
-		file:{
-			upload:{
-				enabled:config.file.upload.enabled,
-				max_file_size:config.file.upload.max_file_size,
-				options:uploadOptions
-			}
-		},
-		logging,
-		max_results_per_module:config.max_results_per_module,
-		max_results_total:config.max_results_total,
-		index:config.index,
-		database:_createDatabase(
-			config.database,
-			configDirectory,
-			aiSearchPath
-		),
-		route:{
-			api:{
-				plugins:new Set(config.route.api.plugins),
-				enabled:config.route.api.enabled
-			},
-			'/':config.route['/'],
-			gui:{
-				enabled:config.route.gui.enabled,
-				path:resolve(configDirectory,config.route.gui.path)
-			}
-		}
-	};
-}
 
 export class PetQueryConfig{
+	protected static _configPath:path_t|null = null;
 	protected static _json:PetQuerySchemaServerDatabaseConfigEntryType|null = null;
 	protected static _settings:PetQueryConfigType|undefined;
 
 	private constructor(){}
 
-	static async loadFromCommandLine(
-		args:readonly utf8_t[]
+	static async loadFromFile(
+		configPath:path_t
 	):Promise<void>{
-		let configPath:utf8_t|undefined;
-		if(1 === args.length){
-			configPath = args[0];
-		}else if(2 === args.length && '--config' === args[0]){
-			configPath = args[1];
-		}
-		if(undefined === configPath || '' === configPath){
-			throw new Error(
-				'Usage: node dist/index.js --config <server-config.json>'
-			);
-		}
-		const absolutePath = resolve(configPath);
-		const text = await readFile(absolutePath,'utf8');
+		this._configPath = resolve(configPath);
+		const text = await readFile(this._configPath,'utf8');
 		let json:json_t;
 		try{
 			json = JSON.parse(text);
 			this._json = PetQuerySchemaServerDatabaseConfigEntry.fromJson(json);
 		}
 		catch(error){
-			throw new Error(`Invalid JSON configuration "${absolutePath}"`,{
+			throw new Error(`Invalid JSON configuration "${this._configPath}"`,{
 				cause:error
 			});
 		}
 		const parsed = PetQuerySchema.parse(configValidator,json);
-		const configDirectory = dirname(absolutePath);
-		const server = _createServerConfig(parsed,configDirectory);
+		const server = this._createServerConfig(parsed);
 		this._settings = {
 			server,
 			plugin:new Map()
@@ -458,5 +336,93 @@ export class PetQueryConfig{
 			throw new Error('Load a JSON server config before use');
 		}
 		return this._settings;
+	}
+
+	protected static _createServerConfig(
+		config:PetQueryConfigFileType,
+		configDirectory:filename_t
+	):PetQueryConfigServerType{
+		const certificate:ServerOptions = {};
+		if(undefined !== config.https.certificate.key){
+			certificate.key = config.https.certificate.key;
+		}
+		if(undefined !== config.https.certificate.cert){
+			certificate.cert = config.https.certificate.cert;
+		}
+		const uploadOptions:fileUpload.Options = {
+			abortOnLimit:true,
+			useTempFiles:false
+		};
+		const trustedProxies = PetQueryIp.validateTrustedProxies(
+			config.http.trusted_proxies ?? []
+		);
+		const aiSearchPath = resolve(
+			configDirectory,
+			config.ai_search_path
+		);
+		const logging:PetQueryLogConfig = {
+			level:config.logging?.level ?? PetQueryLogLevel.Info,
+			request:{
+				enabled:config.logging?.request?.enabled ?? true
+			},
+			file:{
+				path:resolve(
+					configDirectory,
+					config.logging?.file?.path ?? 'petquery.log'
+				),
+				max_size:config.logging?.file?.max_size ?? 10485760,
+				max_files:config.logging?.file?.max_files ?? 5
+			}
+		};
+		PetQueryLog._initialize(logging);
+
+		return {
+			api:config.api,
+			adminContact:config.adminContact,
+			companyAddress:config.companyAddress,
+			http:{
+				host:config.http.host ?? '0.0.0.0',
+				port:config.http.port,
+				enabled:config.http.enabled,
+				trusted_proxies:trustedProxies
+			},
+			https:{
+				host:config.https.host ?? '0.0.0.0',
+				port:config.https.port,
+				enabled:config.https.enabled,
+				certificate
+			},
+			authenticate:{
+				mode:config.authenticate.mode,
+				providers:config.authenticate.providers,
+				plugin_options:config.authenticate.plugin_options,
+				session:config.authenticate.session,
+				lmdb:config.authenticate.lmdb,
+				ldap:config.authenticate.ldap,
+				oidc:config.authenticate.oidc
+			},
+			file:{
+				upload:{
+					enabled:config.file.upload.enabled,
+					max_file_size:config.file.upload.max_file_size,
+					options:uploadOptions
+				}
+			},
+			logging,
+			max_results_per_module:config.max_results_per_module,
+			max_results_total:config.max_results_total,
+			index:config.index,
+			database:_createDatabase(
+				config.database,
+				configDirectory,
+				aiSearchPath
+			),
+			route:{
+				api:{
+					plugins:new Set(config.route.api.plugins),
+					enabled:config.route.api.enabled
+				}
+			}
+		};
 	}
 };

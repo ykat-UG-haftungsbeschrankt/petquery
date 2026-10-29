@@ -6,6 +6,7 @@
  */
 
 import { Admin } from '#gui/admin';
+import { ApiEndpointSetup } from '#gui/api-endpoint-setup';
 import { App as Framework7App } from 'framework7-react';
 import { Button } from 'framework7-react';
 import { Docs } from '#gui/docs';
@@ -92,15 +93,42 @@ export function App():ReactElement{
 	const [providers,setProviders] = useState<Array<AuthProvider>>([]);
 	const [user,setUser] = useState<AuthUser|null>(null);
 	const [checking,setChecking] = useState<bool_t>(true);
+	const [apiEndpointRequired,setApiEndpointRequired] =
+		useState<bool_t>(false);
 	const [setupRequired,setSetupRequired] = useState<bool_t>(false);
 	const [authError,setAuthError] = useState<utf8_t|null>(null);
 	const token:utf8_t = '';
+	const setupInProgress = apiEndpointRequired || setupRequired;
 
 	useEffect(()=>{
 		sessionStorage.removeItem('petquery.admin.token');
 		sessionStorage.removeItem('petquery.admin.provider');
 		let active = true;
 		async function restoreSession():Promise<void>{
+			if(import.meta.env.DEV){
+				const response = await fetch(
+					'/__petquery/api-endpoint',
+					{cache:'no-store'}
+				);
+				if(!active){
+					return;
+				}
+				if(!response.ok){
+					throw new Error(
+						`Vite endpoint status failed: ${response.status}`
+					);
+				}
+				const endpointStatus = await response.text();
+				if('missing' === endpointStatus){
+					setApiEndpointRequired(true);
+					return;
+				}
+				if('configured' !== endpointStatus){
+					throw new Error(
+						'Vite API endpoint status is invalid'
+					);
+				}
+			}
 			const auth = await getAuthProviders();
 			if(!active){
 				return;
@@ -208,6 +236,8 @@ export function App():ReactElement{
 				<p className="muted">{t('Checking your session...')}</p>
 			</Panel>
 		);
+	}else if(apiEndpointRequired){
+		content = <ApiEndpointSetup/>;
 	}else if(setupRequired){
 		content = <Setup onComplete={onSetupComplete}/>;
 	}else if('docs' === page){
@@ -241,7 +271,7 @@ export function App():ReactElement{
 							<Button
 								type="button"
 								className="brand-button"
-								disabled={setupRequired}
+								disabled={setupInProgress}
 								onClick={()=>{
 									changePage('search');
 								}}
@@ -251,7 +281,7 @@ export function App():ReactElement{
 						</NavLeft>
 						<NavRight>
 							<div className="desktop-nav">
-								{!setupRequired && PAGES.map((entry)=>{
+								{!setupInProgress && PAGES.map((entry)=>{
 									return (
 										<Button
 											key={entry.page}
@@ -290,7 +320,7 @@ export function App():ReactElement{
 									? <span className="auth-state">
 										{t('Checking...')}
 									</span>
-									: setupRequired
+									: setupInProgress
 										? <span className="auth-state">
 											{t('Initial setup')}
 										</span>
@@ -323,7 +353,7 @@ export function App():ReactElement{
 					>
 						{content}
 					</main>
-					{!setupRequired && <Toolbar
+					{!setupInProgress && <Toolbar
 						bottom
 						className="mobile-tabbar"
 					>

@@ -1,6 +1,7 @@
 /dist/
 node_modules/
 /docs/
+/gui/public/typedoc/
 /var/
 /aisearch/data.json
 /aisearch/*.tmp

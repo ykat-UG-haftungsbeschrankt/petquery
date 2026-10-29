@@ -678,4 +678,29 @@ export const deMessages:I18nMessages = {
 		"Mindestens 16 druckbare Zeichen, keine Leerzeichen.",
 	"They cannot sign in to the admin GUI.":
 		"Sie können sich nicht an der Admin-GUI anmelden.",
+	"Connect to the PetQuery API":
+		"Mit der PetQuery-API verbinden",
+	"Enter the origin of the running API server.":
+		"Geben Sie den Ursprung des laufenden API-Servers ein.",
+	"Vite saves the address in gui/.env.local for the local proxy.":
+		"Vite speichert diese Adresse in gui/.env.local und verwendet sie "
+		+"als lokales Proxy-Ziel.",
+	"API server origin":
+		"Ursprung des API-Servers",
+	"Use an HTTP(S) origin without a path, query, or credentials.":
+		"Verwenden Sie einen HTTP(S)-Ursprung ohne Pfad, Abfrage oder "
+		+"Zugangsdaten.",
+	"Enter a valid HTTP(S) API origin.":
+		"Geben Sie einen gültigen HTTP(S)-Ursprung der API ein.",
+	"Unable to save the API endpoint.":
+		"Der API-Endpunkt konnte nicht gespeichert werden.",
+	"Unexpected API endpoint response.":
+		"Unerwartete Antwort beim Speichern des API-Endpunkts.",
+	"Endpoint saved. Restart Vite to connect.":
+		"Endpunkt gespeichert. Starten Sie Vite neu, um die Verbindung "
+		+"herzustellen.",
+	"Save endpoint":
+		"Endpunkt speichern",
+	"Saving endpoint...":
+		"Endpunkt wird gespeichert...",
 };

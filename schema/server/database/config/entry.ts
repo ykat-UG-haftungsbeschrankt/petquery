@@ -144,11 +144,6 @@ const schema = strict({
 			 enabled:T.Boolean()
 			,plugins:T.Array(T.String({minLength:1}),{maxItems:1000})
 		})
-		,'/':strict({enabled:T.Boolean()})
-		,gui:strict({
-			enabled:T.Boolean(),
-			path:T.Optional(T.String({minLength:1}))
-		})
 	})
 });
 
