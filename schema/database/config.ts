@@ -8,9 +8,11 @@
 import { PetQuerySchema } from '#petquery/schema.js';
 import { PetQuerySchemaAbstract } from '#petquery/schema.js';
 import { PetQuerySchemaDatabaseConfigLmdb } from '#schema/database/config/lmdb.js';
-import {
-	PetQuerySchemaDatabaseConfigPostgresql
-} from '#schema/database/config/postgresql.js';
+import { PetQuerySchemaDatabaseConfigMariadb } from '#schema/database/config/mariadb.js';
+import { PetQuerySchemaDatabaseConfigMongodb } from '#schema/database/config/mongodb.js';
+import { PetQuerySchemaDatabaseConfigPostgresql } from '#schema/database/config/postgresql.js';
+import { PetQuerySchemaDatabaseConfigRedis } from '#schema/database/config/redis.js';
+import { PetQuerySchemaDatabaseConfigSqlite } from '#schema/database/config/sqlite.js';
 
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 
@@ -18,7 +20,11 @@ const T = PetQuerySchema.type;
 
 const schema = T.Union([
 	PetQuerySchemaDatabaseConfigLmdb.getSchema(),
-	PetQuerySchemaDatabaseConfigPostgresql.getSchema()
+	PetQuerySchemaDatabaseConfigPostgresql.getSchema(),
+	PetQuerySchemaDatabaseConfigMariadb.getSchema(),
+	PetQuerySchemaDatabaseConfigMongodb.getSchema(),
+	PetQuerySchemaDatabaseConfigRedis.getSchema(),
+	PetQuerySchemaDatabaseConfigSqlite.getSchema()
 ],{
 	 title:'GET /api/config/get File'
 	,additionalProperties:false

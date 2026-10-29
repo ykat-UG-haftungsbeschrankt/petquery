@@ -9,6 +9,7 @@ import { Button as Framework7Button } from 'framework7-react';
 import { getConfig } from '@petquery/api-client';
 import { Panel } from '#gui/panel';
 import { saveConfig } from '@petquery/api-client';
+import { isJsonRecord } from '#gui/json';
 import { useAction } from '#gui/action';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
@@ -100,33 +101,6 @@ function formatBytes(bytes:uint_t,language:Language):utf8_t{
 		maximumFractionDigits:2
 	}).format(bytes / 1048576);
 	return `${formatted} MiB`;
-}
-
-function isJson(value:unknown):value is json_t{
-	if(null === value
-	|| 'string' === typeof value
-	|| 'boolean' === typeof value){
-		return true;
-	}
-	if('number' === typeof value){
-		return Number.isFinite(value);
-	}
-	if(Array.isArray(value)){
-		return value.every(isJson);
-	}
-	if('object' === typeof value){
-		return Object.values(value).every(isJson);
-	}
-	return false;
-}
-
-function isJsonRecord(
-	value:unknown
-):value is Record<utf8_t,json_t>{
-	return 'object' === typeof value
-		&& null !== value
-		&& !Array.isArray(value)
-		&& Object.values(value).every(isJson);
 }
 
 function parsePluginOptions(

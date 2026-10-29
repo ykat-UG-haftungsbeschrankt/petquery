@@ -11,12 +11,19 @@
 			"type": "object",
 			"required": [
 				"gid",
+				"api",
+				"adminContact",
+				"companyAddress",
 				"http",
+				"https",
 				"authenticate",
 				"file",
 				"max_results_per_module",
 				"max_results_total",
 				"index",
+				"logging",
+				"database",
+				"ai_search_path",
 				"route"
 			],
 			"properties": {
@@ -48,7 +55,10 @@
 				"http": {
 					"type": "object",
 					"required": [
-						"port"
+						"host",
+						"port",
+						"enabled",
+						"trusted_proxies"
 					],
 					"properties": {
 						"host": {
@@ -80,6 +90,7 @@
 				"https": {
 					"type": "object",
 					"required": [
+						"host",
 						"port",
 						"enabled",
 						"certificate"
@@ -100,6 +111,10 @@
 						},
 						"certificate": {
 							"type": "object",
+							"required": [
+								"key",
+								"cert"
+							],
 							"properties": {
 								"key": {
 									"type": "string"
@@ -117,6 +132,8 @@
 					"type": "object",
 					"required": [
 						"mode",
+						"providers",
+						"plugin_options",
 						"session",
 						"lmdb",
 						"ldap",
@@ -141,19 +158,6 @@
 							"patternProperties": {
 								"^.*$": {}
 							}
-						},
-						"bearer": {
-							"type": "array",
-							"items": {
-								"type": "string",
-								"pattern": "^[\\x21-\\x7e]{16,256}$"
-							},
-							"minItems": 0,
-							"maxItems": 100
-						},
-						"bearer_env": {
-							"type": "string",
-							"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
 						},
 						"session": {
 							"type": "object",
@@ -355,6 +359,11 @@
 				},
 				"logging": {
 					"type": "object",
+					"required": [
+						"level",
+						"request",
+						"file"
+					],
 					"properties": {
 						"level": {
 							"anyOf": [
@@ -378,6 +387,9 @@
 						},
 						"request": {
 							"type": "object",
+							"required": [
+								"enabled"
+							],
 							"properties": {
 								"enabled": {
 									"type": "boolean"
@@ -387,6 +399,11 @@
 						},
 						"file": {
 							"type": "object",
+							"required": [
+								"path",
+								"max_size",
+								"max_files"
+							],
 							"properties": {
 								"path": {
 									"type": "string",
@@ -446,6 +463,84 @@
 								}
 							},
 							"additionalProperties": false
+						},
+						{
+							"type": "object",
+							"required": [
+								"type",
+								"connectionString"
+							],
+							"properties": {
+								"type": {
+									"type": "string",
+									"const": "mariadb"
+								},
+								"connectionString": {
+									"type": "string",
+									"minLength": 1
+								}
+							},
+							"additionalProperties": false
+						},
+						{
+							"type": "object",
+							"required": [
+								"type",
+								"connectionString",
+								"database"
+							],
+							"properties": {
+								"type": {
+									"type": "string",
+									"const": "mongodb"
+								},
+								"connectionString": {
+									"type": "string",
+									"minLength": 1
+								},
+								"database": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 64
+								}
+							},
+							"additionalProperties": false
+						},
+						{
+							"type": "object",
+							"required": [
+								"type",
+								"connectionString"
+							],
+							"properties": {
+								"type": {
+									"type": "string",
+									"const": "redis"
+								},
+								"connectionString": {
+									"type": "string",
+									"minLength": 1
+								}
+							},
+							"additionalProperties": false
+						},
+						{
+							"type": "object",
+							"required": [
+								"type",
+								"path"
+							],
+							"properties": {
+								"type": {
+									"type": "string",
+									"const": "sqlite"
+								},
+								"path": {
+									"type": "string",
+									"minLength": 1
+								}
+							},
+							"additionalProperties": false
 						}
 					]
 				},
@@ -492,12 +587,19 @@
 					"type": "object",
 					"required": [
 						"gid",
+						"api",
+						"adminContact",
+						"companyAddress",
 						"http",
+						"https",
 						"authenticate",
 						"file",
 						"max_results_per_module",
 						"max_results_total",
 						"index",
+						"logging",
+						"database",
+						"ai_search_path",
 						"route"
 					],
 					"properties": {
@@ -529,7 +631,10 @@
 						"http": {
 							"type": "object",
 							"required": [
-								"port"
+								"host",
+								"port",
+								"enabled",
+								"trusted_proxies"
 							],
 							"properties": {
 								"host": {
@@ -561,6 +666,7 @@
 						"https": {
 							"type": "object",
 							"required": [
+								"host",
 								"port",
 								"enabled",
 								"certificate"
@@ -581,6 +687,10 @@
 								},
 								"certificate": {
 									"type": "object",
+									"required": [
+										"key",
+										"cert"
+									],
 									"properties": {
 										"key": {
 											"type": "string"
@@ -598,6 +708,8 @@
 							"type": "object",
 							"required": [
 								"mode",
+								"providers",
+								"plugin_options",
 								"session",
 								"lmdb",
 								"ldap",
@@ -622,19 +734,6 @@
 									"patternProperties": {
 										"^.*$": {}
 									}
-								},
-								"bearer": {
-									"type": "array",
-									"items": {
-										"type": "string",
-										"pattern": "^[\\x21-\\x7e]{16,256}$"
-									},
-									"minItems": 0,
-									"maxItems": 100
-								},
-								"bearer_env": {
-									"type": "string",
-									"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
 								},
 								"session": {
 									"type": "object",
@@ -836,6 +935,11 @@
 						},
 						"logging": {
 							"type": "object",
+							"required": [
+								"level",
+								"request",
+								"file"
+							],
 							"properties": {
 								"level": {
 									"anyOf": [
@@ -859,6 +963,9 @@
 								},
 								"request": {
 									"type": "object",
+									"required": [
+										"enabled"
+									],
 									"properties": {
 										"enabled": {
 											"type": "boolean"
@@ -868,6 +975,11 @@
 								},
 								"file": {
 									"type": "object",
+									"required": [
+										"path",
+										"max_size",
+										"max_files"
+									],
 									"properties": {
 										"path": {
 											"type": "string",
@@ -920,6 +1032,84 @@
 										"type": {
 											"type": "string",
 											"const": "lmdb"
+										},
+										"path": {
+											"type": "string",
+											"minLength": 1
+										}
+									},
+									"additionalProperties": false
+								},
+								{
+									"type": "object",
+									"required": [
+										"type",
+										"connectionString"
+									],
+									"properties": {
+										"type": {
+											"type": "string",
+											"const": "mariadb"
+										},
+										"connectionString": {
+											"type": "string",
+											"minLength": 1
+										}
+									},
+									"additionalProperties": false
+								},
+								{
+									"type": "object",
+									"required": [
+										"type",
+										"connectionString",
+										"database"
+									],
+									"properties": {
+										"type": {
+											"type": "string",
+											"const": "mongodb"
+										},
+										"connectionString": {
+											"type": "string",
+											"minLength": 1
+										},
+										"database": {
+											"type": "string",
+											"minLength": 1,
+											"maxLength": 64
+										}
+									},
+									"additionalProperties": false
+								},
+								{
+									"type": "object",
+									"required": [
+										"type",
+										"connectionString"
+									],
+									"properties": {
+										"type": {
+											"type": "string",
+											"const": "redis"
+										},
+										"connectionString": {
+											"type": "string",
+											"minLength": 1
+										}
+									},
+									"additionalProperties": false
+								},
+								{
+									"type": "object",
+									"required": [
+										"type",
+										"path"
+									],
+									"properties": {
+										"type": {
+											"type": "string",
+											"const": "sqlite"
 										},
 										"path": {
 											"type": "string",

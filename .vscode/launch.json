@@ -11,7 +11,9 @@
             "program": "${workspaceFolder}/dist/index.js",
             "args": [
                 "--config",
-                "${workspaceFolder}/config/debug/server-a.json"
+                "${workspaceFolder}/config/debug/server-`date +%Y%m%d-%H%M`.json",
+				"--port",
+                "50101"
             ],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "npm: build",
@@ -31,6 +33,27 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Bootstrap PetQuery",
+            "program": "${workspaceFolder}/dist/index.js",
+            "args": [
+                "--config",
+                "${workspaceFolder}/config/debug/bootstrap.json",
+                "--port",
+                "50101"
+            ],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "npm: build:server",
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js"
+            ],
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Generate and Open Docs",
             "program": "${workspaceFolder}/node_modules/typedoc/bin/typedoc",
             "cwd": "${workspaceFolder}",
@@ -38,7 +61,7 @@
             "outputCapture": "std",
             "serverReadyAction": {
                 "pattern": "html generated at",
-                "uriFormat": "file://${workspaceFolder}/docs/index.html",
+                "uriFormat": "file://${workspaceFolder}/gui/public/typedoc/index.html",
                 "action": "openExternally"
             },
             "skipFiles": [

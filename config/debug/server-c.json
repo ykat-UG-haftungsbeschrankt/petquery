@@ -8,13 +8,17 @@
 	"http": {
 		"host": "127.0.0.1",
 		"port": 50103,
-		"enabled": true
+		"enabled": true,
+		"trusted_proxies": []
 	},
 	"https": {
 		"host": "127.0.0.1",
 		"port": 50103,
 		"enabled": false,
-		"certificate": {}
+		"certificate": {
+			"key": "",
+			"cert": ""
+		}
 	},
 	"authenticate": {
 		"mode": "lmdb",

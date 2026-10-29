@@ -14,7 +14,11 @@ const T = PetQuerySchema.type;
 
 const schema = T.Enum([
 		'lmdb',
-		'postgresql'
+		'mariadb',
+		'mongodb',
+		'postgresql',
+		'redis',
+		'sqlite'
 	]
 	,{
 	 title:'GET /api/config/get File'

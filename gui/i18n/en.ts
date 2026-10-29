@@ -685,4 +685,92 @@ export const enMessages = {
 		"Save endpoint",
 	"Saving endpoint...":
 		"Saving endpoint...",
+	"Bootstrap server settings":
+		"Bootstrap server settings",
+	"The configuration will be saved to the selected startup file.":
+		"The configuration will be saved to the selected startup file.",
+	"The administrator account is created after the server starts.":
+		"The administrator account is created after the server starts.",
+	"Enable HTTP or HTTPS so the server can accept API requests.":
+		"Enable HTTP or HTTPS so the server can accept API requests.",
+	"At least one authentication provider is required.":
+		"At least one authentication provider is required.",
+	"Provide a TLS key and certificate to enable HTTPS.":
+		"Provide a TLS key and certificate to enable HTTPS.",
+	"Unable to save bootstrap configuration.":
+		"Unable to save bootstrap configuration.",
+	"Unexpected response from the bootstrap server.":
+		"Unexpected response from the bootstrap server.",
+	"Server identity":
+		"Server identity",
+	"Public API endpoint URI":
+		"Public API endpoint URI",
+	"HTTP host":
+		"HTTP host",
+	"HTTPS":
+		"HTTPS",
+	"HTTPS host":
+		"HTTPS host",
+	"HTTPS port":
+		"HTTPS port",
+	"TLS private key":
+		"TLS private key",
+	"TLS certificate":
+		"TLS certificate",
+	"Database backend":
+		"Database backend",
+	"LMDB":
+		"LMDB",
+	"PostgreSQL":
+		"PostgreSQL",
+	"MariaDB":
+		"MariaDB",
+	"MongoDB":
+		"MongoDB",
+	"Redis":
+		"Redis",
+	"SQLite":
+		"SQLite",
+	"LMDB data path":
+		"LMDB data path",
+	"PostgreSQL connection string":
+		"PostgreSQL connection string",
+	"MariaDB connection string":
+		"MariaDB connection string",
+	"MongoDB connection string":
+		"MongoDB connection string",
+	"MongoDB database name":
+		"MongoDB database name",
+	"Redis connection string":
+		"Redis connection string",
+	"SQLite data path":
+		"SQLite data path",
+	"AI search database path":
+		"AI search database path",
+	"Authentication mode":
+		"Authentication mode",
+	"LMDB authentication":
+		"LMDB authentication",
+	"LDAP settings":
+		"LDAP settings",
+	"OpenID Connect settings":
+		"OpenID Connect settings",
+	"Logging":
+		"Logging",
+	"Log level":
+		"Log level",
+	"Request logging":
+		"Request logging",
+	"Log file path":
+		"Log file path",
+	"Log file max size (bytes)":
+		"Log file max size (bytes)",
+	"Max log files":
+		"Max log files",
+	"Save and start server":
+		"Save and start server",
+	"Saving bootstrap configuration...":
+		"Saving bootstrap configuration...",
+	"Configuration saved. Starting the API server...":
+		"Configuration saved. Starting the API server...",
 } as const;

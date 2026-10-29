@@ -775,7 +775,6 @@ function normalizeConfigValues(
 		authenticate:{
 			...authenticate,
 			mode,
-			bearer:[],
 			providers,
 			plugin_options:authenticate.plugin_options ?? {}
 		}

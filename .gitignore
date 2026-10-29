@@ -1,4 +1,5 @@
 /dist/
+/config/debug/bootstrap.json
 node_modules/
 /docs/
 /gui/public/typedoc/

@@ -222,7 +222,8 @@ export default defineConfig(({mode})=>{
 			...(null === target ? {} : {
 				proxy:{
 					'/api':{target,changeOrigin:true},
-					'/auth':{target,changeOrigin:true}
+					'/auth':{target,changeOrigin:true},
+					'/bootstrap':{target,changeOrigin:true}
 				}
 			})
 		}

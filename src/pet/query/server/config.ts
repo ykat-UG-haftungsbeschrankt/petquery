@@ -67,7 +67,6 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 				mode,
 				providers,
 				plugin_options:config.authenticate.plugin_options,
-				bearer:[],
 				session:{
 					...defaults.authenticate.session,
 					...config.authenticate.session
@@ -122,19 +121,13 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 		const sync = config.index.sync;
 		const providers = values.authenticate.providers;
 		const trustedProxies = values.http.trusted_proxies;
-		if(undefined === providers){
-			throw new Error('Authentication providers are required');
-		}
-		if(undefined === trustedProxies){
-			throw new Error('Trusted proxies are required');
-		}
 
 		config.http.port = values.http.port;
 		config.http.trusted_proxies = trustedProxies;
 		config.authenticate.mode = values.authenticate.mode;
 		config.authenticate.providers = providers;
 		config.authenticate.plugin_options =
-			values.authenticate.plugin_options ?? {};
+			values.authenticate.plugin_options;
 		config.authenticate.session.cookie_name =
 			values.authenticate.session.cookie_name;
 		config.authenticate.session.max_age =
@@ -194,40 +187,30 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 		values:PetQuerySchemaServerDatabaseConfigEntryType
 	):PetQuerySchemaServerDatabaseConfigEntryType{
 		const defaults = PetQueryConfig.getLoadedJson();
-		let https:PetQuerySchemaServerDatabaseConfigEntryType['https'];
-		if(undefined === defaults.https){
-			https = values.https;
-		}else if(undefined === values.https){
-			https = defaults.https;
-		}else{
-			https = {
-				...defaults.https,
-				...values.https,
-				certificate:{
-					...defaults.https.certificate,
-					...values.https.certificate
-				}
-			};
-		}
-		const logging = undefined === defaults.logging
-			&& undefined === values.logging
-			? undefined
-			: {
-				...defaults.logging,
-				...values.logging,
-				request:{
-					...defaults.logging?.request,
-					...values.logging?.request
-				},
-				file:{
-					...defaults.logging?.file,
-					...values.logging?.file
-				}
-			};
+		const https = {
+			...defaults.https,
+			...values.https,
+			certificate:{
+				...defaults.https.certificate,
+				...values.https.certificate
+			}
+		};
+		const logging = {
+			...defaults.logging,
+			...values.logging,
+			request:{
+				...defaults.logging.request,
+				...values.logging.request
+			},
+			file:{
+				...defaults.logging.file,
+				...values.logging.file
+			}
+		};
 		return {
 			...defaults,
 			...values,
-			...(undefined === https ? {} : {https}),
+			https,
 			http:{
 				...defaults.http,
 				...values.http
@@ -274,7 +257,7 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 					...values.route.api
 				}
 			},
-			...(undefined === logging ? {} : {logging})
+			logging
 		};
 	}
 
@@ -305,20 +288,15 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 		if(expectedGid !== values.gid){
 			throw new Error('Configuration gid does not match');
 		}
-		const {
-			bearer:UNUSED_bearer,
-			bearer_env:UNUSED_bearer_env,
-			...authenticate
-		} =
-			values.authenticate;
+		const authenticate = values.authenticate;
 		const http = {
 			...values.http,
 			trusted_proxies:PetQueryIp.validateTrustedProxies(
-				values.http.trusted_proxies ?? []
+				values.http.trusted_proxies
 			)
 		};
 		const providers = this._getInteractiveProviders(
-			authenticate.providers ?? [authenticate.mode]
+			authenticate.providers
 		);
 		const firstProvider = providers[0];
 		if(undefined === firstProvider){
@@ -335,7 +313,6 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 				mode:'bearer' === authenticate.mode
 					? firstProvider
 					: authenticate.mode,
-				bearer:[],
 				providers
 			}
 		};

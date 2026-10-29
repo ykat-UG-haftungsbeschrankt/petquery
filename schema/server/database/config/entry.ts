@@ -23,47 +23,39 @@ function strict<P extends PetQuerySchemaProperties>(properties:P){
 
 const schema = strict({
 	 gid:T.String({format:'uuid'})
-	,api:T.Optional(strict({
+	,api:strict({
 		endpoint:T.String({format:'uri'})
-	}))
-	,adminContact:T.Optional(T.String({maxLength:1024}))
-	,companyAddress:T.Optional(T.String({maxLength:4096}))
+	})
+	,adminContact:T.String({maxLength:1024})
+	,companyAddress:T.String({maxLength:4096})
 	,http:strict({
-		host:T.Optional(T.String({minLength:1,maxLength:255})),
+		host:T.String({minLength:1,maxLength:255}),
 		port:T.Integer({minimum:1,maximum:65535})
-		,enabled:T.Optional(T.Boolean())
-		,trusted_proxies:T.Optional(T.Array(
+		,enabled:T.Boolean()
+		,trusted_proxies:T.Array(
 			T.String({minLength:1,maxLength:64}),
 			{maxItems:64,uniqueItems:true}
-		))
+		)
 	})
-	,https:T.Optional(strict({
-		host:T.Optional(T.String({minLength:1,maxLength:255})),
+	,https:strict({
+		host:T.String({minLength:1,maxLength:255}),
 		port:T.Integer({minimum:1,maximum:65535}),
 		enabled:T.Boolean(),
 		certificate:strict({
-			key:T.Optional(T.String()),
-			cert:T.Optional(T.String())
+			key:T.String(),
+			cert:T.String()
 		})
-	}))
+	})
 	,authenticate:strict({
 		mode:T.String({minLength:1})
-		,providers:T.Optional(T.Array(
+		,providers:T.Array(
 			T.String({minLength:1}),
 			{minItems:1,maxItems:1000}
-		))
-		,plugin_options:T.Optional(T.Record(
+		)
+		,plugin_options:T.Record(
 			T.String({minLength:1}),
 			T.Any()
-		))
-		// Kept empty for compatibility with previously saved config records.
-		,bearer:T.Optional(T.Array(
-			T.String({pattern:'^[\\x21-\\x7e]{16,256}$'}),
-			{minItems:0,maxItems:100}
-		))
-		,bearer_env:T.Optional(T.String({
-			pattern:'^[A-Za-z_][A-Za-z0-9_]*$'
-		}))
+		)
 		,session:strict({
 			 cookie_name:T.String({
 				pattern:'^[A-Za-z0-9._-]{1,64}$'
@@ -111,24 +103,24 @@ const schema = strict({
 			,max_servers:T.Integer({minimum:1,maximum:1000000})
 		})
 	})
-	,logging:T.Optional(strict({
-		level:T.Optional(PetQuerySchemaTypeLogLevel),
-		request:T.Optional(strict({
-			enabled:T.Optional(T.Boolean())
-		})),
-		file:T.Optional(strict({
-			path:T.Optional(T.String({minLength:1,maxLength:4096})),
-			max_size:T.Optional(T.Integer({
+	,logging:strict({
+		level:PetQuerySchemaTypeLogLevel,
+		request:strict({
+			enabled:T.Boolean()
+		}),
+		file:strict({
+			path:T.String({minLength:1,maxLength:4096}),
+			max_size:T.Integer({
 				minimum:1024,
 				maximum:10485760
-			})),
-			max_files:T.Optional(T.Integer({
+			}),
+			max_files:T.Integer({
 				minimum:2,
 				maximum:5
-			}))
-		}))
-	}))
-	,database:T.Optional(T.Union([
+			})
+		})
+	})
+	,database:T.Union([
 		strict({
 			type:T.Literal('postgresql'),
 			connectionString:T.String({minLength:1})
@@ -136,9 +128,26 @@ const schema = strict({
 		strict({
 			type:T.Literal('lmdb'),
 			path:T.String({minLength:1})
+		}),
+		strict({
+			type:T.Literal('mariadb'),
+			connectionString:T.String({minLength:1})
+		}),
+		strict({
+			type:T.Literal('mongodb'),
+			connectionString:T.String({minLength:1}),
+			database:T.String({minLength:1,maxLength:64})
+		}),
+		strict({
+			type:T.Literal('redis'),
+			connectionString:T.String({minLength:1})
+		}),
+		strict({
+			type:T.Literal('sqlite'),
+			path:T.String({minLength:1})
 		})
-	]))
-	,ai_search_path:T.Optional(T.String({minLength:1}))
+	])
+	,ai_search_path:T.String({minLength:1})
 	,route:strict({
 		 api:strict({
 			 enabled:T.Boolean()

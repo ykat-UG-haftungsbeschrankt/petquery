@@ -105,10 +105,13 @@ async function assertPortFree(port){
 }
 
 async function startServer(server){
+	const port = new URL(server.endpoint).port;
 	const child = spawn(process.execPath,[
 		resolve('dist/index.js'),
 		'--config',
-		resolve(server.config)
+		resolve(server.config),
+		'--port',
+		port
 	],{
 		cwd:process.cwd(),
 		env:process.env,

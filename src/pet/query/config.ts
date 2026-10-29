@@ -5,21 +5,19 @@
  * free of charge, without warranty of any kind.
  */
 
-import { PetQueryDatabaseAuthLmdb } from '#petquery/database/auth/lmdb.js';
-import { PetQueryDatabaseConfigLmdb } from '#petquery/database/config/lmdb.js';
-import { PetQueryDatabaseIndexLmdb } from '#petquery/database/index/lmdb.js';
-import { PetQueryDatabasePetLmdb } from '#petquery/database/pet/lmdb.js';
-import { PetQueryDatabasePostgresql } from '#petquery/database/postgresql.js';
-import { PetQueryDatabaseSessionLmdb } from '#petquery/database/session/lmdb.js';
 import { PetQueryDatabase } from '#petquery/database.js';
 import { PetQueryDatabaseEx } from '#petquery/database.js';
+import { PetQueryDatabaseLmdb } from '#petquery/database/lmdb.js';
+import { PetQueryDatabaseMariadb } from '#petquery/database/mariadb.js';
+import { PetQueryDatabaseMongodb } from '#petquery/database/mongodb.js';
+import { PetQueryDatabasePostgresql } from '#petquery/database/postgresql.js';
+import { PetQueryDatabaseRedis } from '#petquery/database/redis.js';
+import { PetQueryDatabaseSqlite } from '#petquery/database/sqlite.js';
 import { PetQueryIp } from '#petquery/ip.js';
 import { PetQueryLog } from '#petquery/log.js';
-import { PetQueryLogLevel } from '#petquery/log/level.js';
 import { PetQuerySchema } from '#petquery/schema.js';
-import { PetQuerySchemaTypeLogLevel } from '#schema/type/log/level.js';
+import { PetQuerySchemaServerDatabaseConfigEntry } from '#schema/server/database/config/entry.js';
 import { PetQueryTypes } from '#petquery/types.js';
-import { PetQueryArgs } from '#petquery/args.js';
 import { PetQueryAssert } from '#petquery/assert.js';
 import { readFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
@@ -28,12 +26,12 @@ import fileUpload from 'express-fileupload';
 
 import type { PetQueryLogConfig } from '#petquery/log.js';
 import type { PetQueryPluginConfig } from '#petquery/plugin.js';
-import type { PetQuerySchemaDatabaseConfigLmdbType } from '#schema/database/config/lmdb.js';
+import type { PetQuerySchemaServerDatabaseConfigEntryType } from '#schema/server/database/config/entry.js';
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 import type { ServerOptions } from 'node:https';
-import { PetQuerySchemaServerDatabaseConfigEntry, PetQuerySchemaServerDatabaseConfigEntryType } from '#schema/server/database/config/entry.js';
 
 export type PetQueryConfigServerType = {
+	gid:uuid_t;
 	api:{endpoint:uri_t};
 	adminContact:utf8_t;
 	companyAddress:utf8_t;
@@ -111,125 +109,7 @@ export type PetQueryConfigType = {
 	plugin:Map<string,PetQueryPluginConfig>;
 };
 
-const T = PetQuerySchema.type;
-const configSchema = T.Object({
-	gid:T.String({format:'uuid'}),
-	api:T.Object({
-		endpoint:T.String({format:'uri'})
-	},{additionalProperties:false}),
-	adminContact:T.String({maxLength:1024}),
-	companyAddress:T.String({maxLength:4096}),
-	http:T.Object({
-		host:T.Optional(T.String({minLength:1,maxLength:255})),
-		port:T.Integer({minimum:1,maximum:65535}),
-		enabled:T.Boolean(),
-		trusted_proxies:T.Optional(T.Array(
-			T.String({minLength:1,maxLength:64}),
-			{maxItems:64,uniqueItems:true}
-		))
-	},{additionalProperties:false}),
-	https:T.Object({
-		host:T.Optional(T.String({minLength:1,maxLength:255})),
-		port:T.Integer({minimum:1,maximum:65535}),
-		enabled:T.Boolean(),
-		certificate:T.Object({
-			key:T.Optional(T.String()),
-			cert:T.Optional(T.String())
-		},{additionalProperties:false})
-	},{additionalProperties:false}),
-	authenticate:T.Object({
-		mode:T.String({minLength:1}),
-		providers:T.Array(T.String({minLength:1}),{minItems:1}),
-		plugin_options:T.Record(T.String(),T.Any()),
-		bearer:T.Optional(T.Array(
-			T.String({pattern:'^[\\x21-\\x7e]{16,256}$'}),
-			{minItems:1,maxItems:100}
-		)),
-		bearer_env:T.Optional(T.String({
-			pattern:'^[A-Za-z_][A-Za-z0-9_]*$'
-		})),
-		session:T.Object({
-			cookie_name:T.String({
-				pattern:'^[A-Za-z0-9._-]{1,64}$'
-			}),
-			max_age:T.Integer({minimum:60000,maximum:2147483647}),
-			secure:T.Boolean()
-		},{additionalProperties:false}),
-		lmdb:T.Object({
-			users_name:T.String({minLength:1,maxLength:128}),
-			sessions_name:T.String({minLength:1,maxLength:128})
-		},{additionalProperties:false}),
-		ldap:T.Object({
-			url:T.String({maxLength:4096}),
-			bind_dn:T.String({maxLength:4096}),
-			bind_password:T.String({maxLength:4096}),
-			base_dn:T.String({maxLength:4096}),
-			user_filter:T.String({maxLength:4096}),
-			admin_group:T.String({maxLength:1024})
-		},{additionalProperties:false}),
-		oidc:T.Object({
-			issuer:T.String({maxLength:4096}),
-			client_id:T.String({maxLength:1024}),
-			client_secret:T.String({maxLength:4096}),
-			redirect_uri:T.String({maxLength:4096}),
-			scopes:T.String({maxLength:1024}),
-			admin_group:T.String({maxLength:1024})
-		},{additionalProperties:false})
-	},{additionalProperties:false}),
-	file:T.Object({
-		upload:T.Object({
-			enabled:T.Boolean(),
-			max_file_size:T.Integer({
-				minimum:1,
-				maximum:1073741824
-			})
-		},{additionalProperties:false})
-	},{additionalProperties:false}),
-	logging:T.Optional(T.Object({
-		level:T.Optional(PetQuerySchemaTypeLogLevel),
-		request:T.Optional(T.Object({
-			enabled:T.Optional(T.Boolean())
-		},{additionalProperties:false})),
-		file:T.Optional(T.Object({
-			path:T.Optional(T.String({minLength:1,maxLength:4096})),
-			max_size:T.Optional(T.Integer({
-				minimum:1024,
-				maximum:10485760
-			})),
-			max_files:T.Optional(T.Integer({
-				minimum:2,
-				maximum:5
-			}))
-		},{additionalProperties:false}))
-	},{additionalProperties:false})),
-	max_results_per_module:T.Integer({minimum:1,maximum:1000000}),
-	max_results_total:T.Integer({minimum:1,maximum:1000000}),
-	index:T.Object({
-		sync:T.Object({
-			enabled:T.Boolean(),
-			interval:T.Integer({minimum:1000,maximum:2147483647}),
-			timeout:T.Integer({minimum:100,maximum:2147483647}),
-			max_servers:T.Integer({minimum:1,maximum:1000000})
-		},{additionalProperties:false})
-	},{additionalProperties:false}),
-	database:T.Union([
-		T.Object({
-			type:T.Literal('postgresql'),
-			connectionString:T.String({minLength:1})
-		},{additionalProperties:false}),
-		T.Object({
-			type:T.Literal('lmdb'),
-			path:T.String({minLength:1})
-		},{additionalProperties:false})
-	]),
-	ai_search_path:T.String({minLength:1}),
-	route:T.Object({
-		api:T.Object({
-			plugins:T.Array(T.String({minLength:1}),{maxItems:1000}),
-			enabled:T.Boolean()
-		},{additionalProperties:false}),
-	},{additionalProperties:false})
-},{additionalProperties:false});
+const configSchema = PetQuerySchemaServerDatabaseConfigEntry.getSchema();
 
 type PetQueryConfigFileType =
 	PetQuerySchemaStatic<typeof configSchema>;
@@ -249,23 +129,40 @@ function _createDatabase(
 			)
 		);
 	}
-
-	const path = resolve(configDirectory,config.path);
-	const makeConfig = (
-		name:utf8_t
-	):PetQuerySchemaDatabaseConfigLmdbType=>{
-		return {type:'lmdb',path,name};
-	};
-	return new PetQueryDatabase({
-		dbAuth:new PetQueryDatabaseAuthLmdb(makeConfig('auth')),
-		dbConfig:new PetQueryDatabaseConfigLmdb(makeConfig('config')),
-		dbIndex:new PetQueryDatabaseIndexLmdb(makeConfig('index')),
-		dbPet:new PetQueryDatabasePetLmdb(
-			makeConfig('pet'),
+	if('mariadb' === config.type){
+		return new PetQueryDatabaseEx(
+			new PetQueryDatabaseMariadb(config,aiSearchPath)
+		);
+	}
+	if('mongodb' === config.type){
+		return new PetQueryDatabaseEx(
+			new PetQueryDatabaseMongodb(config,aiSearchPath)
+		);
+	}
+	if('redis' === config.type){
+		return new PetQueryDatabaseEx(
+			new PetQueryDatabaseRedis(config,aiSearchPath)
+		);
+	}
+	if('sqlite' === config.type){
+		return new PetQueryDatabaseEx(
+			new PetQueryDatabaseSqlite(
+				{
+					type:'sqlite',
+					path:resolve(configDirectory,config.path)
+				},
+				aiSearchPath
+			)
+		);
+	}
+	if('lmdb' === config.type){
+		return new PetQueryDatabaseLmdb(
+			config,
+			configDirectory,
 			aiSearchPath
-		),
-		dbSession:new PetQueryDatabaseSessionLmdb(makeConfig('session'))
-	});
+		);
+	}
+	throw new Error('Unsupported database type');
 }
 
 
@@ -280,20 +177,24 @@ export class PetQueryConfig{
 	static async loadFromFile(
 		configPath:path_t
 	):Promise<void>{
-		this._configPath = resolve(configPath);
-		const text = await readFile(this._configPath,'utf8');
+		const absolutePath = resolve(configPath);
+		this._configPath = absolutePath;
+		const text = await readFile(absolutePath,'utf8');
 		let json:json_t;
 		try{
 			json = JSON.parse(text);
 			this._json = PetQuerySchemaServerDatabaseConfigEntry.fromJson(json);
 		}
 		catch(error){
-			throw new Error(`Invalid JSON configuration "${this._configPath}"`,{
+			throw new Error(`Invalid JSON configuration "${absolutePath}"`,{
 				cause:error
 			});
 		}
 		const parsed = PetQuerySchema.parse(configValidator,json);
-		const server = this._createServerConfig(parsed);
+		const server = this._createServerConfig(
+			parsed,
+			dirname(absolutePath)
+		);
 		this._settings = {
 			server,
 			plugin:new Map()
@@ -343,10 +244,10 @@ export class PetQueryConfig{
 		configDirectory:filename_t
 	):PetQueryConfigServerType{
 		const certificate:ServerOptions = {};
-		if(undefined !== config.https.certificate.key){
+		if('' !== config.https.certificate.key){
 			certificate.key = config.https.certificate.key;
 		}
-		if(undefined !== config.https.certificate.cert){
+		if('' !== config.https.certificate.cert){
 			certificate.cert = config.https.certificate.cert;
 		}
 		const uploadOptions:fileUpload.Options = {
@@ -354,40 +255,41 @@ export class PetQueryConfig{
 			useTempFiles:false
 		};
 		const trustedProxies = PetQueryIp.validateTrustedProxies(
-			config.http.trusted_proxies ?? []
+			config.http.trusted_proxies
 		);
 		const aiSearchPath = resolve(
 			configDirectory,
 			config.ai_search_path
 		);
 		const logging:PetQueryLogConfig = {
-			level:config.logging?.level ?? PetQueryLogLevel.Info,
+			level:config.logging.level,
 			request:{
-				enabled:config.logging?.request?.enabled ?? true
+				enabled:config.logging.request.enabled
 			},
 			file:{
 				path:resolve(
 					configDirectory,
-					config.logging?.file?.path ?? 'petquery.log'
+					config.logging.file.path
 				),
-				max_size:config.logging?.file?.max_size ?? 10485760,
-				max_files:config.logging?.file?.max_files ?? 5
+				max_size:config.logging.file.max_size,
+				max_files:config.logging.file.max_files
 			}
 		};
 		PetQueryLog._initialize(logging);
 
 		return {
+			gid:config.gid,
 			api:config.api,
 			adminContact:config.adminContact,
 			companyAddress:config.companyAddress,
 			http:{
-				host:config.http.host ?? '0.0.0.0',
+				host:config.http.host,
 				port:config.http.port,
 				enabled:config.http.enabled,
 				trusted_proxies:trustedProxies
 			},
 			https:{
-				host:config.https.host ?? '0.0.0.0',
+				host:config.https.host,
 				port:config.https.port,
 				enabled:config.https.enabled,
 				certificate

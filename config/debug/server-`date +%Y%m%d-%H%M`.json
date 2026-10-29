@@ -1,0 +1,93 @@
+{
+  "gid": "5ce0b28c-7763-4c9b-a766-35c13be45046",
+  "api": {
+    "endpoint": "http://127.0.0.1:50101"
+  },
+  "adminContact": "admin@example.com",
+  "companyAddress": "Example Company",
+  "http": {
+    "host": "127.0.0.1",
+    "port": 50101,
+    "enabled": true,
+    "trusted_proxies": []
+  },
+  "https": {
+    "host": "127.0.0.1",
+    "port": 50102,
+    "enabled": false,
+    "certificate": {
+      "key": "",
+      "cert": ""
+    }
+  },
+  "authenticate": {
+    "mode": "lmdb",
+    "providers": [
+      "lmdb"
+    ],
+    "plugin_options": {},
+    "session": {
+      "cookie_name": "petquery",
+      "max_age": 28800000,
+      "secure": false
+    },
+    "lmdb": {
+      "users_name": "users",
+      "sessions_name": "sessions"
+    },
+    "ldap": {
+      "url": "",
+      "bind_dn": "",
+      "bind_password": "",
+      "base_dn": "",
+      "user_filter": "(uid={{username}})",
+      "admin_group": "admin"
+    },
+    "oidc": {
+      "issuer": "",
+      "client_id": "",
+      "client_secret": "",
+      "redirect_uri": "",
+      "scopes": "openid profile email groups",
+      "admin_group": "admin"
+    }
+  },
+  "file": {
+    "upload": {
+      "enabled": true,
+      "max_file_size": 10485760
+    }
+  },
+  "max_results_per_module": 10,
+  "max_results_total": 100,
+  "index": {
+    "sync": {
+      "enabled": true,
+      "interval": 5000,
+      "timeout": 1000,
+      "max_servers": 100
+    }
+  },
+  "logging": {
+    "level": "info",
+    "request": {
+      "enabled": true
+    },
+    "file": {
+      "path": "../../var/debug/bootstrap/petquery.log",
+      "max_size": 10485760,
+      "max_files": 5
+    }
+  },
+  "database": {
+    "type": "lmdb",
+    "path": "../../var/debug/bootstrap/lmdb"
+  },
+  "ai_search_path": "../../var/debug/bootstrap/ai-search.sqlite3",
+  "route": {
+    "api": {
+      "enabled": true,
+      "plugins": []
+    }
+  }
+}

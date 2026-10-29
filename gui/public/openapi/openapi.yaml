@@ -1381,7 +1381,14 @@ components:
       additionalProperties: false
     AuthenticateConfig:
       type: object
-      required: [mode, bearer, session, lmdb, ldap, oidc]
+      required:
+        - mode
+        - providers
+        - plugin_options
+        - session
+        - lmdb
+        - ldap
+        - oidc
       properties:
         mode:
           type: string
@@ -1395,13 +1402,6 @@ components:
         plugin_options:
           type: object
           additionalProperties: true
-        bearer:
-          type: array
-          minItems: 1
-          maxItems: 100
-          items:
-            type: string
-            pattern: "^[\\x21-\\x7e]{16,256}$"
         session:
           type: object
           required: [cookie_name, max_age, secure]

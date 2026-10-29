@@ -7,6 +7,7 @@
 
 import { Button as Framework7Button } from 'framework7-react';
 import { Panel } from '#gui/panel';
+import { _saveApiEndpoint } from '#gui/api-endpoint';
 import { useAction } from '#gui/action';
 import { useI18n } from '#gui/i18n';
 import { useState } from 'react';
@@ -24,34 +25,7 @@ export function ApiEndpointSetup():ReactElement{
 		event.preventDefault();
 		setSaved(false);
 		run(async ()=>{
-			const value = endpoint.trim();
-			const url = URL.canParse(value) ? new URL(value) : null;
-			if(null === url
-			|| ('http:' !== url.protocol && 'https:' !== url.protocol)
-			|| '/' !== url.pathname
-			|| '' !== url.search
-			|| '' !== url.hash
-			|| '' !== url.username
-			|| '' !== url.password){
-				throw new Error(t(
-					'Enter a valid HTTP(S) API origin.'
-				));
-			}
-			const requestUrl = new URL(
-				'/__petquery/api-endpoint',
-				window.location.origin
-			);
-			requestUrl.searchParams.set('endpoint',url.origin);
-			const response = await fetch(requestUrl,{method:'POST'});
-			const message = await response.text();
-			if(!response.ok){
-				throw new Error('' === message
-					? t('Unable to save the API endpoint.')
-					: message);
-			}
-			if('saved' !== message){
-				throw new Error(t('Unexpected API endpoint response.'));
-			}
+			await _saveApiEndpoint(endpoint,t);
 			setSaved(true);
 		});
 	}

@@ -7,6 +7,7 @@
 
 import { Admin } from '#gui/admin';
 import { ApiEndpointSetup } from '#gui/api-endpoint-setup';
+import { Bootstrap } from '#gui/bootstrap';
 import { App as Framework7App } from 'framework7-react';
 import { Button } from 'framework7-react';
 import { Docs } from '#gui/docs';
@@ -95,10 +96,15 @@ export function App():ReactElement{
 	const [checking,setChecking] = useState<bool_t>(true);
 	const [apiEndpointRequired,setApiEndpointRequired] =
 		useState<bool_t>(false);
+	const [bootstrapRequired,setBootstrapRequired] =
+		useState<bool_t>(false);
+	const [bootstrapPort,setBootstrapPort] = useState<port_t>(50101);
 	const [setupRequired,setSetupRequired] = useState<bool_t>(false);
 	const [authError,setAuthError] = useState<utf8_t|null>(null);
 	const token:utf8_t = '';
-	const setupInProgress = apiEndpointRequired || setupRequired;
+	const setupInProgress = apiEndpointRequired
+		|| bootstrapRequired
+		|| setupRequired;
 
 	useEffect(()=>{
 		sessionStorage.removeItem('petquery.admin.token');
@@ -126,6 +132,33 @@ export function App():ReactElement{
 				if('configured' !== endpointStatus){
 					throw new Error(
 						'Vite API endpoint status is invalid'
+					);
+				}
+				const bootstrapResponse = await fetch(
+					'/bootstrap',
+					{cache:'no-store'}
+				);
+				if(!active){
+					return;
+				}
+				if(200 === bootstrapResponse.status){
+					const bootstrapPortText =
+						await bootstrapResponse.text();
+					const port = Number(bootstrapPortText);
+					if(!Number.isInteger(port)
+					|| 0 >= port || 65535 < port){
+						throw new Error(
+							'Bootstrap server returned an invalid port'
+						);
+					}
+					setBootstrapPort(port);
+					setBootstrapRequired(true);
+					return;
+				}
+				if(404 !== bootstrapResponse.status){
+					throw new Error(
+						`Bootstrap status failed: `
+						+`${bootstrapResponse.status}`
 					);
 				}
 			}
@@ -238,6 +271,8 @@ export function App():ReactElement{
 		);
 	}else if(apiEndpointRequired){
 		content = <ApiEndpointSetup/>;
+	}else if(bootstrapRequired){
+		content = <Bootstrap bootstrapPort={bootstrapPort}/>;
 	}else if(setupRequired){
 		content = <Setup onComplete={onSetupComplete}/>;
 	}else if('docs' === page){

@@ -6,10 +6,14 @@
 	],
 	"entryPointStrategy": "expand",
 	"exclude": ["**/.trash/**"],
-	"tsconfig": "tsconfig.json",
+	"tsconfig": "gui/tsconfig.typedoc.json",
 	"out": "gui/public/typedoc",
 	"readme": "README.md",
 	"cleanOutputDir": true,
+	"validation": {
+		"notExported": false,
+		"invalidPath": false
+	},
 	"plugin": [
 		//"@typhonjs-typedoc/typedoc-theme-dmt",
 		"typedoc-plugin-mermaid",

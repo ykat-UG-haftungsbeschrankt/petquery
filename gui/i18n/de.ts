@@ -703,4 +703,94 @@ export const deMessages:I18nMessages = {
 		"Endpunkt speichern",
 	"Saving endpoint...":
 		"Endpunkt wird gespeichert...",
+	"Bootstrap server settings":
+		"Bootstrap-Servereinstellungen",
+	"The configuration will be saved to the selected startup file.":
+		"Die Konfiguration wird in der ausgewählten Startdatei gespeichert.",
+	"The administrator account is created after the server starts.":
+		"Das Administratorkonto wird nach dem Serverstart erstellt.",
+	"Enable HTTP or HTTPS so the server can accept API requests.":
+		"Aktivieren Sie HTTP oder HTTPS, damit der Server API-Anfragen "
+		+"annehmen kann.",
+	"At least one authentication provider is required.":
+		"Mindestens ein Authentifizierungsanbieter ist erforderlich.",
+	"Provide a TLS key and certificate to enable HTTPS.":
+		"Geben Sie einen TLS-Schlüssel und ein Zertifikat an, um HTTPS zu "
+		+"aktivieren.",
+	"Unable to save bootstrap configuration.":
+		"Die Bootstrap-Konfiguration konnte nicht gespeichert werden.",
+	"Unexpected response from the bootstrap server.":
+		"Unerwartete Antwort vom Bootstrap-Server.",
+	"Server identity":
+		"Serveridentität",
+	"Public API endpoint URI":
+		"Öffentliche API-Endpunkt-URI",
+	"HTTP host":
+		"HTTP-Host",
+	"HTTPS":
+		"HTTPS",
+	"HTTPS host":
+		"HTTPS-Host",
+	"HTTPS port":
+		"HTTPS-Port",
+	"TLS private key":
+		"Privater TLS-Schlüssel",
+	"TLS certificate":
+		"TLS-Zertifikat",
+	"Database backend":
+		"Datenbank-Backend",
+	"LMDB":
+		"LMDB",
+	"PostgreSQL":
+		"PostgreSQL",
+	"MariaDB":
+		"MariaDB",
+	"MongoDB":
+		"MongoDB",
+	"Redis":
+		"Redis",
+	"SQLite":
+		"SQLite",
+	"LMDB data path":
+		"LMDB-Datenpfad",
+	"PostgreSQL connection string":
+		"PostgreSQL-Verbindungszeichenfolge",
+	"MariaDB connection string":
+		"MariaDB-Verbindungszeichenfolge",
+	"MongoDB connection string":
+		"MongoDB-Verbindungszeichenfolge",
+	"MongoDB database name":
+		"MongoDB-Datenbankname",
+	"Redis connection string":
+		"Redis-Verbindungszeichenfolge",
+	"SQLite data path":
+		"SQLite-Datenpfad",
+	"AI search database path":
+		"Pfad zur KI-Suchdatenbank",
+	"Authentication mode":
+		"Authentifizierungsmodus",
+	"LMDB authentication":
+		"LMDB-Authentifizierung",
+	"LDAP settings":
+		"LDAP-Einstellungen",
+	"OpenID Connect settings":
+		"OpenID-Connect-Einstellungen",
+	"Logging":
+		"Protokollierung",
+	"Log level":
+		"Protokollstufe",
+	"Request logging":
+		"Anfrageprotokollierung",
+	"Log file path":
+		"Protokolldateipfad",
+	"Log file max size (bytes)":
+		"Maximale Protokolldateigröße (Bytes)",
+	"Max log files":
+		"Maximale Protokolldateien",
+	"Save and start server":
+		"Speichern und Server starten",
+	"Saving bootstrap configuration...":
+		"Bootstrap-Konfiguration wird gespeichert...",
+	"Configuration saved. Starting the API server...":
+		"Konfiguration gespeichert. API-Server wird gestartet...",
 };

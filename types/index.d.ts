@@ -34,6 +34,7 @@ declare type uuid_t = string;
 declare type ip_t = string;
 declare type cidr_t = string;
 declare type bearer_t = string;
+declare type path_t = string;
 
 declare type json_string_t = string;
 declare type json_number_t = number;

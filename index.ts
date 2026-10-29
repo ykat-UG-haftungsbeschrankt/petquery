@@ -18,8 +18,10 @@ import { PetQueryServerRouteApi } from '#petquery/server/route/api.js';
 import { PetQueryServerRouteAuth } from '#petquery/server/route/auth.js';
 import { PetQueryServerRoutePet } from '#petquery/server/route/pet.js';
 
-import type { PetQueryServerDatabaseIndex } from '#petquery/server/database/index.js';
 import { PetQuerySchemaServerDatabaseConfigEntry } from '#schema/server/database/config/entry.js';
+
+import type { PetQuerySchemaServerDatabaseConfigEntryType } from '#schema/server/database/config/entry.js';
+import type { Server as NodeHttpServer } from 'node:http';
 /*
 import {PetQuery3pPluginAnimalidConfig} from
 	'#petquery/3p/plugin/animalid/config.js';
@@ -32,22 +34,66 @@ import {PetQuery3pPluginMysqlConfig} from
 	'#petquery/3p/plugin/mysql/config.js';
 */
 
-const args = new PetQueryArgs(process.argv);
+const args = new PetQueryArgs(process.argv.slice(2));
 if(!NodeFs.existsSync(args.getConfigPath())){
 	const app = Express();
 	app.use(Express.json({limit:1024*1024*10}));
-	app.post('/bootstrap',async(req, res)=>{
-		const json = JSON.parse(req.body);
-		const config = PetQuerySchemaServerDatabaseConfigEntry.fromJson(json);
-		NodeFs.writeFileSync(
-			 args.getConfigPath()
-			,JSON.stringify(config, null, 2)
-		);
-		await main(args);
-		res.send('Bootstrap received');
+	app.get('/bootstrap',(UNUSED_req,res)=>{
+		res.type('text/plain').send(`${args.getPort()}`);
 	});
-	app.listen(args.getPort(),()=>{
-		console.log(`Server is running on port ${args.getPort()}`);
+	let bootstrapServer:NodeHttpServer|null = null;
+	app.post('/bootstrap',(request,response)=>{
+		let config:PetQuerySchemaServerDatabaseConfigEntryType;
+		try{
+			config = PetQuerySchemaServerDatabaseConfigEntry.fromJson(
+				request.body
+			);
+		}
+		catch(error){
+			response.status(400).type('text/plain').send(
+				error instanceof Error
+					? error.message
+					: 'Invalid server configuration'
+			);
+			return;
+		}
+		NodeFs.writeFileSync(
+			args.getConfigPath(),
+			JSON.stringify(config,null,2),
+			{flag:'wx'}
+		);
+		response.once('finish',()=>{
+			const activeServer = bootstrapServer;
+			if(null === activeServer){
+				console.error('Bootstrap server is unavailable');
+				process.exit(1);
+				return;
+			}
+			activeServer.close((error)=>{
+				if(undefined !== error){
+					console.error(
+						'Failed to close bootstrap server',
+						error
+					);
+					process.exit(1);
+					return;
+				}
+				main(args).catch((startError:unknown)=>{
+					console.error(
+						'Failed to start PetQuery after bootstrap',
+						startError
+					);
+					process.exit(1);
+				});
+			});
+		});
+		response.status(201).type('text/plain').send('saved');
+	});
+	bootstrapServer = app.listen(args.getPort(),'127.0.0.1',()=>{
+		console.log(
+			`Bootstrap server running at http://127.0.0.1:`
+			+`${args.getPort()}/`
+		);
 	});
 }else{
 	await main(args);
@@ -69,14 +115,14 @@ async function main(args: PetQueryArgs):Promise<void>{
 	const server = new PetQueryServer(
 		serverConfig,
 		database,
-		serverUuid,
+		serverConfig.gid,
 		serverServerConfig,
 		auth,
 		database
 	);
 	const serverIndexSync = new PetQueryServerIndexSync(
 		database,
-		serverUuid,
+		serverConfig.gid,
 		indexConfig.sync.interval,
 		indexConfig.sync.timeout,
 		indexConfig.sync.max_servers
