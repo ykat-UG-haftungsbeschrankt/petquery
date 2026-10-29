@@ -17,6 +17,31 @@
 
 ---
 
+## Index
+
+- [Why petquery?](#-why-petquery)
+- [Features](#-features)
+- [How it works](#-how-it-works)
+- [Quick start](#-quick-start)
+- [Configuration](#-configuration)
+- [GUI and API server split](#gui-and-api-server-split)
+  - [First-time bootstrap](#first-time-bootstrap)
+  - [Production](#production)
+- [Endpoints](#-endpoints)
+  - [API schemas](#api-schemas)
+  - [Pet search](#post-apipetssearch-search-pets-and-registries)
+  - [Peer registration](#federation-register-a-peer)
+  - [Server index](#apiserver-manage-the-server-index)
+  - [Configuration API](#apiconfig-read-and-save-configuration)
+  - [Authentication](#auth-sessions-and-user-management)
+- [Plugins](#-plugins)
+- [Persistent server index](#persistent-server-index)
+- [Development](#-development)
+  - [Schemas](#schemas)
+  - [Admin GUI](#admin-gui)
+- [Documentation](#-documentation)
+- [License](#-license)
+
 ## 💡 Why petquery?
 
 When a pet goes missing, most national authorities only search the national
@@ -41,7 +66,8 @@ same time, and it returns a single combined result.
   federated servers can be spotted.
 - 🛡️ **Validated I/O**: incoming and remote JSON is checked with
   [`cast.ts`](https://www.npmjs.com/package/cast.ts) before it is used.
-- 🔐 **Bearer authentication** for the machine-facing endpoints.
+- 🔐 **Machine API clients**: managed bearer credentials for
+  machine-to-machine access.
 - 📷 **Image search**: uploaded pet photos can be matched against local
   records with the built-in AI search index.
 - 📎 **File uploads**: photos or documents can also be passed to plugins.
@@ -67,13 +93,28 @@ git clone https://github.com/ykat-UG-haftungsbeschrankt/petquery.git
 cd petquery
 npm install
 npm run install:gui
+```
+
+In one terminal, start three isolated API servers:
+
+```bash
 npm run debug:multi
 ```
 
-`npm run debug:multi` builds the server and GUI, then starts three isolated
-servers on ports `50101`, `50102` and `50103`. They bind to loopback only,
-register each other as peers, and print their generated admin bearer tokens.
-Press Ctrl+C to stop all three.
+The script builds the server and GUI, asks for an admin username and password,
+starts servers on ports `50101`, `50102` and `50103`, and registers them as
+peers. It creates temporary API clients for peer registration and revokes
+them when stopped. Press Ctrl+C to stop the servers.
+
+In another terminal, start the GUI:
+
+```bash
+npm run dev:gui
+```
+
+Open the URL Vite prints, normally `http://127.0.0.1:5173/`. If
+`gui/.env.local` is missing, the GUI asks for the API server origin; for
+`debug:multi`, use `http://127.0.0.1:50101`.
 
 To start one server from its own JSON config, build the server and GUI, then
 run:
@@ -81,48 +122,61 @@ run:
 ```bash
 npm run build:server
 npm run build:gui
-node dist/index.js --config path/to/server.json
+node dist/index.js --config path/to/server.json --port 50101
 ```
 
-`node dist/index.js path/to/server.json` is also accepted.
+`PetQueryArgs` parses `--config` and `--port` with
+[`command-line-args`](https://github.com/75lb/command-line-args). A positional
+config path is also accepted:
+
+```bash
+node dist/index.js path/to/server.json --port 50101
+```
+
+`--port` is required. If the config file exists, the server listens on the
+port in `http.port`; if it does not exist, the server starts the local
+bootstrap listener on `--port`.
 
 > [!TIP]
 > The ready-to-run multi-server configs are in [`config/debug/`](config/debug).
 > `var/debug/` holds each server's separate LMDB files, AI-search SQLite index,
-> and a generated bearer token with restricted file permissions.
+> and other per-server data.
 
 ## ⚙️ Configuration
 
-The server requires a JSON config path on the command line. Its top-level
-fields are validated by [`src/pet/query/config.ts`](src/pet/query/config.ts).
-For example, [`server-a.json`](config/debug/server-a.json) configures an
-LMDB-backed server; the other two files provide the same setup on different
-ports and storage directories.
+The server loads a JSON config selected with `--config`. `PetQueryArgs`
+parses `--config` and `--port`; a positional config path is also accepted.
+The strict schema is defined in
+[`schema/server/database/config/entry.ts`](schema/server/database/config/entry.ts).
+Every property is required. [`server-a.json`](config/debug/server-a.json) is a
+complete LMDB example; `server-b.json` and `server-c.json` use separate ports
+and storage paths.
 
 Important fields:
 
 | Field | Purpose |
 |---|---|
-| `api.endpoint` | This server's advertised base URL for peer sync |
-| `http.host` / `http.port` | HTTP bind address and port |
-| `https.host` / `https.port` | HTTPS bind address and port |
-| `authenticate.bearer` | Literal bearer tokens |
-| `authenticate.bearer_env` | Environment variable containing one bearer token |
-| `database` | PostgreSQL connection string or LMDB directory |
+| `api.endpoint` | This server's advertised API origin |
+| `http` | Host, port, enabled flag and trusted proxies |
+| `https` | Host, port, enabled flag and TLS certificate fields |
+| `authenticate` | Login mode, providers, sessions and provider settings |
+| `database` | Database backend and its connection or file path |
+| `logging` | Log level, request logging and log file settings |
 | `ai_search_path` | Per-server SQLite sidecar for image-search vectors |
 | `index.sync` | Whether and how often to sync the peer index |
-| `route` | Enables the root redirect, API and GUI routes |
+| `route.api` | Enables the API and selects the plugins it queries |
 
-Use exactly one of `authenticate.bearer` or `authenticate.bearer_env`.
-Prefer the environment-variable option for secrets. Paths for the database,
-AI-search index, and GUI are resolved relative to the JSON config file.
-`http.host` and `https.host` default to `0.0.0.0`; the debug configs explicitly
-bind to `127.0.0.1`.
+All config fields are required. Use empty values for settings that are
+disabled, such as `https.certificate.key` and `cert` when HTTPS is off, and an
+empty `http.trusted_proxies` array for direct connections. Static
+`authenticate.bearer` and `authenticate.bearer_env` fields have been removed;
+create machine credentials under Admin → API clients instead.
 
-The debug database, AI index, and generated tokens persist under
-`var/debug/`. Remove a server's directory to reset its data and identity.
+The debug database and AI-search data persist under `var/debug/`. Remove a
+server's directory to reset its data and identity. Database, logging and
+AI-search paths are resolved relative to the JSON config file.
 
-Supported database descriptors are:
+Examples of database descriptors are:
 
 ```json
 {"type": "lmdb", "path": "../../var/debug/server-a/lmdb"}
@@ -137,22 +191,86 @@ or:
 }
 ```
 
+Other supported backends are `mariadb` (`connectionString`), `mongodb`
+(`connectionString` and `database`), `redis` (`connectionString`) and
+`sqlite` (`path`).
+
 The admin GUI can save runtime settings to the configured database. Those
 saved settings are applied on restart and can override corresponding JSON
 values.
+
+## GUI and API server split
+
+The Express API server and the React GUI are separate processes. The API
+server exposes `/api/*` and `/auth/*`; it no longer serves the GUI, TypeDoc,
+Swagger/OpenAPI, or a root redirect.
+
+### Development
+
+Run the API server/bootstrap listener and GUI in separate terminals. The
+GUI is served by Vite from `/`, normally at `http://127.0.0.1:5173/`:
+
+```bash
+npm run dev:gui
+```
+
+When `PETQUERY_API_URL` is set in `gui/.env.local`, Vite proxies `/api`,
+`/auth` and `/bootstrap` to that origin. If no endpoint is configured, the
+GUI asks for the running API/bootstrap origin and saves it in
+`gui/.env.local`. Restart Vite to apply the proxy target. This target is
+distinct from `api.endpoint`, which is the origin the configured server
+advertises to peers and clients.
+
+### First-time bootstrap
+
+Start the server with a config path that does not exist:
+
+```bash
+npm run build:server
+node dist/index.js --config config/debug/bootstrap.json --port 50101
+```
+
+The VS Code **Bootstrap PetQuery** launch profile uses this ignored config
+path. The bootstrap listener binds to `127.0.0.1` on the required `--port`.
+In another terminal, run `npm run dev:gui`, open the Vite URL, and enter
+`http://127.0.0.1:50101` if the GUI asks for an API origin. Save the endpoint,
+restart Vite, and reload the GUI.
+
+The GUI detects bootstrap mode through `GET /bootstrap` and displays a
+structured config form. Submitting the form posts the complete
+`PetQuerySchemaServerDatabaseConfigEntry` to `POST /bootstrap`. The server
+validates and writes the config file, closes the bootstrap listener, then
+starts the configured API server. The API endpoint is saved to
+`gui/.env.local` for Vite's proxy. If it differs from the bootstrap origin,
+restart Vite again so it uses the new target. The GUI then offers initial
+administrator setup; the password is not stored in the config file.
+
+Bootstrap mode is used only when the selected config file does not exist.
+Otherwise the process starts the normal API server.
+
+### Production
+
+`npm run build:gui` builds the Vite app into `dist/gui/`. Serve that directory
+from a static web server at `/`; the API server does not host it. Configure
+the GUI host or a reverse proxy to send `/api/*` and `/auth/*` to the API
+backend on the same origin. The production GUI expects an already-configured
+API server; use the development GUI for first-time bootstrap. The bootstrap
+listener binds to loopback and should not be exposed through a public proxy.
+The GUI Docs page loads TypeDoc at `/typedoc/` and Swagger UI at `/openapi/`.
 
 ## 🌐 Endpoints
 
 | Endpoint | Auth | Returns | Turned on by |
 |---|:---:|---|---|
-| `/` | — | Redirects to `/gui` | `route['/'].enabled` |
-| `/gui/*` | —/🔐 | PetQuery GUI and Admin sections | `route.gui.enabled` |
 | `POST /api/pets/search` | — | Local pet and plugin matches | `route.api.enabled` |
 | `/api/server/*` | varies | Read or manage the server index | `route.api.enabled` |
 | `/api/config/*` | 🔐 admin | Read or save the editable config | `route.api.enabled` |
 | `/api/pets` | 🔐 user/admin | Manage local pet JSON records | `route.api.enabled` |
 | `/auth/*` | varies | Login, sessions and user management | — |
-| `/docs/` | — | Generated API documentation | — |
+| `/bootstrap` | — | `GET` status; `POST` config | Bootstrap only |
+
+The GUI host serves `/`, client-side routes, `/typedoc/` and `/openapi/`.
+These are not routes on the API server.
 
 `POST /api/pets/search` accepts JSON or form bodies and
 `multipart/form-data` file uploads.
@@ -376,8 +494,9 @@ The `authenticate` configuration contains:
 
 ```json
 {
-	"mode": "bearer",
-	"bearer": ["token"],
+	"mode": "lmdb",
+	"providers": ["lmdb"],
+	"plugin_options": {},
 	"session": {
 		"cookie_name": "petquery_session",
 		"max_age": 28800000,
@@ -406,9 +525,10 @@ The `authenticate` configuration contains:
 }
 ```
 
-The provider `mode` is one of `bearer`, `lmdb`, `ldap` or `oidc`. Prefer
-`authenticate.bearer_env` in the startup JSON config instead of committing
-bearer tokens. Admin-saved settings can override JSON settings on restart.
+Select login providers in `authenticate.providers`. Static
+`authenticate.bearer` and `authenticate.bearer_env` fields are no longer
+supported. Create machine credentials in Admin → API clients instead.
+Admin-saved settings can override JSON settings on restart.
 
 ### `/api/pets`: manage local pet records
 
@@ -485,9 +605,9 @@ The server sets an HttpOnly session cookie and returns:
 }
 ```
 
-For bearer mode, send the bearer token in the `Authorization` header.
 For OIDC mode, open `GET /auth/oidc/login`; the callback creates the same
-session and redirects to the appropriate Admin page.
+session and redirects to the appropriate Admin page. Machine-to-machine
+bearer tokens are managed as API clients in the Admin GUI.
 
 | Method | Path | Auth | Action |
 |---|---|---|---|
@@ -601,18 +721,16 @@ most `sync.max_servers` entries per peer. Peers need `route.api.enabled`.
 
 | Command | What it does |
 |---|---|
-| `npm start -- --config path.json` | Build, then start one configured server |
-| `npm run build` | Lint, compile, write the schemas, build the admin GUI |
+| `npm start -- --config <path> --port <port>` | Build and start API server |
+| `npm run build` | Lint, compile, generate schemas and docs, build the GUI |
 | `npm run build:server` | Compile the server TypeScript |
 | `npm run build:schema` | Write `schema/**/*.json` from the `.ts` schemas |
 | `npm run debug:multi` | Build and start three federated loopback servers |
 | `npm run lint` | ESLint: unused code and copyright headers |
-| `npm run doc` | Generate HTML API docs with the DMT theme into `docs/` |
-| `npm run doc:uml` | Generate HTML API docs with UML diagrams into `docs/` |
-| `npm run doc:markdown` | Generate Markdown API docs into `docs-markdown/` |
-| `npm run install:gui` | Install the admin GUI's dependencies |
+| `npm run doc` | Generate TypeDoc HTML in `gui/public/typedoc/` |
+| `npm run install:gui` | Install the GUI's dependencies |
 | `npm run build:gui` | Build the admin GUI into `dist/gui/` |
-| `npm run dev:gui` | Start the admin GUI dev server with hot reload |
+| `npm run dev:gui` | Generate docs and start the Vite GUI dev server |
 
 Coding conventions, including one class per file, naming and the copyright
 header, are described in [`AGENTS.md`](AGENTS.md).
@@ -645,39 +763,41 @@ The path mirrors the route, for example
 
   An invalid request returns `400` and a handler error `500`, both with
   `success: false` and the messages in `error`
-  ([`schema/error.json`](schema/error.json)).
+  ([`schema/api/envelope.ts`](schema/api/envelope.ts)).
 - The `.json` files next to them are JSON Schema for clients in other
   languages. They are generated; edit the `.ts` file and run
   `npm run build:schema` (part of `npm run build`).
 
 ### Admin GUI
 
-The PetQuery GUI at `/gui/` is a React app in [`gui/`](gui), built with Vite.
-It has its own dependencies, so install them once with
-`npm run install:gui` before building.
+The PetQuery GUI is a separate React app in [`gui/`](gui), built with Vite
+and served from `/`, not from an API-server `/gui/` route. Install its
+dependencies with `npm run install:gui`.
 
-- **Production:** `npm run build` writes the GUI to `dist/gui/`, which
-  `route.gui.path` points to. Without a build, `/gui/` returns `503`.
-- **Development:** start the server, then run `npm run dev:gui` and open
-  `http://localhost:5173/gui/`. The dev server forwards `/api`, `/auth`
-  and `/docs` to the server on port 50000.
-- **Documentation:** generated TypeDoc files are served at `/docs/` and are
-  browsable from the GUI's Docs page.
+- **Development:** run `npm run dev:gui` and open the URL Vite prints,
+  normally `http://127.0.0.1:5173/`. Vite proxies API requests using
+  `PETQUERY_API_URL` from `gui/.env.local`; if it is missing, the GUI asks
+  for the API origin and prompts you to restart Vite after saving it.
+- **Production:** `npm run build:gui` writes the static app to `dist/gui/`.
+  Host that directory at `/` and proxy `/api/*` and `/auth/*` to the API
+  server on the same origin. TypeDoc and Swagger UI assets are included at
+  `/typedoc/` and `/openapi/`.
 
 The GUI has Home, Docs and Admin sections:
 
-- **Home** and the PetQuery logo open `/gui/search`, which queries the public
+- **Home** and the PetQuery logo open `/search`, which queries the public
   `POST /api/pets/search` endpoint and can upload supporting files.
-- **Docs** embeds the generated API documentation served at `/docs/`.
-- **Admin** opens `/gui/admin/config` and contains Config, Servers, Users
-  and Pets. Config selects bearer, LMDB, LDAP or OpenID Connect
-  authentication and edits the HTTP port, session settings, provider
-  settings, bearer tokens, result limits, file upload, peer sync, routes and
-  `/api` plugins. It calls
+- **Docs** opens `/docs` and embeds TypeDoc at `/typedoc/` and Swagger UI
+  at `/openapi/`.
+- **Admin** opens `/admin/config` and contains Config, Servers, API clients,
+  Users and Pets. Config edits the HTTP and HTTPS ports, session settings,
+  LMDB, LDAP and OpenID Connect provider settings, result limits, file
+  uploads, peer sync, API routes and plugins. It calls
   `GET /api/config/get` and `PUT /api/config/put`, which save to
   the database settings store. Changes apply when the server restarts; until
   then, the page shows a pending-restart notice.
 - **Servers** lists, adds, edits and deletes entries in the server index.
+- **API clients** manages bearer credentials for machine-to-machine access.
 - **Users** manages local LMDB users with `admin` and `user` groups. LDAP and
   OpenID Connect users are displayed read-only from active sessions.
 - **Pets** manages local records and lets admins upload preview and attachment
@@ -685,24 +805,29 @@ The GUI has Home, Docs and Admin sections:
   local images and does not fetch remote image URLs.
 
 Docs and search are public. Admin pages require authentication.
-The `admin` group
-has full access; the `user` group can search and manage only Pets. Bearer
-tokens remain supported for machine clients. GUI sessions use HttpOnly
-cookies and are stored in the configured session database.
-Only the `admin` group can edit authentication settings. Turn the GUI off with
-`route.gui.enabled`.
+The `admin` group has full access; the `user` group can search and manage only
+Pets. Machine-to-machine bearer credentials are managed as API clients.
+GUI sessions use HttpOnly cookies and are stored in the configured session
+database. Only the `admin` group can edit authentication settings. Since the
+GUI is hosted separately, its availability is controlled by the static web
+host, not a server `route.gui` setting.
 
 ## 📚 Documentation
 
-The API documentation is generated from the source with
+TypeDoc reference documentation is generated from the source with
 [TypeDoc](https://typedoc.org):
 
 ```bash
 npm run doc
 ```
 
-Then open `docs/index.html`, or use the **Generate and Open Docs** debug
-configuration in VS Code.
+The generated site is written to `gui/public/typedoc/`. Open
+`gui/public/typedoc/index.html`, or use the **Generate and Open Docs** debug
+configuration in VS Code. `npm run build:gui` includes the TypeDoc site in
+`dist/gui/`; the GUI's Docs page is available at `/docs`.
+
+The Swagger UI and OpenAPI specification are in `gui/public/openapi/` and
+are served by the GUI at `/openapi/`.
 
 ## 📄 License
 
