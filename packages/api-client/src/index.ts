@@ -10,6 +10,7 @@ import { PetQuerySchemaApiAuthApiClientsDeleteResponse } from '#schema/api/auth/
 import { PetQuerySchemaApiAuthApiClientsGetResponse } from '#schema/api/auth/api-clients/get/response.js';
 import { PetQuerySchemaApiAuthApiClientsPostResponse } from '#schema/api/auth/api-clients/post/response.js';
 import { PetQuerySchemaApiAuthApiClientsPutResponse } from '#schema/api/auth/api-clients/put/response.js';
+import { PetQuerySchemaApiAuthApiClientsRotatePostResponse } from '#schema/api/auth/api-clients/rotate/post/response.js';
 import { PetQuerySchemaApiAuthLoginPostResponse } from '#schema/api/auth/login/post/response.js';
 import { PetQuerySchemaApiAuthLogoutPostResponse } from '#schema/api/auth/logout/post/response.js';
 import { PetQuerySchemaApiAuthModeGetResponse } from '#schema/api/auth/mode/get/response.js';
@@ -35,6 +36,7 @@ import type { PetQuerySchemaApiAuthApiClientSettingsType } from '#schema/api/aut
 import type { PetQuerySchemaApiAuthApiClientsGetResponseType } from '#schema/api/auth/api-clients/get/response.js';
 import type { PetQuerySchemaApiAuthApiClientsPostResponseType } from '#schema/api/auth/api-clients/post/response.js';
 import type { PetQuerySchemaApiAuthApiClientsPutResponseType } from '#schema/api/auth/api-clients/put/response.js';
+import type { PetQuerySchemaApiAuthApiClientsRotatePostResponseType } from '#schema/api/auth/api-clients/rotate/post/response.js';
 import type { PetQuerySchemaApiAuthApiClientType } from '#schema/api/auth/api-client.js';
 import type { PetQuerySchemaApiAuthManagedUserType } from '#schema/api/auth/user.js';
 import type { PetQuerySchemaApiAuthModeGetResponseType } from '#schema/api/auth/mode/get/response.js';
@@ -68,6 +70,9 @@ export type ApiClientSettings =
 
 export type ApiClientCreateResponse =
 	PetQuerySchemaApiAuthApiClientsPostResponseType;
+
+export type ApiClientTokenRotateResponse =
+	PetQuerySchemaApiAuthApiClientsRotatePostResponseType;
 
 export const API_CLIENT_PERMISSION_CATALOG =
 	PetQuerySchemaApiAuthApiClientPermissionCatalog;
@@ -345,6 +350,19 @@ export async function updateApiClient(
 		token,
 		values,
 		PetQuerySchemaApiAuthApiClientsPutResponse
+	);
+}
+
+export async function rotateApiClientToken(
+	token:utf8_t,
+	id:ApiClient['id']
+):Promise<ApiClientTokenRotateResponse>{
+	return request(
+		'POST',
+		`/auth/api-clients/${encodeURIComponent(id)}/rotate`,
+		token,
+		undefined,
+		PetQuerySchemaApiAuthApiClientsRotatePostResponse
 	);
 }
 

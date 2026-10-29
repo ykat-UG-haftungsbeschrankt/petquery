@@ -13,6 +13,7 @@ import { listPets } from '@petquery/api-client';
 import { Panel } from '#gui/panel';
 import { updatePet } from '@petquery/api-client';
 import { useAction } from '#gui/action';
+import { useI18n } from '#gui/i18n';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
@@ -22,6 +23,7 @@ import type { DataTableColumn } from '#gui/data-table';
 import type { FormEvent } from 'react';
 import type { PetRecord } from '@petquery/api-client';
 import type { ReactElement } from 'react';
+import type { Translate } from '#gui/i18n';
 
 type PetImageAttachment = {
 	name:utf8_t;
@@ -71,29 +73,38 @@ function isDataImageUri(uri:utf8_t):bool_t{
 	return uri.toLowerCase().startsWith('data:image/');
 }
 
-async function readImage(file:File):Promise<PetImageAttachment>{
+async function readImage(
+	file:File,
+	t:Translate
+):Promise<PetImageAttachment>{
 	if(!IMAGE_MIME_TYPES.has(file.type.toLowerCase())){
-		throw new Error('Choose a PNG, JPEG, GIF, WebP, AVIF, or BMP image.');
+		throw new Error(t(
+			'Choose a PNG, JPEG, GIF, WebP, AVIF, or BMP image.'
+		));
 	}
 	return new Promise((resolve,reject)=>{
 		const reader = new FileReader();
 		reader.onload = ()=>{
 			if('string' !== typeof reader.result){
-				reject(new Error(`Could not read image "${file.name}"`));
+				reject(new Error(t('Could not read image "{name}"',{
+					name:file.name
+				})));
 				return;
 			}
 			resolve({name:file.name,uri:reader.result});
 		};
 		reader.onerror = ()=>{
-			reject(reader.error ?? new Error(
-				`Could not read image "${file.name}"`
-			));
+			reject(reader.error ?? new Error(t(
+				'Could not read image "{name}"',
+				{name:file.name}
+			)));
 		};
 		reader.readAsDataURL(file);
 	});
 }
 
 export function Pets(props:{token:utf8_t}):ReactElement{
+	const {t} = useI18n();
 	const {busy,error,run} = useAction();
 	const [pets,setPets] = useState<Array<PetRecord>>([]);
 	const [editing,setEditing] = useState<utf8_t|null>(null);
@@ -126,10 +137,15 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 		setForm(structuredClone(pet));
 		const images = pet.files.filter(isDataImageUri);
 		setUploadedImages(images.map((uri,index)=>{
-			return {name:`Saved image ${index + 1}`,uri};
+			return {
+				name:t('Saved image {number}',{number:index + 1}),
+				uri
+			};
 		}));
 		setPreviewImageName(
-			isDataImageUri(pet.preview) ? 'Saved preview image' : null
+			isDataImageUri(pet.preview)
+				? t('Saved preview image')
+				: null
 		);
 	}
 
@@ -200,7 +216,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 			return;
 		}
 		run(async ()=>{
-			const image = await readImage(file);
+			const image = await readImage(file,t);
 			setField('preview',image.uri);
 			setPreviewImageName(image.name);
 		});
@@ -218,7 +234,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 		run(async ()=>{
 			const images:Array<PetImageAttachment> = [];
 			for(const file of files){
-				images.push(await readImage(file));
+				images.push(await readImage(file,t));
 			}
 			setUploadedImages((current)=>{
 				return [...current,...images];
@@ -257,7 +273,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 	}
 
 	function onDelete(pet:PetRecord):void{
-		if(!window.confirm(`Delete pet ${pet.gid}?`)){
+		if(!window.confirm(t('Delete pet {gid}?',{gid:pet.gid}))){
 			return;
 		}
 		run(async ()=>{
@@ -275,9 +291,9 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 			<Panel>
 				<div className="page-heading">
 					<div>
-						<h2>Pets</h2>
+						<h2>{t('Pets')}</h2>
 						<p className="muted">
-							Manage the local pet JSON database.
+							{t('Manage the local pet JSON database.')}
 						</p>
 					</div>
 					<Framework7Button
@@ -287,7 +303,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 							run(refresh);
 						}}
 					>
-						Refresh
+						{t('Refresh')}
 					</Framework7Button>
 				</div>
 				<DataTable
@@ -305,7 +321,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 									editPet(pet);
 								}}
 							>
-								Edit
+								{t('Edit')}
 							</Framework7Button>
 							<Framework7Button
 								type="button"
@@ -314,7 +330,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 									onDelete(pet);
 								}}
 							>
-								Delete
+								{t('Delete')}
 							</Framework7Button>
 						</>
 					)}
@@ -322,10 +338,10 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 			</Panel>
 
 			<Panel>
-				<h2>{null === editing ? 'Add pet' : 'Edit pet'}</h2>
+				<h2>{null === editing ? t('Add pet') : t('Edit pet')}</h2>
 				<form onSubmit={onSubmit}>
 					<label className="field">
-						<span>Pet GID</span>
+						<span>{t('Pet GID')}</span>
 						<input
 							required
 							disabled={null !== editing}
@@ -336,7 +352,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						/>
 					</label>
 					<label className="field">
-						<span>Name</span>
+						<span>{t('Name')}</span>
 						<input
 							required
 							maxLength={256}
@@ -347,7 +363,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						/>
 					</label>
 					<label className="field">
-						<span>Species</span>
+						<span>{t('Species')}</span>
 						<input
 							required
 							maxLength={256}
@@ -358,7 +374,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						/>
 					</label>
 					<label className="field">
-						<span>Owner contact</span>
+						<span>{t('Owner contact')}</span>
 						<input
 							maxLength={4096}
 							value={form.owner_contact}
@@ -371,7 +387,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						/>
 					</label>
 					<label className="field field-wide">
-						<span>Notes</span>
+						<span>{t('Notes')}</span>
 						<textarea
 							maxLength={65536}
 							value={form.notes}
@@ -381,7 +397,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						/>
 					</label>
 					<label className="field field-wide">
-						<span>Upload preview image</span>
+						<span>{t('Upload preview image')}</span>
 						<input
 							className="file-input"
 							type="file"
@@ -396,7 +412,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 							<img
 								className="attachment-preview"
 								src={form.preview}
-								alt="Pet preview"
+								alt={t('Pet preview')}
 							/>
 							<Framework7Button
 								type="button"
@@ -406,14 +422,14 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 									setPreviewImageName(null);
 								}}
 							>
-								Remove preview image
+								{t('Remove preview image')}
 							</Framework7Button>
 						</div>
 					)}
 					{SOURCE_FIELDS.map((field)=>{
 						return (
 							<label className="field" key={field}>
-								<span>Source {field}</span>
+								<span>{t('Source {field}',{field})}</span>
 								<input
 									value={form.source[field]}
 									onChange={(event)=>{
@@ -433,12 +449,15 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						);
 					})}
 					<fieldset>
-						<legend>Attributes</legend>
+						<legend>{t('Attributes')}</legend>
 						{form.attributes.map((attribute,index)=>{
 							return (
 								<div className="row" key={index}>
 									<input
-										aria-label={`Attribute ${index + 1} key`}
+										aria-label={t(
+											'Attribute {number} key',
+											{number:index + 1}
+										)}
 										value={attribute.key}
 										onChange={(event)=>{
 											const value = event.target.value;
@@ -446,7 +465,10 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 										}}
 									/>
 									<input
-										aria-label={`Attribute ${index + 1} value`}
+										aria-label={t(
+											'Attribute {number} value',
+											{number:index + 1}
+										)}
 										value={attribute.value}
 										onChange={(event)=>{
 											const value = event.target.value;
@@ -460,7 +482,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 											removeAttribute(index);
 										}}
 									>
-										Remove
+										{t('Remove')}
 									</Framework7Button>
 								</div>
 							);
@@ -470,11 +492,11 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 							disabled={busy}
 							onClick={addAttribute}
 						>
-							Add attribute
+							{t('Add attribute')}
 						</Framework7Button>
 					</fieldset>
 					<label className="field field-wide">
-						<span>Upload attachment images</span>
+						<span>{t('Upload attachment images')}</span>
 						<input
 							className="file-input"
 							type="file"
@@ -508,7 +530,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 												});
 											}}
 										>
-											Remove image
+											{t('Remove image')}
 										</Framework7Button>
 									</li>
 								);
@@ -516,7 +538,9 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 						</ul>
 					)}
 					<Framework7Button type="submit" disabled={busy} fill>
-						{null === editing ? 'Create pet' : 'Save pet'}
+						{null === editing
+							? t('Create pet')
+							: t('Save pet')}
 					</Framework7Button>
 					{null !== editing && (
 						<Framework7Button
@@ -524,7 +548,7 @@ export function Pets(props:{token:utf8_t}):ReactElement{
 							disabled={busy}
 							onClick={resetForm}
 						>
-							Cancel
+							{t('Cancel')}
 						</Framework7Button>
 					)}
 				</form>

@@ -9,9 +9,9 @@ import { PetQueryTypes } from '#petquery/types.js';
 
 export class PetQueryAssert implements Singleton{
 	private constructor(){}
-	static notNull<T>(value:T|null|undefined):asserts value is NonNullable<T>{
+	static notNull<T>(value:T|null|undefined,msg?:utf8_t):asserts value is NonNullable<T>{
 		if(null === value || undefined === value){
-			throw new Error('Value is null or undefined');
+			throw new Error(msg ?? 'Value is null or undefined');
 		}
 	}
 	static assertArray<T>(value:unknown):asserts value is Array<T>{

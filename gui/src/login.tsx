@@ -7,6 +7,7 @@
 
 import { Button as Framework7Button } from 'framework7-react';
 import { getProviderLoginUrl } from '@petquery/api-client';
+import { useI18n } from '#gui/i18n';
 import { Panel } from '#gui/panel';
 import { useAction } from '#gui/action';
 import { useEffect } from 'react';
@@ -15,6 +16,7 @@ import { useState } from 'react';
 import type { AuthProvider } from '@petquery/api-client';
 import type { FormEvent } from 'react';
 import type { ReactElement } from 'react';
+import type { Translate } from '#gui/i18n';
 
 export type LoginProps = {
 	providers:Array<AuthProvider>;
@@ -27,6 +29,7 @@ export type LoginProps = {
 };
 
 export function Login(props:LoginProps):ReactElement{
+	const {t} = useI18n();
 	const {busy,error,run} = useAction();
 	const [providerName,setProviderName] = useState<utf8_t>('');
 	const [username,setUsername] = useState<utf8_t>('');
@@ -68,13 +71,15 @@ export function Login(props:LoginProps):ReactElement{
 
 	return (
 		<Panel className="login-card">
-			<h2>Sign in to PetQuery Admin</h2>
+			<h2>{t('Sign in to PetQuery Admin')}</h2>
 			{null !== message && <pre className="error">{message}</pre>}
 			{0 === props.providers.length
-				? <p className="muted">No login providers are enabled.</p>
+				? <p className="muted">
+					{t('No login providers are enabled.')}
+				</p>
 				: <>
 					<label className="field">
-						<span>Sign-in provider</span>
+						<span>{t('Sign-in provider')}</span>
 						<select
 							value={provider?.name ?? ''}
 							onChange={(event)=>{
@@ -93,18 +98,20 @@ export function Login(props:LoginProps):ReactElement{
 					<p className="muted">
 						{null === provider
 							? ''
-							: loginDescription(provider)}
+							: loginDescription(provider,t)}
 					</p>
 					{'redirect' === provider?.login
 						? <a
 							className="button-link"
 							href={getProviderLoginUrl(provider.name)}
 						>
-							Continue to {provider.name}
+							{t('Continue to {provider}',{
+								provider:provider.name
+							})}
 						</a>
 						: <form className="login-form" onSubmit={onSubmit}>
 							<label htmlFor="login-username">
-								Username
+								{t('Username')}
 							</label>
 							<input
 								id="login-username"
@@ -116,7 +123,7 @@ export function Login(props:LoginProps):ReactElement{
 								}}
 							/>
 							<label htmlFor="login-password">
-								Password
+								{t('Password')}
 							</label>
 							<input
 								id="login-password"
@@ -133,7 +140,9 @@ export function Login(props:LoginProps):ReactElement{
 								disabled={busy}
 								fill
 							>
-								{busy ? 'Signing in...' : 'Sign in'}
+								{busy
+									? t('Signing in...')
+									: t('Sign in')}
 							</Framework7Button>
 						</form>}
 				</>}
@@ -141,9 +150,16 @@ export function Login(props:LoginProps):ReactElement{
 	);
 }
 
-function loginDescription(provider:AuthProvider):utf8_t{
+function loginDescription(
+	provider:AuthProvider,
+	t:Translate
+):utf8_t{
 	if('redirect' === provider.login){
-		return `Continue with ${provider.name}.`;
+		return t('Continue with {provider}.',{
+			provider:provider.name
+		});
 	}
-	return `Sign in with your ${provider.name} account.`;
+	return t('Sign in with your {provider} account.',{
+		provider:provider.name
+	});
 }

@@ -26,6 +26,33 @@
 	color:#adc2ca;
 }
 
+.language-control{
+	display:flex;
+	align-items:center;
+	gap:6px;
+	margin:0;
+	color:#dbe9ed;
+	font-size:.78rem;
+	white-space:nowrap;
+}
+
+.language-control select{
+	width:auto;
+	max-width:110px;
+	height:34px;
+	margin:0px 0px 0px 20px;
+	padding:0 8px;
+	border:1px solid rgba(255,255,255,.25);
+	border-radius:8px;
+	color:#fff;
+	background:rgba(255,255,255,.08);
+	font-size:.78rem;
+}
+
+.language-control option{
+	color:var(--ink);
+}
+
 button {
   width: auto;
 }
@@ -196,6 +223,19 @@ button {
 
 	.log-filters .button{
 		margin:0;
+	}
+
+	.language-control{
+		gap:0;
+	}
+
+	.language-control span{
+		display:none;
+	}
+
+	.language-control select{
+		max-width:94px;
+		height:32px;
 	}
 }
 

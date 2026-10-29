@@ -17,6 +17,8 @@ import { PetQuerySchemaApiAuthApiClientsPostRequest } from '#schema/api/auth/api
 import { PetQuerySchemaApiAuthApiClientsPostResponse } from '#schema/api/auth/api-clients/post/response.js';
 import { PetQuerySchemaApiAuthApiClientsPutRequest } from '#schema/api/auth/api-clients/put/request.js';
 import { PetQuerySchemaApiAuthApiClientsPutResponse } from '#schema/api/auth/api-clients/put/response.js';
+import { PetQuerySchemaApiAuthApiClientsRotatePostRequest } from '#schema/api/auth/api-clients/rotate/post/request.js';
+import { PetQuerySchemaApiAuthApiClientsRotatePostResponse } from '#schema/api/auth/api-clients/rotate/post/response.js';
 import { PetQuerySchemaApiAuthLoginPostRequest } from '#schema/api/auth/login/post/request.js';
 import { PetQuerySchemaApiAuthLoginPostResponse } from '#schema/api/auth/login/post/response.js';
 import { PetQuerySchemaApiAuthLogoutPostRequest } from '#schema/api/auth/logout/post/request.js';
@@ -97,6 +99,14 @@ const schemas:Array<[utf8_t,PetQuerySchemaType]> = [
 	[
 		'schema/api/auth/api-clients/put/response.json',
 		PetQuerySchemaApiAuthApiClientsPutResponse.getSchema()
+	],
+	[
+		'schema/api/auth/api-clients/rotate/post/request.json',
+		PetQuerySchemaApiAuthApiClientsRotatePostRequest.getSchema()
+	],
+	[
+		'schema/api/auth/api-clients/rotate/post/response.json',
+		PetQuerySchemaApiAuthApiClientsRotatePostResponse.getSchema()
 	],
 	[
 		'schema/api/auth/api-clients/delete/request.json',

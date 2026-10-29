@@ -19,6 +19,7 @@ import { PetQueryLogLevel } from '#petquery/log/level.js';
 import { PetQuerySchema } from '#petquery/schema.js';
 import { PetQuerySchemaTypeLogLevel } from '#schema/type/log/level.js';
 import { PetQueryTypes } from '#petquery/types.js';
+import { PetQueryAssert } from '#petquery/assert.js';
 import { readFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { resolve } from 'node:path';
@@ -29,6 +30,7 @@ import type { PetQueryPluginConfig } from '#petquery/plugin.js';
 import type { PetQuerySchemaDatabaseConfigLmdbType } from '#schema/database/config/lmdb.js';
 import type { PetQuerySchemaStatic } from '#petquery/schema.js';
 import type { ServerOptions } from 'node:https';
+import { PetQuerySchemaServerDatabaseConfigEntry, PetQuerySchemaServerDatabaseConfigEntryType } from '#schema/server/database/config/entry.js';
 
 export type PetQueryConfigServerType = {
 	api:{endpoint:uri_t};
@@ -115,6 +117,7 @@ export type PetQueryConfigType = {
 
 const T = PetQuerySchema.type;
 const configSchema = T.Object({
+	gid:T.String({format:'uuid'}),
 	api:T.Object({
 		endpoint:T.String({format:'uri'})
 	},{additionalProperties:false}),
@@ -379,6 +382,7 @@ function _createServerConfig(
 }
 
 export class PetQueryConfig{
+	protected static _json:PetQuerySchemaServerDatabaseConfigEntryType|null = null;
 	protected static _settings:PetQueryConfigType|undefined;
 
 	private constructor(){}
@@ -399,9 +403,10 @@ export class PetQueryConfig{
 		}
 		const absolutePath = resolve(configPath);
 		const text = await readFile(absolutePath,'utf8');
-		let json:unknown;
+		let json:json_t;
 		try{
 			json = JSON.parse(text);
+			this._json = PetQuerySchemaServerDatabaseConfigEntry.fromJson(json);
 		}
 		catch(error){
 			throw new Error(`Invalid JSON configuration "${absolutePath}"`,{
@@ -415,6 +420,11 @@ export class PetQueryConfig{
 			server,
 			plugin:new Map()
 		};
+	}
+
+	static getLoadedJson():PetQuerySchemaServerDatabaseConfigEntryType{
+		PetQueryAssert.notNull(this._json,'JSON server config not loaded');
+		return this._json;
 	}
 
 	static getServerConfig():PetQueryConfigServerType{

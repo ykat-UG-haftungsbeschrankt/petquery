@@ -130,6 +130,41 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 		await this._put('auth',{gid:key,data:value});
 	}
 
+	async serverAuthReplace(
+		oldKey:utf8_t,
+		newKey:utf8_t,
+		value:utf8_t
+	):Promise<void>{
+		const client = await (await this._getPool()).connect();
+		try{
+			await client.query('BEGIN');
+			const removed = await client.query(
+				`DELETE FROM petquery
+				WHERE record_type = $1 AND value->>'gid' = $2`,
+				['auth',oldKey]
+			);
+			if(1 !== removed.rowCount){
+				throw new Error('API client token was not found');
+			}
+			await client.query(
+				`INSERT INTO petquery (record_type,value)
+				VALUES ($1,$2::jsonb)`,
+				[
+					'auth',
+					JSON.stringify({gid:newKey,data:value})
+				]
+			);
+			await client.query('COMMIT');
+		}
+		catch(error){
+			await client.query('ROLLBACK');
+			throw error;
+		}
+		finally{
+			client.release();
+		}
+	}
+
 	async serverAuthRemove(key:utf8_t):Promise<void>{
 		await this._remove('auth',key);
 	}
@@ -154,16 +189,16 @@ implements PetQueryServerDatabaseAuth, PetQueryServerDatabaseConfig,
 
 	async serverConfigLoad(
 		gid:uuid_t
-	):Promise<PetQuerySchemaServerDatabaseConfigEntryType>{
-		return this._getRequired(
+	):Promise<PetQuerySchemaServerDatabaseConfigEntryType|undefined>{
+		return this._get(
 			'config',gid,
 			PetQuerySchemaServerDatabaseConfigEntry.getValidator()
 		);
 	}
 
-	async serverIndexGetServerUid():Promise<uuid_t>{
-		const entry = await this._getRequired('server','uid',serverValidator);
-		return entry.data;
+	async serverIndexGetServerUid():Promise<uuid_t|undefined>{
+		const entry = await this._get('server','uid',serverValidator);
+		return entry?.data;
 	}
 
 	async serverIndexSetServerUid(gid:uuid_t):Promise<void>{

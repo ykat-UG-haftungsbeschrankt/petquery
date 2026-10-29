@@ -18,7 +18,6 @@ import { PetQueryServerRouteDocs } from '#petquery/server/route/docs.js';
 import { PetQueryServerRouteGui } from '#petquery/server/route/gui.js';
 import { PetQueryServerRouteOpenapi } from '#petquery/server/route/openapi.js';
 import { PetQueryServerRoutePet } from '#petquery/server/route/pet.js';
-import { v4 as uuidv4 } from 'uuid';
 
 import type { PetQueryServerDatabaseIndex } from '#petquery/server/database/index.js';
 /*
@@ -34,23 +33,26 @@ import {PetQuery3pPluginMysqlConfig} from
 */
 
 
-// Returns the UUID stored in db, generating and storing one on first start.
+// Keeps the stored UUID, or seeds a new database from the config UUID.
 async function loadServerUuid(
-	db:PetQueryServerDatabaseIndex
+	db:PetQueryServerDatabaseIndex,
+	initialGid:uuid_t
 ):Promise<uuid_t>{
-	try{
-		return await db.serverIndexGetServerUid();
-	}catch(UNUSED_error){
-		const uuid = uuidv4();
-		await db.serverIndexSetServerUid(uuid);
-		return uuid;
+	const gid = await db.serverIndexGetServerUid();
+	if(undefined !== gid){
+		return gid;
 	}
+	await db.serverIndexSetServerUid(initialGid);
+	return initialGid;
 }
 await PetQueryConfig.loadFromCommandLine(process.argv.slice(2));
 const serverConfig = PetQueryConfig.getServerConfig();
 const indexConfig = serverConfig.index;
 const database = serverConfig.database;
-const serverUuid = await loadServerUuid(database.getDbIndex());
+const serverUuid = await loadServerUuid(
+	database.getDbIndex(),
+	PetQueryConfig.getLoadedJson().gid
+);
 const serverServerConfig = new PetQueryServerConfig(
 	serverUuid,
 	serverConfig.database

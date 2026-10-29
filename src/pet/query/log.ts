@@ -64,7 +64,7 @@ export class PetQueryLog implements Singleton{
 		this._fileTransport = null;
 		this._maxFiles = 0;
 		this._logger = winston.createLogger({
-			level:PetQueryLogLevel.Info,
+			level:PetQueryLogLevel.Debug,
 			levels:winston.config.npm.levels,
 			transports:[
 				new winston.transports.Console({

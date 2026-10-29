@@ -15,6 +15,8 @@ import { searchPets } from '@petquery/api-client';
 import { Sighting } from '#gui/sighting';
 import { useAction } from '#gui/action';
 import { useEffect } from 'react';
+import { useI18n } from '#gui/i18n';
+import { useRef } from 'react';
 import { useState } from 'react';
 
 import type { ChangeEvent } from 'react';
@@ -88,6 +90,7 @@ export function Search(props:{
 	token:utf8_t;
 	onEdit:(gid:utf8_t)=>void;
 }):ReactElement{
+	const {t} = useI18n();
 	const {busy,error,run} = useAction();
 	const [query,setQuery] = useState<utf8_t>('');
 	const [files,setFiles] = useState<Array<File>>([]);
@@ -98,7 +101,9 @@ export function Search(props:{
 		const value = query.trim();
 		run(async ()=>{
 			if('' === value && 0 === files.length){
-				throw new Error('Enter a microchip ID or select files.');
+				throw new Error(t(
+					'Enter a microchip ID or select files.'
+				));
 			}
 			setResponse(await searchPets(props.token,value,files));
 		});
@@ -117,11 +122,15 @@ export function Search(props:{
 			<Panel className="search-card">
 				<div className="search-card-content">
 					<div className="search-intro">
-						<div className="eyebrow">Federated pet lookup</div>
-						<h2>Find a pet. Bring them home.</h2>
+						<div className="eyebrow">
+							{t('Federated pet lookup')}
+						</div>
+						<h2>{t('Find a pet. Bring them home.')}</h2>
 						<p className="muted">
-							Search enabled registries with a microchip ID,
-							files, or both.
+							{t(
+								'Search enabled registries with a microchip '
+								+'ID, files, or both.'
+							)}
 						</p>
 						<div className="search-hero-art" aria-hidden="true">
 							<div className="hero-art-glow"></div>
@@ -132,13 +141,17 @@ export function Search(props:{
 							/>
 							<div className="hero-art-caption">
 								<span className="hero-art-dot"></span>
-								<span>One search across trusted sources</span>
+								<span>
+									{t('One search across trusted sources')}
+								</span>
 							</div>
 						</div>
 					</div>
 					<div className="search-form-shell">
 						<form className="search-form" onSubmit={onSubmit}>
-							<label htmlFor="pet-query">Microchip ID</label>
+							<label htmlFor="pet-query">
+								{t('Microchip ID')}
+							</label>
 							<div className="search-controls">
 								<input
 									id="pet-query"
@@ -152,7 +165,7 @@ export function Search(props:{
 								/>
 							</div>
 							<label className="file-field" htmlFor="pet-files">
-								Files
+								{t('Files')}
 							</label>
 							<input
 								id="pet-files"
@@ -197,8 +210,8 @@ export function Search(props:{
 								</span>
 								<span>
 									{busy
-										? 'Searching...'
-										: 'Search for a pet'}
+										? t('Searching...')
+										: t('Search for a pet')}
 								</span>
 							</Framework7Button>
 						</form>
@@ -207,28 +220,32 @@ export function Search(props:{
 			</Panel>
 			{null === response && <Panel className="search-description">
 				<div className="eyebrow">
-					One tiny chip. A whole lot of hope.
+					{t('One tiny chip. A whole lot of hope.')}
 				</div>
-				<h2>Why PetQuery?</h2>
+				<h2>{t('Why PetQuery?')}</h2>
 				<p>
-					When a pet goes missing, people often search only the
-					registries close to home. A pet that crosses a border can
-					be hard to find.
+					{t(
+						'When a pet goes missing, people often search only '
+						+'the registries close to home. A pet that crosses a '
+						+'border can be hard to find.'
+					)}
 				</p>
 				<p>
-					PetQuery is a plugin-based, federated search for pet
-					microchip IDs. It checks configured sources in parallel
-					and brings the results together.
+					{t(
+						'PetQuery is a plugin-based, federated search for '
+						+'pet microchip IDs. It checks configured sources in '
+						+'parallel and brings the results together.'
+					)}
 				</p>
-				<h3>Features</h3>
+				<h3>{t('Features')}</h3>
 				<div className="description-points">
-					<span>Parallel plugin search</span>
-					<span>Search by image</span>
-					<span>Federated and loop-safe</span>
-					<span>Validated I/O</span>
-					<span>Share helpful files</span>
-					<span>Reunite pets and people</span>
-					<span>Build with the API</span>
+					<span>{t('Parallel plugin search')}</span>
+					<span>{t('Search by image')}</span>
+					<span>{t('Federated and loop-safe')}</span>
+					<span>{t('Validated I/O')}</span>
+					<span>{t('Share helpful files')}</span>
+					<span>{t('Reunite pets and people')}</span>
+					<span>{t('Build with the API')}</span>
 				</div>
 				<div className="feature-grid">
 					{SEARCH_FEATURES.map((feature)=>{
@@ -237,36 +254,40 @@ export function Search(props:{
 								<img
 									src={`${import.meta.env.BASE_URL}`
 										+feature.image}
-									alt={feature.alt}
+									alt={t(feature.alt)}
 								/>
 								<div>
-									<h3>{feature.title}</h3>
-									<p>{feature.text}</p>
+									<h3>{t(feature.title)}</h3>
+									<p>{t(feature.text)}</p>
 								</div>
 							</article>
 						);
 					})}
 				</div>
-				<h3>How it works</h3>
+				<h3>{t('How it works')}</h3>
 				<div className="workflow">
 					<div className="workflow-step">
-						<strong>1. Send a query</strong>
-						<span>Enter a chip ID, add a photo, or do both.</span>
+						<strong>{t('1. Send a query')}</strong>
+						<span>
+							{t('Enter a chip ID, add a photo, or do both.')}
+						</span>
 					</div>
 					<div className="workflow-arrow" aria-hidden="true">
 						&darr;
 					</div>
 					<div className="workflow-sources">
-						<div>Registry plugins</div>
-						<div>Local records and AI image search</div>
-						<div>Connected PetQuery servers</div>
+						<div>{t('Registry plugins')}</div>
+						<div>{t('Local records and AI image search')}</div>
+						<div>{t('Connected PetQuery servers')}</div>
 					</div>
 					<div className="workflow-arrow" aria-hidden="true">
 						&darr;
 					</div>
 					<div className="workflow-step">
-						<strong>2. Get combined results</strong>
-						<span>Matches return together in one response.</span>
+						<strong>{t('2. Get combined results')}</strong>
+						<span>
+							{t('Matches return together in one response.')}
+						</span>
 					</div>
 				</div>
 			</Panel>}
@@ -287,12 +308,15 @@ function SearchResults(props:{
 	onEdit:(gid:utf8_t)=>void;
 }):ReactElement{
 	const response = props.response;
+	const {t} = useI18n();
 	const {error,run} = useAction();
 	const endpointAction = useAction();
 	const runEndpoint = endpointAction.run;
 	const [serverEndpoint,setServerEndpoint] = useState<uri_t|null>(null);
 	const [location,setLocation] =
 		useState<PetSighting['location']|null>(null);
+	const translate = useRef(t);
+	translate.current = t;
 
 	useEffect(()=>{
 		runEndpoint(async ()=>{
@@ -302,7 +326,7 @@ function SearchResults(props:{
 
 	useEffect(()=>{
 		run(async ()=>{
-			setLocation(await locateViewer());
+			setLocation(await locateViewer(translate.current));
 		});
 	},[run]);
 
@@ -311,8 +335,12 @@ function SearchResults(props:{
 			<div className="page-heading">
 				<div>
 					<h2>
-						Found {response.data.length} result
-						{1 === response.data.length ? '' : 's'}
+						{t(
+							1 === response.data.length
+								? 'Found {count} result'
+								: 'Found {count} results',
+							{count:response.data.length}
+						)}
 					</h2>
 				</div>
 				{null !== error && <p className="error" role="alert">{error}</p>}
@@ -324,12 +352,14 @@ function SearchResults(props:{
 				<span className={
 					response.success ? 'status status-ok' : 'status status-warn'
 				}>
-					{response.success ? 'Complete' : 'Partial'}
+					{response.success
+						? t('Complete')
+						: t('Partial')}
 				</span>
 			</div>
 			{0 < response.error.length && (
 				<div className="result-errors">
-					<strong>Some registries reported errors</strong>
+					<strong>{t('Some registries reported errors')}</strong>
 					<ul>
 						{response.error.map((message,index)=>{
 							return <li key={`${message}-${index}`}>{message}</li>;
@@ -338,7 +368,9 @@ function SearchResults(props:{
 				</div>
 			)}
 			{0 === response.data.length
-				? <p className="muted">No matching pet was found.</p>
+				? <p className="muted">
+					{t('No matching pet was found.')}
+				</p>
 				: <div className="search-results">
 					{response.data.map((result,index)=>{
 						return (
@@ -364,6 +396,7 @@ function SearchResultCard(props:{
 	editable:bool_t;
 	onEdit:(gid:utf8_t)=>void;
 }):ReactElement{
+	const {language,t} = useI18n();
 	const result = props.result;
 	const [reporting,setReporting] = useState<bool_t>(false);
 	const [reported,setReported] = useState<PetSighting|null>(null);
@@ -381,30 +414,39 @@ function SearchResultCard(props:{
 			{result.source.name}
 		</a>;
 	const rows:Array<{key:utf8_t;value:ReactNode}> = [
-		{key:'Species',value:result.species},
-		{key:'Pet GID',value:<code>{result.gid}</code>}
+		{key:t('Species'),value:result.species},
+		{key:t('Pet GID'),value:<code>{result.gid}</code>}
 	];
 	if('' !== result.owner_contact){
-		rows.push({key:'Owner contact',value:result.owner_contact});
+		rows.push({
+			key:t('Owner contact'),
+			value:result.owner_contact
+		});
 	}
 	if('' !== result.notes){
-		rows.push({key:'Notes',value:result.notes});
+		rows.push({key:t('Notes'),value:result.notes});
 	}
 	if(undefined === lastSeen){
-		rows.push({key:'Distance',value:'No last seen location'});
+		rows.push({
+			key:t('Distance'),
+			value:t('No last seen location')
+		});
 	}else{
 		rows.push({
-			key:'Last seen',
-			value:new Date(lastSeen.timestamp).toLocaleString()
+			key:t('Last seen'),
+			value:new Date(lastSeen.timestamp).toLocaleString(language)
 		});
 		rows.push({
-			key:'Distance',
+			key:t('Distance'),
 			value:null === distance
-				? 'Enable your location to calculate'
-				: `${distance.toFixed(1)} km`
+				? t('Enable your location to calculate')
+				: `${new Intl.NumberFormat(language,{
+					minimumFractionDigits:1,
+					maximumFractionDigits:1
+				}).format(distance)} km`
 		});
 		rows.push({
-			key:'Last seen contact',
+			key:t('Last seen contact'),
 			value:`${lastSeen.contact.name} - ${lastSeen.contact.email}`
 				+` - ${lastSeen.contact.phone}`
 		});
@@ -459,7 +501,7 @@ function SearchResultCard(props:{
 								setReporting(true);
 							}}
 						>
-							Report last seen
+							{t('Report last seen')}
 						</Framework7Button>
 					)}
 					{props.editable && (
@@ -468,7 +510,7 @@ function SearchResultCard(props:{
 							small
 							onClick={onEdit}
 						>
-							Edit
+							{t('Edit')}
 						</Framework7Button>
 					)}
 				</div>
@@ -477,12 +519,16 @@ function SearchResultCard(props:{
 				<img
 					className="result-preview"
 					src={result.preview}
-					alt={`Preview from ${result.source.name}`}
+					alt={t('Preview from {source}',{
+						source:result.source.name
+					})}
 					loading="lazy"
 				/>
 			)}
 			<h3>{result.name}</h3>
-			{null !== reported && <p role="status">Last seen saved.</p>}
+			{null !== reported && <p role="status">
+				{t('Last seen saved.')}
+			</p>}
 			<table className="result-fields">
 				<tbody>
 					{rows.map((row,index)=>{

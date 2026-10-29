@@ -44,6 +44,21 @@ implements PetQueryServerDatabaseAuth{
 		await this._db.put(key,value);
 	}
 
+	async serverAuthReplace(
+		oldKey:utf8_t,
+		newKey:utf8_t,
+		value:utf8_t
+	):Promise<void>{
+		this._assertNotDestroyed();
+		await this._db.transaction(async ()=>{
+			if(undefined === this._db.get(oldKey)){
+				throw new Error('API client token was not found');
+			}
+			await this._db.remove(oldKey);
+			await this._db.put(newKey,value);
+		});
+	}
+
 	async serverAuthRemove(key:utf8_t):Promise<void>{
 		this._assertNotDestroyed();
 		await this._db.remove(key);

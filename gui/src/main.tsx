@@ -10,6 +10,7 @@ import '#gui/app.css';
 import '#gui/custom.css';
 
 import { App } from '#gui/app';
+import { I18nProvider } from '#gui/i18n';
 import Framework7 from 'framework7/lite';
 import Framework7React from 'framework7-react';
 import { createRoot } from 'react-dom/client';
@@ -23,6 +24,8 @@ if(null === root){
 }
 createRoot(root).render(
 	<StrictMode>
-		<App/>
+		<I18nProvider>
+			<App/>
+		</I18nProvider>
 	</StrictMode>
 );

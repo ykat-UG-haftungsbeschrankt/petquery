@@ -6,6 +6,7 @@
  */
 
 import { Button } from 'framework7-react';
+import { useI18n } from '#gui/i18n';
 import { Panel } from '#gui/panel';
 import { useEffect } from 'react';
 import { useState } from 'react';
@@ -16,6 +17,7 @@ const DOCS_URL:utf8_t = '/docs/';
 const API_URL:utf8_t = '/openapi/';
 
 export function Docs():ReactElement{
+	const {t} = useI18n();
 	const base = import.meta.env.BASE_URL;
 	const [apiSelected,setApiSelected] = useState<bool_t>(
 		()=>`${base}docs/api` === window.location.pathname
@@ -45,7 +47,10 @@ export function Docs():ReactElement{
 
 	return (
 		<Panel className="docs-page">
-			<nav className="admin-nav" aria-label="Documentation sections">
+			<nav
+				className="admin-nav"
+				aria-label={t('Documentation sections')}
+			>
 				<Button
 					type="button"
 					fill={!apiSelected}
@@ -54,7 +59,7 @@ export function Docs():ReactElement{
 						onNavigate(false);
 					}}
 				>
-					Documentation
+					{t('Documentation')}
 				</Button>
 				<Button
 					type="button"
@@ -64,14 +69,14 @@ export function Docs():ReactElement{
 						onNavigate(true);
 					}}
 				>
-					API
+					{t('API')}
 				</Button>
 			</nav>
 			<iframe
 				className="docs-frame"
 				title={apiSelected
-					? 'PetQuery API reference'
-					: 'PetQuery documentation'}
+					? t('PetQuery API reference')
+					: t('PetQuery documentation')}
 				src={url}
 			/>
 		</Panel>

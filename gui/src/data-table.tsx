@@ -7,6 +7,7 @@
 
 import { Button as Framework7Button } from 'framework7-react';
 import { CardContent } from 'framework7-react';
+import { useI18n } from '#gui/i18n';
 import { useState } from 'react';
 
 import type { ReactElement } from 'react';
@@ -29,17 +30,18 @@ export function DataTable<Row>(props:{
 	rowKey:(row:Row)=>utf8_t;
 	renderActions?:(row:Row)=>ReactNode;
 }):ReactElement{
+	const {language,t} = useI18n();
 	const [query,setQuery] = useState<utf8_t>('');
 	const [sortKey,setSortKey] = useState<utf8_t>(
 		props.columns[0]?.key ?? ''
 	);
 	const [descending,setDescending] = useState<bool_t>(false);
 	const renderActions = props.renderActions;
-	const normalizedQuery = query.trim().toLocaleLowerCase();
+	const normalizedQuery = query.trim().toLocaleLowerCase(language);
 	const visibleRows = props.rows.filter((row)=>{
 		return '' === normalizedQuery || props.columns.some((column)=>{
 			return String(column.value(row) ?? '')
-				.toLocaleLowerCase()
+				.toLocaleLowerCase(language)
 				.includes(normalizedQuery);
 		});
 	});
@@ -57,7 +59,7 @@ export function DataTable<Row>(props:{
 			}else{
 				order = String(leftValue ?? '').localeCompare(
 					String(rightValue ?? ''),
-					undefined,
+					language,
 					{numeric:true,sensitivity:'base'}
 				);
 			}
@@ -90,7 +92,9 @@ export function DataTable<Row>(props:{
 		<>
 			<div className="table-controls">
 				<label className="field table-filter">
-					<span>Filter {props.filterLabel}</span>
+					<span>{t('Filter {label}',{
+						label:t(props.filterLabel)
+					})}</span>
 					<input
 						type="search"
 						value={query}
@@ -101,7 +105,7 @@ export function DataTable<Row>(props:{
 				</label>
 				<div className="table-mobile-sort">
 					<label className="field">
-						<span>Sort by</span>
+						<span>{t('Sort by')}</span>
 						<select
 							value={sortKey}
 							onChange={(event)=>{
@@ -126,8 +130,8 @@ export function DataTable<Row>(props:{
 						className="button table-sort-direction"
 						aria-label={
 							descending
-								? 'Sort ascending'
-								: 'Sort descending'
+								? t('Sort ascending')
+								: t('Sort descending')
 						}
 						aria-pressed={descending}
 						onClick={()=>{
@@ -136,15 +140,19 @@ export function DataTable<Row>(props:{
 							});
 						}}
 					>
-						{descending ? 'Descending' : 'Ascending'}
+						{descending
+							? t('Descending')
+							: t('Ascending')}
 					</button>
 				</div>
 			</div>
 			{0 === visibleRows.length
 				? <p className="muted">
 					{0 === props.rows.length
-						? props.emptyMessage
-						: `No ${props.filterLabel} match the filter.`}
+						? t(props.emptyMessage)
+						: t('No {label} match the filter.',{
+							label:t(props.filterLabel)
+						})}
 				</p>
 				: <>
 					<div className="table-scroll">
@@ -176,14 +184,14 @@ export function DataTable<Row>(props:{
 														onSort(column.key);
 													}}
 												>
-													{column.label}
+													{t(column.label)}
 													{direction}
 												</Framework7Button>
 											</th>
 										);
 									})}
 									{undefined !== renderActions
-										&& <th>Actions</th>}
+										&& <th>{t('Actions')}</th>}
 								</tr>
 							</thead>
 							<tbody>
@@ -213,7 +221,9 @@ export function DataTable<Row>(props:{
 					<div
 						className="table-cards"
 						role="list"
-						aria-label={`${props.filterLabel} results`}
+						aria-label={t('{label} results',{
+							label:t(props.filterLabel)
+						})}
 					>
 						{visibleRows.map((row)=>{
 							return (
@@ -232,7 +242,7 @@ export function DataTable<Row>(props:{
 													key={column.key}
 												>
 													<strong>
-														{column.label}
+														{t(column.label)}
 													</strong>
 													<div>
 														{renderValue(
@@ -249,7 +259,7 @@ export function DataTable<Row>(props:{
 													'table-card-actions'
 												}
 											>
-												<strong>Actions</strong>
+												<strong>{t('Actions')}</strong>
 												<div>
 													{renderActions(row)}
 												</div>

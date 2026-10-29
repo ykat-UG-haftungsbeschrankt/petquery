@@ -10,12 +10,12 @@ import { PetQueryDestructor } from '#petquery/destructor.js';
 import { PetQueryIp } from '#petquery/ip.js';
 import { PetQuerySchemaServerDatabaseConfigEntry } from '#schema/server/database/config/entry.js';
 
-import type { PetQueryConfigServerType } from '#petquery/config.js';
+import { PetQueryConfig, type PetQueryConfigServerType } from '#petquery/config.js';
 import type { PetQuerySchemaServerDatabaseConfigEntryType } from '#schema/server/database/config/entry.js';
 import type { PetQueryServerDatabaseConfig } from '#petquery/server/database/config.js';
 
-// Loads, validates and atomically saves the server settings that are
-// editable in the admin GUI. Saved values take effect on restart.
+// Loads, validates and saves the server configuration. Saved values take
+// effect on restart.
 export class PetQueryServerConfig extends PetQueryDestructor{
 	protected readonly _database:PetQueryServerDatabaseConfig;
 	protected readonly _gid:uuid_t;
@@ -33,10 +33,11 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 	async _destructor():Promise<void>{
 	}
 
-	// Extracts the editable values from server settings.
+	// Returns the full config shape with current runtime values overlaid.
 	fromServerConfig(
 		config:PetQueryConfigServerType
 	):PetQuerySchemaServerDatabaseConfigEntryType{
+		const defaults = PetQueryConfig.getLoadedJson();
 		const sync = config.index.sync;
 		const providers = this._getInteractiveProviders(
 			config.authenticate.providers
@@ -51,68 +52,73 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 			? firstProvider
 			: config.authenticate.mode;
 
-		return {
-			 gid:this._gid
-			,http:{
+		return this._sanitize(this._mergeWithDefaults({
+			...defaults,
+			gid:this._gid,
+			http:{
+				...defaults.http,
+				host:config.http.host,
 				port:config.http.port,
+				enabled:config.http.enabled,
 				trusted_proxies:config.http.trusted_proxies
-			}
-			,authenticate:{
-				 mode
-				,providers
-				,plugin_options:config.authenticate.plugin_options
-				,bearer:[]
-				,session:{
-					 cookie_name:config.authenticate.session.cookie_name
-					,max_age:config.authenticate.session.max_age
-					,secure:config.authenticate.session.secure
+			},
+			authenticate:{
+				...defaults.authenticate,
+				mode,
+				providers,
+				plugin_options:config.authenticate.plugin_options,
+				bearer:[],
+				session:{
+					...defaults.authenticate.session,
+					...config.authenticate.session
+				},
+				lmdb:{
+					...defaults.authenticate.lmdb,
+					...config.authenticate.lmdb
+				},
+				ldap:{
+					...defaults.authenticate.ldap,
+					...config.authenticate.ldap
+				},
+				oidc:{
+					...defaults.authenticate.oidc,
+					...config.authenticate.oidc
 				}
-				,lmdb:{
-					 users_name:config.authenticate.lmdb.users_name
-					,sessions_name:config.authenticate.lmdb.sessions_name
-				}
-				,ldap:{
-					 url:config.authenticate.ldap.url
-					,bind_dn:config.authenticate.ldap.bind_dn
-					,bind_password:config.authenticate.ldap.bind_password
-					,base_dn:config.authenticate.ldap.base_dn
-					,user_filter:config.authenticate.ldap.user_filter
-					,admin_group:config.authenticate.ldap.admin_group
-				}
-				,oidc:{
-					 issuer:config.authenticate.oidc.issuer
-					,client_id:config.authenticate.oidc.client_id
-					,client_secret:config.authenticate.oidc.client_secret
-					,redirect_uri:config.authenticate.oidc.redirect_uri
-					,scopes:config.authenticate.oidc.scopes
-					,admin_group:config.authenticate.oidc.admin_group
-				}
-			}
-			,file:{
+			},
+			file:{
+				...defaults.file,
 				upload:{
-					 enabled:config.file.upload.enabled
-					,max_file_size:config.file.upload.max_file_size
+					...defaults.file.upload,
+					enabled:config.file.upload.enabled,
+					max_file_size:config.file.upload.max_file_size
 				}
-			}
-			,max_results_per_module:config.max_results_per_module
-			,max_results_total:config.max_results_total
-			,index:{
+			},
+			max_results_per_module:config.max_results_per_module,
+			max_results_total:config.max_results_total,
+			index:{
+				...defaults.index,
 				sync:{
-					 enabled:sync.enabled
-					,interval:sync.interval
-					,timeout:sync.timeout
-					,max_servers:sync.max_servers
+					...defaults.index.sync,
+					...sync
+				}
+			},
+			route:{
+				...defaults.route,
+				api:{
+					...defaults.route.api,
+					enabled:config.route.api.enabled,
+					plugins:Array.from(config.route.api.plugins)
+				},
+				'/':{
+					...defaults.route['/'],
+					enabled:config.route['/'].enabled
+				},
+				gui:{
+					...defaults.route.gui,
+					enabled:config.route.gui.enabled
 				}
 			}
-			,route:{
-				 api:{
-					 enabled:config.route.api.enabled
-					,plugins:Array.from(config.route.api.plugins)
-				}
-				,'/':{enabled:config.route['/'].enabled}
-				,gui:{enabled:config.route.gui.enabled}
-			}
-		};
+		}));
 	}
 
 	// Writes values into server settings in place, so references to nested
@@ -121,7 +127,7 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 		config:PetQueryConfigServerType,
 		values:PetQuerySchemaServerDatabaseConfigEntryType
 	):void{
-		values = this._sanitize(values);
+		values = this._sanitize(this._mergeWithDefaults(values));
 		const sync = config.index.sync;
 		const providers = values.authenticate.providers;
 		const trustedProxies = values.http.trusted_proxies;
@@ -189,30 +195,142 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 	// Validates untrusted JSON. Throws an Error
 	// naming the invalid field.
 	parse(json:json_t):PetQuerySchemaServerDatabaseConfigEntryType{
-		return this._sanitize(
+		return this._sanitize(this._mergeWithDefaults(
 			PetQuerySchemaServerDatabaseConfigEntry.fromJson(json)
-		);
+		));
 	}
 
-	// Returns the saved values, or null if nothing has been saved yet.
+	// Applies startup defaults to saved records written by older versions.
+	protected _mergeWithDefaults(
+		values:PetQuerySchemaServerDatabaseConfigEntryType
+	):PetQuerySchemaServerDatabaseConfigEntryType{
+		const defaults = PetQueryConfig.getLoadedJson();
+		let https:PetQuerySchemaServerDatabaseConfigEntryType['https'];
+		if(undefined === defaults.https){
+			https = values.https;
+		}else if(undefined === values.https){
+			https = defaults.https;
+		}else{
+			https = {
+				...defaults.https,
+				...values.https,
+				certificate:{
+					...defaults.https.certificate,
+					...values.https.certificate
+				}
+			};
+		}
+		const logging = undefined === defaults.logging
+			&& undefined === values.logging
+			? undefined
+			: {
+				...defaults.logging,
+				...values.logging,
+				request:{
+					...defaults.logging?.request,
+					...values.logging?.request
+				},
+				file:{
+					...defaults.logging?.file,
+					...values.logging?.file
+				}
+			};
+		return {
+			...defaults,
+			...values,
+			...(undefined === https ? {} : {https}),
+			http:{
+				...defaults.http,
+				...values.http
+			},
+			authenticate:{
+				...defaults.authenticate,
+				...values.authenticate,
+				session:{
+					...defaults.authenticate.session,
+					...values.authenticate.session
+				},
+				lmdb:{
+					...defaults.authenticate.lmdb,
+					...values.authenticate.lmdb
+				},
+				ldap:{
+					...defaults.authenticate.ldap,
+					...values.authenticate.ldap
+				},
+				oidc:{
+					...defaults.authenticate.oidc,
+					...values.authenticate.oidc
+				}
+			},
+			file:{
+				...defaults.file,
+				...values.file,
+				upload:{
+					...defaults.file.upload,
+					...values.file.upload
+				}
+			},
+			index:{
+				...defaults.index,
+				...values.index,
+				sync:{
+					...defaults.index.sync,
+					...values.index.sync
+				}
+			},
+			route:{
+				...defaults.route,
+				...values.route,
+				api:{
+					...defaults.route.api,
+					...values.route.api
+				},
+				'/':{
+					...defaults.route['/'],
+					...values.route['/']
+				},
+				gui:{
+					...defaults.route.gui,
+					...values.route.gui
+				}
+			},
+			...(undefined === logging ? {} : {logging})
+		};
+	}
+
+	// Returns saved values, falling back to the startup config.
 	async load():Promise<PetQuerySchemaServerDatabaseConfigEntryType>{
-		return this._sanitize(
-			await this._database.serverConfigLoad(this._gid)
-		);
+		const config = await this._database.serverConfigLoad(this._gid);
+		const values = config ?? {
+			...PetQueryConfig.getLoadedJson(),
+			gid:this._gid
+		};
+		return this._sanitize(this._mergeWithDefaults(values));
 	}
 
 	// Saves values returned by normalize() through the database backend.
-	async save(values:PetQuerySchemaServerDatabaseConfigEntryType):Promise<void>{
+	async save(
+		values:PetQuerySchemaServerDatabaseConfigEntryType
+	):Promise<void>{
 		return this._database.serverConfigSave(
 			this._gid,
-			this._sanitize(values)
+			this._sanitize(this._mergeWithDefaults(values))
 		);
 	}
 
 	protected _sanitize(
 		values:PetQuerySchemaServerDatabaseConfigEntryType
 	):PetQuerySchemaServerDatabaseConfigEntryType{
-		const {bearer:UNUSED_bearer,...authenticate} =
+		const expectedGid = this._gid;
+		if(expectedGid !== values.gid){
+			throw new Error('Configuration gid does not match');
+		}
+		const {
+			bearer:UNUSED_bearer,
+			bearer_env:UNUSED_bearer_env,
+			...authenticate
+		} =
 			values.authenticate;
 		const http = {
 			...values.http,
@@ -231,6 +349,7 @@ export class PetQueryServerConfig extends PetQueryDestructor{
 		}
 		return {
 			...values,
+			gid:this._gid,
 			http,
 			authenticate:{
 				...authenticate,

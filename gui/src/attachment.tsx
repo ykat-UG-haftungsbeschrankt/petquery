@@ -6,6 +6,7 @@
  */
 
 import { useState } from 'react';
+import { useI18n } from '#gui/i18n';
 
 import type { ReactElement } from 'react';
 
@@ -34,11 +35,18 @@ export function Attachment(props:{
 	file:uri_t;
 	index:size_t;
 }):ReactElement{
+	const {t} = useI18n();
 	const [failed,setFailed] = useState<bool_t>(false);
-	const label = `Attached file ${props.index + 1}`;
+	const label = t('Attached file {number}',{
+		number:props.index + 1
+	});
 	const base = window.location.href;
 	if(!URL.canParse(props.file,base) || '' === props.file.trim()){
-		return <span>{label}: invalid attachment URL.</span>;
+		return <span>
+			{t('Attached file {number}: invalid attachment URL.',{
+				number:props.index + 1
+			})}
+		</span>;
 	}
 	const url = new URL(props.file,base);
 	const kind = attachmentKind(url);
@@ -46,7 +54,11 @@ export function Attachment(props:{
 		|| 'https:' === url.protocol
 		|| ('data:' === url.protocol && 'link' !== kind);
 	if(!allowed){
-		return <span>{label}: unsupported attachment URL.</span>;
+		return <span>
+			{t('Attached file {number}: unsupported attachment URL.',{
+				number:props.index + 1
+			})}
+		</span>;
 	}
 
 	function onPreviewError():void{
@@ -63,12 +75,16 @@ export function Attachment(props:{
 					href={url.href}
 					target="_blank"
 					rel="noreferrer"
-					aria-label={`Open ${label.toLowerCase()}`}
+					aria-label={t('Open {label}',{
+						label:label.toLocaleLowerCase()
+					})}
 				>
 					<img
 						className="attachment-preview"
 						src={url.href}
-						alt={`Preview of ${label.toLowerCase()}`}
+						alt={t('Preview of {label}',{
+							label:label.toLocaleLowerCase()
+						})}
 						loading="lazy"
 						referrerPolicy="no-referrer"
 						onError={onPreviewError}
@@ -79,18 +95,20 @@ export function Attachment(props:{
 				<video
 					className="attachment-preview"
 					src={url.href}
-					aria-label={`Preview of ${label.toLowerCase()}`}
+					aria-label={t('Preview of {label}',{
+						label:label.toLocaleLowerCase()
+					})}
 					controls
 					playsInline
 					preload="metadata"
 					onError={onPreviewError}
 				>
-					Your browser does not support video previews.
+					{t('Your browser does not support video previews.')}
 				</video>
 			)}
 			{failed && (
 				<p className="muted">
-					Preview unavailable. Use the attachment link to open it.
+					{t('Preview unavailable. Use the attachment link to open it.')}
 				</p>
 			)}
 		</div>

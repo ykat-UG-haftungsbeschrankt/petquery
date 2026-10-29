@@ -8,6 +8,7 @@
 import { getSession } from '@petquery/api-client';
 import { setupInitialAdmin } from '@petquery/api-client';
 import { Button as Framework7Button } from 'framework7-react';
+import { useI18n } from '#gui/i18n';
 import { Panel } from '#gui/panel';
 import { useAction } from '#gui/action';
 import { useState } from 'react';
@@ -19,6 +20,7 @@ import type { ReactElement } from 'react';
 export function Setup(props:{
 	onComplete:(user:AuthUser)=>void;
 }):ReactElement{
+	const {t} = useI18n();
 	const {busy,error,run} = useAction();
 	const [username,setUsername] = useState<utf8_t>('admin');
 	const [password,setPassword] = useState<utf8_t>('');
@@ -28,12 +30,14 @@ export function Setup(props:{
 		event.preventDefault();
 		run(async ()=>{
 			if(password !== confirmation){
-				throw new Error('Passwords do not match');
+				throw new Error(t('Passwords do not match'));
 			}
 			await setupInitialAdmin(username.trim(),password);
 			const user = await getSession();
 			if(null === user){
-				throw new Error('Initial setup did not create an admin session');
+				throw new Error(t(
+					'Initial setup did not create an admin session'
+				));
 			}
 			setPassword('');
 			setConfirmation('');
@@ -43,16 +47,18 @@ export function Setup(props:{
 
 	return (
 		<Panel className="login-card">
-			<div className="eyebrow">First-time setup</div>
-			<h2>Create the administrator account</h2>
+			<div className="eyebrow">{t('First-time setup')}</div>
+			<h2>{t('Create the administrator account')}</h2>
 			<p className="muted">
-				This server has no local administrator. The first client to
-				complete setup becomes the administrator. Continue only on a
-				network you trust.
+				{t(
+					'This server has no local administrator. The first '
+					+'client to complete setup becomes the administrator. '
+					+'Continue only on a network you trust.'
+				)}
 			</p>
 			{null !== error && <pre className="error">{error}</pre>}
 			<form className="login-form" onSubmit={onSubmit}>
-				<label htmlFor="setup-username">Username</label>
+				<label htmlFor="setup-username">{t('Username')}</label>
 				<input
 					id="setup-username"
 					required
@@ -65,7 +71,7 @@ export function Setup(props:{
 						setUsername(event.target.value);
 					}}
 				/>
-				<label htmlFor="setup-password">Password</label>
+				<label htmlFor="setup-password">{t('Password')}</label>
 				<input
 					id="setup-password"
 					type="password"
@@ -78,7 +84,9 @@ export function Setup(props:{
 						setPassword(event.target.value);
 					}}
 				/>
-				<label htmlFor="setup-confirmation">Confirm password</label>
+				<label htmlFor="setup-confirmation">
+					{t('Confirm password')}
+				</label>
 				<input
 					id="setup-confirmation"
 					type="password"
@@ -96,7 +104,9 @@ export function Setup(props:{
 					disabled={busy}
 					fill
 				>
-					{busy ? 'Creating admin...' : 'Create admin'}
+					{busy
+						? t('Creating admin...')
+						: t('Create admin')}
 				</Framework7Button>
 			</form>
 		</Panel>

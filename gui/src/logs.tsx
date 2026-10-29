@@ -9,6 +9,7 @@ import { Button as Framework7Button } from 'framework7-react';
 import { getLogEntries } from '@petquery/api-client';
 import { getRequestLogEntries } from '@petquery/api-client';
 import { Panel } from '#gui/panel';
+import { useI18n } from '#gui/i18n';
 import { useAction } from '#gui/action';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
@@ -37,6 +38,7 @@ export function Logs(props:{
 	token:utf8_t;
 	requestOnly?:bool_t;
 }):ReactElement{
+	const {language,t} = useI18n();
 	const {busy,error,run} = useAction();
 	const [entries,setEntries] = useState<Array<LogEntry>>([]);
 	const [level,setLevel] = useState<LogLevel|'all'>('all');
@@ -72,12 +74,16 @@ export function Logs(props:{
 
 	return (
 		<Panel>
-			<h2>{props.requestOnly ? 'Request logs' : 'Logs'}</h2>
+			<h2>
+				{props.requestOnly ? t('Request logs') : t('Logs')}
+			</h2>
 			<p className="muted">
 				{props.requestOnly
-					? 'Showing up to 100 newest requests. '
-						+'Query strings and bodies are not recorded.'
-					: 'Showing up to 100 newest log entries.'}
+					? t(
+						'Showing up to 100 newest requests. Query strings '
+						+'and bodies are not recorded.'
+					)
+					: t('Showing up to 100 newest log entries.')}
 			</p>
 			<form
 				className={props.requestOnly
@@ -87,7 +93,7 @@ export function Logs(props:{
 			>
 				{!props.requestOnly && (
 					<label className="field">
-						<span>Level</span>
+						<span>{t('Level')}</span>
 						<select
 							value={level}
 							onChange={(event)=>{
@@ -99,11 +105,11 @@ export function Logs(props:{
 								}
 							}}
 						>
-							<option value="all">All levels</option>
+							<option value="all">{t('All levels')}</option>
 							{LOG_LEVELS.map((value)=>{
 								return (
 									<option key={value} value={value}>
-										{value}
+										{t(value)}
 									</option>
 								);
 							})}
@@ -112,8 +118,8 @@ export function Logs(props:{
 				)}
 				<label className="field">
 					<span>{props.requestOnly
-						? 'Search request lines'
-						: 'Search message'}</span>
+						? t('Search request lines')
+						: t('Search message')}</span>
 					<input
 						type="search"
 						maxLength={256}
@@ -128,9 +134,11 @@ export function Logs(props:{
 					fill
 					disabled={busy}
 				>
-					{busy ? 'Loading...' : props.requestOnly
-						? 'Search requests'
-						: 'Search logs'}
+					{busy
+						? t('Loading...')
+						: props.requestOnly
+							? t('Search requests')
+							: t('Search logs')}
 				</Framework7Button>
 			</form>
 			{null !== error && (
@@ -145,11 +153,10 @@ export function Logs(props:{
 								key={`${entry.timestamp}-${index}`}
 							>
 								<div className="log-entry-meta">
-									<strong>{entry.level}</strong>
+									<strong>{t(entry.level)}</strong>
 									<time dateTime={entry.timestamp}>
-										{new Date(
-											entry.timestamp
-										).toLocaleString()}
+										{new Date(entry.timestamp)
+											.toLocaleString(language)}
 									</time>
 								</div>
 								<pre>{entry.message}</pre>
@@ -160,8 +167,8 @@ export function Logs(props:{
 				: !busy && null === error
 					? <p className="muted">
 						{props.requestOnly
-							? 'No matching request logs.'
-							: 'No matching log entries.'}
+							? t('No matching request logs.')
+							: t('No matching log entries.')}
 					</p>
 					: null}
 		</Panel>

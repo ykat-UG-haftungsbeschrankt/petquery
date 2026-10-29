@@ -31,10 +31,9 @@ implements PetQueryServerDatabaseIndex{
 		await this._db.close();
 	}
 
-	async serverIndexGetServerUid():Promise<uuid_t>{
+	async serverIndexGetServerUid():Promise<uuid_t|undefined>{
 		this._assertNotDestroyed();
 		const value = this._db.get('server/uid');
-		PetQueryAssert.notNull(value);
 		return value;
 	}
 	async serverIndexSetServerUid(gid:uuid_t):Promise<void>{

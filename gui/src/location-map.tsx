@@ -10,6 +10,7 @@ import 'leaflet/dist/leaflet.css';
 import { circleMarker } from 'leaflet';
 import { map as createMap } from 'leaflet';
 import { tileLayer } from 'leaflet';
+import { useI18n } from '#gui/i18n';
 import { useEffect } from 'react';
 import { useRef } from 'react';
 
@@ -26,6 +27,7 @@ export function LocationMap(props:{
 	longitude:float_t|null;
 	onChange:(latitude:float_t,longitude:float_t)=>void;
 }):ReactElement{
+	const {t} = useI18n();
 	const container = useRef<HTMLDivElement|null>(null);
 	const map = useRef<LeafletMap|null>(null);
 	const marker = useRef<CircleMarker|null>(null);
@@ -93,7 +95,7 @@ export function LocationMap(props:{
 			ref={container}
 			className="location-map"
 			role="application"
-			aria-label="Map: click to set the sighting location"
+			aria-label={t('Map: click to set the sighting location')}
 		/>
 	);
 }

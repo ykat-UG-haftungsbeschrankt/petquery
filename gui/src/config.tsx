@@ -12,6 +12,7 @@ import { saveConfig } from '@petquery/api-client';
 import { useAction } from '#gui/action';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
+import { useI18n } from '#gui/i18n';
 import { useState } from 'react';
 
 import type { ChangeEvent } from 'react';
@@ -19,6 +20,8 @@ import type { ConfigState } from '@petquery/api-client';
 import type { ConfigValues } from '@petquery/api-client';
 import type { FormEvent } from 'react';
 import type { ReactElement } from 'react';
+import type { Language } from '#gui/i18n';
+import type { Translate } from '#gui/i18n';
 
 // setTimeout() fires immediately for delays above 2^31-1 ms.
 const MAX_TIMER_MS = 2147483647;
@@ -70,24 +73,33 @@ function diffPaths(a:ConfigValues,b:ConfigValues):Array<utf8_t>{
 	return ret;
 }
 
-function formatMs(ms:uint_t):utf8_t{
+function formatMs(
+	ms:uint_t,
+	language:Language,
+	t:Translate
+):utf8_t{
+	const formatter = new Intl.NumberFormat(language);
 	if(!Number.isFinite(ms)){
 		return '';
 	}
 	if(ms < 1000){
-		return `${ms} ms`;
+		return `${formatter.format(ms)} ${t('ms')}`;
 	}
 	if(ms < 60000){
-		return `${ms / 1000} s`;
+		return `${formatter.format(ms / 1000)} ${t('s')}`;
 	}
-	return `${Math.round(ms / 600) / 100} min`;
+	return `${formatter.format(Math.round(ms / 600) / 100)} `
+		+`${t('min')}`;
 }
 
-function formatBytes(bytes:uint_t):utf8_t{
+function formatBytes(bytes:uint_t,language:Language):utf8_t{
 	if(!Number.isFinite(bytes)){
 		return '';
 	}
-	return `${Math.round(bytes / 10485.76) / 100} MiB`;
+	const formatted = new Intl.NumberFormat(language,{
+		maximumFractionDigits:2
+	}).format(bytes / 1048576);
+	return `${formatted} MiB`;
 }
 
 function isJson(value:unknown):value is json_t{
@@ -117,39 +129,37 @@ function isJsonRecord(
 		&& Object.values(value).every(isJson);
 }
 
-function parsePluginOptions(text:utf8_t):Record<utf8_t,json_t>{
+function parsePluginOptions(
+	text:utf8_t,
+	t:Translate
+):Record<utf8_t,json_t>{
 	const value:unknown = JSON.parse(text);
 	if(!isJsonRecord(value)){
-		throw new Error('Plugin options must be a JSON object');
+		throw new Error(t('Plugin options must be a JSON object'));
 	}
 	return value;
 }
 
-function generateToken():utf8_t{
-	const bytes = new Uint8Array(16);
-	crypto.getRandomValues(bytes);
-	return Array.from(bytes,(byte)=>{
-		return byte.toString(16).padStart(2,'0');
-	}).join('');
-}
-
 // Returns the reasons why saving values might lock the admin out.
-function getWarnings(values:ConfigValues):Array<utf8_t>{
+function getWarnings(
+	values:ConfigValues,
+	t:Translate
+):Array<utf8_t>{
 	const ret:Array<utf8_t> = [];
 
 	if(!values.route.api.enabled){
-		ret.push(
-			'Disabling the API route also disables /api/config/* and'
-			+' /api/server/*. This page will stop working after a restart.'
-		);
+		ret.push(t(
+			'Disabling the API route also disables /api/config/* and '
+			+'/api/server/*. This page will stop working after a restart.'
+		));
 	}
 	if(!values.route.gui.enabled){
-		ret.push('Disabling the admin route turns off this GUI.');
+		ret.push(t('Disabling the admin route turns off this GUI.'));
 	}
 	return ret;
 }
 
-function numberField(
+function renderNumberField(
 	label:utf8_t,
 	value:uint_t,
 	min:uint_t,
@@ -176,7 +186,7 @@ function numberField(
 	);
 }
 
-function checkboxField(
+function renderCheckboxField(
 	label:utf8_t,
 	checked:bool_t,
 	onChange:(checked:bool_t)=>void
@@ -195,7 +205,7 @@ function checkboxField(
 	);
 }
 
-function textField(
+function renderTextField(
 	label:utf8_t,
 	value:utf8_t,
 	onChange:(value:utf8_t)=>void,
@@ -217,7 +227,35 @@ function textField(
 
 export function Config(props:{token:utf8_t}):ReactElement{
 	const token = props.token;
+	const {language,t} = useI18n();
 	const {busy,error,run} = useAction();
+	const numberField = (
+		label:utf8_t,
+		value:uint_t,
+		min:uint_t,
+		max:uint_t,
+		hint:utf8_t,
+		onChange:(value:uint_t)=>void
+	):ReactElement=>{
+		return renderNumberField(
+			t(label),value,min,max,hint,onChange
+		);
+	};
+	const checkboxField = (
+		label:utf8_t,
+		checked:bool_t,
+		onChange:(checked:bool_t)=>void
+	):ReactElement=>{
+		return renderCheckboxField(t(label),checked,onChange);
+	};
+	const textField = (
+		label:utf8_t,
+		value:utf8_t,
+		onChange:(value:utf8_t)=>void,
+		type:'text'|'password' = 'text'
+	):ReactElement=>{
+		return renderTextField(t(label),value,onChange,type);
+	};
 	const [state,setState] = useState<ConfigState|null>(null);
 	const [form,setForm] = useState<ConfigValues|null>(null);
 	const [pluginOptionsText,setPluginOptionsText] = useState<utf8_t>('');
@@ -255,27 +293,17 @@ export function Config(props:{token:utf8_t}):ReactElement{
 		});
 	}
 
-	function setTokenAt(index:size_t,value:utf8_t):void{
-		edit((draft)=>{
-			draft.authenticate.bearer[index] = value;
-		});
-	}
-
-	function removeTokenAt(index:size_t):void{
-		edit((draft)=>{
-			draft.authenticate.bearer.splice(index,1);
-		});
-	}
-
 	if(null === state || null === form){
 		return (
 			<>
 				{null !== error && <pre className="error">{error}</pre>}
 				<Panel>
-					<h2>Config</h2>
+					<h2>{t('Config')}</h2>
 					<p className="muted">
-						Viewing and editing the config requires an admin
-						session.
+						{t(
+							'Viewing and editing the config requires an '
+							+'admin session.'
+						)}
 					</p>
 					<Framework7Button
 						type="button"
@@ -286,7 +314,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 							});
 						}}
 					>
-						Load
+						{t('Load')}
 					</Framework7Button>
 				</Panel>
 			</>
@@ -315,7 +343,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 
 	function onReload():void{
 		if(0 < unsaved.length
-		&& !window.confirm('Discard unsaved changes?')){
+		&& !window.confirm(t('Discard unsaved changes?'))){
 			return;
 		}
 		run(async ()=>{
@@ -342,20 +370,22 @@ export function Config(props:{token:utf8_t}):ReactElement{
 		const values = structuredClone(form);
 		try{
 			values.authenticate.plugin_options =
-				parsePluginOptions(pluginOptionsText);
+				parsePluginOptions(pluginOptionsText,t);
 			setPluginOptionsError(null);
 		}
 		catch(error){
 			setPluginOptionsError(
 				error instanceof Error
 					? error.message
-					: 'Invalid plugin options JSON'
+					: t('Invalid plugin options JSON')
 			);
 			return;
 		}
-		const warnings = getWarnings(values);
+		const warnings = getWarnings(values,t);
 		if(0 < warnings.length
-		&& !window.confirm(`${warnings.join('\n\n')}\n\nSave anyway?`)){
+		&& !window.confirm(t('{warnings}\n\nSave anyway?',{
+			warnings:warnings.join('\n\n')
+		}))){
 			return;
 		}
 		run(async ()=>{
@@ -374,13 +404,13 @@ export function Config(props:{token:utf8_t}):ReactElement{
 		<>
 			{null !== error && <pre className="error">{error}</pre>}
 			{0 < pending.length && <div className="banner">
-				Saved changes take effect when the server restarts:{' '}
+				{t('Saved changes take effect when the server restarts:')}{' '}
 				<code>{pending.join(', ')}</code>
 			</div>}
 
 			<form onSubmit={onSubmit}>
 				<Panel>
-					<h2>HTTP</h2>
+					<h2>{t('HTTP')}</h2>
 					{numberField(
 						'Port',form.http.port,1,65535,'',
 						(value)=>{
@@ -390,7 +420,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						}
 					)}
 					<label className="field">
-						<span>Trusted proxy IPs/CIDRs</span>
+						<span>{t('Trusted proxy IPs/CIDRs')}</span>
 						<textarea
 							rows={4}
 							value={form.http.trusted_proxies.join('\n')}
@@ -411,9 +441,11 @@ export function Config(props:{token:utf8_t}):ReactElement{
 							}}
 						/>
 						<small className="muted">
-							One trusted proxy IP or CIDR per line. Only trust
-							X-Forwarded-For from these proxies.
-							Leave empty for direct connections.
+							{t(
+								'One trusted proxy IP or CIDR per line. Only '
+								+'trust X-Forwarded-For from these proxies. '
+								+'Leave empty for direct connections.'
+							)}
 						</small>
 					</label>
 				</Panel>
@@ -422,7 +454,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 					<h2>Bearer tokens</h2>
 					<div className="auth-fields">
 						<label className="field">
-							<span>Enabled providers</span>
+							<span>{t('Enabled providers')}</span>
 							<textarea
 								rows={4}
 								value={
@@ -445,13 +477,16 @@ export function Config(props:{token:utf8_t}):ReactElement{
 								}}
 							/>
 							<small className="muted">
-								Enter one registered provider name per line.
-								Names are selected explicitly at sign in.
+								{t(
+									'Enter one registered provider name per '
+									+'line. Names are selected explicitly at '
+									+'sign in.'
+								)}
 							</small>
 						</label>
-						Clients send one of these as
+						{t('Clients send one of these as')}
 						{' '}<code>Authorization: ******;token&gt;</code>.
-						At least 16 printable characters, no spaces.
+						{' '}{t('At least 16 printable characters, no spaces.')}
 						{textField(
 							'Legacy mode value (compatibility only)',
 							form.authenticate.mode,
@@ -462,7 +497,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 							}
 						)}
 					<label className="field">
-							<span>Common legacy mode values</span>
+							<span>{t('Common legacy mode values')}</span>
 							<select
 								value={form.authenticate.mode}
 								onChange={(event)=>{
@@ -484,14 +519,14 @@ export function Config(props:{token:utf8_t}):ReactElement{
 									>
 										{form.authenticate.mode}
 									</option>}
-								<option value="lmdb">LMDB users</option>
-								<option value="ldap">LDAP</option>
-								<option value="oidc">OpenID Connect</option>
+								<option value="lmdb">{t('LMDB users')}</option>
+								<option value="ldap">{t('LDAP')}</option>
+								<option value="oidc">{t('OpenID Connect')}</option>
 							</select>
 						</label>
 						<p className="muted">
 							Bearer credentials are managed under API clients.
-							They cannot sign in to the admin GUI.
+							{t('They cannot sign in to the admin GUI.')}
 						</p>
 						{checkboxField(
 							'Secure session cookie',
@@ -517,7 +552,11 @@ export function Config(props:{token:utf8_t}):ReactElement{
 							form.authenticate.session.max_age,
 							60000,
 							2147483647,
-							formatMs(form.authenticate.session.max_age),
+							formatMs(
+								form.authenticate.session.max_age,
+								language,
+								t
+							),
 							(value)=>{
 								edit((draft)=>{
 									draft.authenticate.session.max_age =
@@ -675,53 +714,8 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						{' '}<code>Authorization: Bearer &lt;token&gt;</code>.
 						At least 16 printable characters, no spaces.
 					</div>
-					{form.authenticate.providers.includes('bearer')
-						&& form.authenticate.bearer.map((value,index)=>{
-						return (
-							<div className="row" key={index}>
-								<input
-									className="token"
-									required
-									minLength={16}
-									maxLength={256}
-									pattern="[\x21-\x7e]+"
-									spellCheck={false}
-									autoComplete="off"
-									value={value}
-									onChange={(event)=>{
-										setTokenAt(index,event.target.value);
-									}}
-								/>
-								{token === value
-									&& <small className="muted">in use</small>}
-								<Framework7Button
-									type="button"
-									disabled={
-										1 === form.authenticate.bearer.length
-									}
-									onClick={()=>{
-										removeTokenAt(index);
-									}}
-								>
-									Remove
-								</Framework7Button>
-							</div>
-						);
-						})}
-					{form.authenticate.providers.includes('bearer')
-						&& <Framework7Button
-							type="button"
-							onClick={()=>{
-								const next = generateToken();
-								edit((draft)=>{
-									draft.authenticate.bearer.push(next);
-								});
-							}}
-						>
-							Add generated token
-						</Framework7Button>}
 					<label className="field">
-						<span>Provider options (JSON)</span>
+						<span>{t('Provider options (JSON)')}</span>
 						<textarea
 							rows={10}
 							spellCheck={false}
@@ -737,7 +731,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 				</Panel>
 
 				<Panel>
-					<h2>Results</h2>
+					<h2>{t('Results')}</h2>
 					{numberField(
 						'Max results per plugin',
 						form.max_results_per_module,1,1000000,'',
@@ -759,7 +753,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 				</Panel>
 
 				<Panel>
-					<h2>File upload</h2>
+					<h2>{t('File upload')}</h2>
 					{checkboxField('Enabled',upload.enabled,(value)=>{
 						edit((draft)=>{
 							draft.file.upload.enabled = value;
@@ -768,7 +762,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 					{numberField(
 						'Max file size (bytes)',
 						upload.max_file_size,1,Number.MAX_SAFE_INTEGER,
-						formatBytes(upload.max_file_size),
+						formatBytes(upload.max_file_size,language),
 						(value)=>{
 							edit((draft)=>{
 								draft.file.upload.max_file_size = value;
@@ -778,7 +772,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 				</Panel>
 
 				<Panel>
-					<h2>Peer sync</h2>
+					<h2>{t('Peer sync')}</h2>
 					{checkboxField('Enabled',sync.enabled,(value)=>{
 						edit((draft)=>{
 							draft.index.sync.enabled = value;
@@ -786,7 +780,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 					})}
 					{numberField(
 						'Interval (ms)',sync.interval,1000,MAX_TIMER_MS,
-						formatMs(sync.interval),
+						formatMs(sync.interval,language,t),
 						(value)=>{
 							edit((draft)=>{
 								draft.index.sync.interval = value;
@@ -795,7 +789,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 					)}
 					{numberField(
 						'Request timeout (ms)',sync.timeout,100,MAX_TIMER_MS,
-						formatMs(sync.timeout),
+						formatMs(sync.timeout,language,t),
 						(value)=>{
 							edit((draft)=>{
 								draft.index.sync.timeout = value;
@@ -814,7 +808,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 				</Panel>
 
 				<Panel>
-					<h2>Routes</h2>
+					<h2>{t('Routes')}</h2>
 					{checkboxField(
 						'/api (includes this page\'s API)',
 						form.route.api.enabled,
@@ -833,7 +827,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 							});
 						}
 					)}
-					<h3>Plugins queried by /api</h3>
+					<h3>{t('Plugins queried by /api')}</h3>
 					{state.plugins.map((name)=>{
 						return (
 							<div key={name}>
@@ -855,7 +849,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						disabled={busy || 0 === unsaved.length}
 						fill
 					>
-						Save
+						{t('Save')}
 					</Framework7Button>
 					<Framework7Button
 						type="button"
@@ -863,7 +857,7 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						outline
 						onClick={onReset}
 					>
-						Reset
+						{t('Reset')}
 					</Framework7Button>
 					<Framework7Button
 						type="button"
@@ -871,12 +865,14 @@ export function Config(props:{token:utf8_t}):ReactElement{
 						outline
 						onClick={onReload}
 					>
-						Reload
+						{t('Reload')}
 					</Framework7Button>
 					<span className="muted">
 						{0 < unsaved.length
-							? `Unsaved: ${unsaved.join(', ')}`
-							: 'No unsaved changes.'}
+							? t('Unsaved: {paths}',{
+								paths:unsaved.join(', ')
+							})
+							: t('No unsaved changes.')}
 					</span>
 				</div>
 			</form>

@@ -12,6 +12,7 @@ import { deleteUser } from '@petquery/api-client';
 import { listUsers } from '@petquery/api-client';
 import { Panel } from '#gui/panel';
 import { updateUser } from '@petquery/api-client';
+import { useI18n } from '#gui/i18n';
 import { useAction } from '#gui/action';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
@@ -27,22 +28,31 @@ import type { ReactElement } from 'react';
 
 type UserGroup = ManagedUser['group'];
 
-const USER_COLUMNS:Array<DataTableColumn<ManagedUser>> = [
-	{
-		key:'username',
-		label:'Username',
-		value:(user)=>user.username,
-		render:(user)=><code>{user.username}</code>
-	},
-	{key:'displayName',label:'Name',value:(user)=>user.displayName},
-	{key:'group',label:'Group',value:(user)=>user.group},
-	{key:'provider',label:'Provider',value:(user)=>user.provider}
-];
+function getUserColumns(
+	t:(message:utf8_t)=>utf8_t
+):Array<DataTableColumn<ManagedUser>>{
+	return [
+		{
+			key:'username',
+			label:'Username',
+			value:(user)=>user.username,
+			render:(user)=><code>{user.username}</code>
+		},
+		{key:'displayName',label:'Name',value:(user)=>user.displayName},
+		{
+			key:'group',
+			label:'Group',
+			value:(user)=>t('admin' === user.group ? 'Admin' : 'User')
+		},
+		{key:'provider',label:'Provider',value:(user)=>user.provider}
+	];
+}
 
 export function Users(props:{
 	token:utf8_t;
 	providers:Array<AuthProvider>;
 }):ReactElement{
+	const {t} = useI18n();
 	const {busy,error,run} = useAction();
 	const [users,setUsers] = useState<Array<ManagedUser>>([]);
 	const [provider,setProvider] = useState<utf8_t>('');
@@ -59,6 +69,7 @@ export function Users(props:{
 	const canManageUsers = writableProviders.some((entry)=>{
 		return entry.name === provider;
 	});
+	const columns = getUserColumns(t);
 
 	useEffect(()=>{
 		if(!props.providers.some((entry)=>{
@@ -120,7 +131,9 @@ export function Users(props:{
 	}
 
 	function onDelete(user:ManagedUser):void{
-		if(!window.confirm(`Delete user ${user.username}?`)){
+		if(!window.confirm(t('Delete user {username}?',{
+			username:user.username
+		}))){
 			return;
 		}
 		run(async ()=>{
@@ -138,9 +151,12 @@ export function Users(props:{
 			<Panel>
 				<div className="page-heading">
 					<div>
-						<h2>Users</h2>
+						<h2>{t('Users')}</h2>
 						<p className="muted">
-							Manage local users and review external identities.
+							{t(
+								'Manage local users and review external '
+								+'identities.'
+							)}
 						</p>
 					</div>
 					<Framework7Button
@@ -150,12 +166,12 @@ export function Users(props:{
 							run(refresh);
 						}}
 					>
-						Refresh
+						{t('Refresh')}
 					</Framework7Button>
 				</div>
 				{0 < props.providers.length && (
 					<label className="field">
-						<span>User management provider</span>
+						<span>{t('User management provider')}</span>
 						<select
 							value={provider}
 							onChange={(event)=>{
@@ -178,7 +194,7 @@ export function Users(props:{
 				)}
 				<DataTable
 					rows={users}
-					columns={USER_COLUMNS}
+					columns={columns}
 					filterLabel="users"
 					emptyMessage="No users found."
 					rowKey={(user)=>{
@@ -195,7 +211,7 @@ export function Users(props:{
 									editUser(user);
 								}}
 							>
-								Edit
+								{t('Edit')}
 							</Framework7Button>
 							<Framework7Button
 								type="button"
@@ -206,7 +222,7 @@ export function Users(props:{
 									onDelete(user);
 								}}
 							>
-								Delete
+								{t('Delete')}
 							</Framework7Button>
 						</>
 					)}
@@ -215,10 +231,12 @@ export function Users(props:{
 
 			{canManageUsers
 				? <Panel>
-				<h2>{null === editing ? 'Add user' : 'Edit user'}</h2>
+				<h2>
+					{null === editing ? t('Add user') : t('Edit user')}
+				</h2>
 				<form onSubmit={onSubmit}>
 					<label className="field">
-						<span>Username</span>
+						<span>{t('Username')}</span>
 						<input
 							required
 							disabled={null !== editing}
@@ -230,7 +248,7 @@ export function Users(props:{
 						/>
 					</label>
 					<label className="field">
-						<span>Display name</span>
+						<span>{t('Display name')}</span>
 						<input
 							required
 							value={displayName}
@@ -240,7 +258,7 @@ export function Users(props:{
 						/>
 					</label>
 					<label className="field">
-						<span>Group</span>
+						<span>{t('Group')}</span>
 						<select
 							value={group}
 							onChange={(event:ChangeEvent<HTMLSelectElement>)=>{
@@ -250,12 +268,12 @@ export function Users(props:{
 								);
 							}}
 						>
-							<option value="user">User</option>
-							<option value="admin">Admin</option>
+							<option value="user">{t('User')}</option>
+							<option value="admin">{t('Admin')}</option>
 						</select>
 					</label>
 					<label className="field">
-						<span>Password</span>
+						<span>{t('Password')}</span>
 						<input
 							type="password"
 							required={null === editing}
@@ -267,7 +285,9 @@ export function Users(props:{
 						/>
 					</label>
 					<Framework7Button type="submit" disabled={busy} fill>
-						{null === editing ? 'Create user' : 'Save user'}
+						{null === editing
+							? t('Create user')
+							: t('Save user')}
 					</Framework7Button>
 					{null !== editing && (
 						<Framework7Button
@@ -275,13 +295,13 @@ export function Users(props:{
 							disabled={busy}
 							onClick={resetForm}
 						>
-							Cancel
+							{t('Cancel')}
 						</Framework7Button>
 					)}
 				</form>
 				</Panel>
 				: <div className="banner">
-					No enabled provider supports user management.
+					{t('No enabled provider supports user management.')}
 				</div>}
 		</>
 	);

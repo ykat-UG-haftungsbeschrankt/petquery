@@ -9,13 +9,16 @@ import { API_CLIENT_PERMISSION_CATALOG } from '@petquery/api-client';
 import { createApiClient } from '@petquery/api-client';
 import { deleteApiClient } from '@petquery/api-client';
 import { listApiClients } from '@petquery/api-client';
+import { rotateApiClientToken } from '@petquery/api-client';
 import { updateApiClient } from '@petquery/api-client';
 import { Button as Framework7Button } from 'framework7-react';
 import { DataTable } from '#gui/data-table';
 import { Panel } from '#gui/panel';
+import { useI18n } from '#gui/i18n';
 import { useAction } from '#gui/action';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
+import { useRef } from 'react';
 import { useState } from 'react';
 
 import type { ApiClient } from '@petquery/api-client';
@@ -23,12 +26,18 @@ import type { ApiClientSettings } from '@petquery/api-client';
 import type { DataTableColumn } from '#gui/data-table';
 import type { FormEvent } from 'react';
 import type { ReactElement } from 'react';
+import type { Language } from '#gui/i18n';
+import type { Translate } from '#gui/i18n';
 
 type ApiClientPermission =
 	typeof API_CLIENT_PERMISSION_CATALOG[number]['id'];
 type ApiClientPermissionValue = ApiClientSettings['permissions'][number];
 
-const API_CLIENT_COLUMNS:Array<DataTableColumn<ApiClient>> = [
+function getApiClientColumns(
+	t:Translate,
+	language:Language
+):Array<DataTableColumn<ApiClient>>{
+	return [
 	{
 		key:'name',
 		label:'Name',
@@ -48,12 +57,12 @@ const API_CLIENT_COLUMNS:Array<DataTableColumn<ApiClient>> = [
 		label:'API permissions',
 		value:(client)=>{
 			return client.permissions.includes('*')
-				? 'All listed API calls'
+				? t('All listed API calls')
 				: client.permissions.join(', ');
 		},
 		render:(client)=>{
 			if(client.permissions.includes('*')){
-				return 'All listed API calls';
+				return t('All listed API calls');
 			}
 			return (
 				<>
@@ -76,9 +85,13 @@ const API_CLIENT_COLUMNS:Array<DataTableColumn<ApiClient>> = [
 		label:'Last updated',
 		value:(client)=>{
 			return client.updatedAt;
+		},
+		render:(client)=>{
+			return new Date(client.updatedAt).toLocaleString(language);
 		}
 	}
-];
+	];
+}
 
 function parseAllowedIps(value:utf8_t):Array<utf8_t>{
 	const lines = value.split('\n');
@@ -93,6 +106,7 @@ function parseAllowedIps(value:utf8_t):Array<utf8_t>{
 }
 
 export function ApiClients(props:{token:utf8_t}):ReactElement{
+	const {language,t} = useI18n();
 	const {busy,error,run} = useAction();
 	const [clients,setClients] = useState<Array<ApiClient>>([]);
 	const [editingId,setEditingId] = useState<utf8_t|null>(null);
@@ -101,6 +115,7 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 	const [permissions,setPermissions] =
 		useState<Array<ApiClientPermissionValue>>([]);
 	const [revealedToken,setRevealedToken] = useState<utf8_t|null>(null);
+	const tokenPanelRef = useRef<HTMLDivElement|null>(null);
 
 	const refresh = useCallback(async ():Promise<void>=>{
 		setClients(await listApiClients(props.token));
@@ -109,6 +124,15 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 	useEffect(()=>{
 		run(refresh);
 	},[run,refresh]);
+
+	useEffect(()=>{
+		if(null !== revealedToken){
+			tokenPanelRef.current?.scrollIntoView({
+				behavior:'smooth',
+				block:'start'
+			});
+		}
+	},[revealedToken]);
 
 	function resetForm():void{
 		setEditingId(null);
@@ -171,7 +195,9 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 	}
 
 	function revokeClient(client:ApiClient):void{
-		if(!window.confirm(`Revoke API client "${client.name}"?`)){
+		if(!window.confirm(t('Revoke API client "{name}"?',{
+			name:client.name
+		}))){
 			return;
 		}
 		run(async ()=>{
@@ -183,49 +209,75 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 		});
 	}
 
+	function rotateToken(client:ApiClient):void{
+		if(!window.confirm(t(
+			'Rotate API-client token for "{name}"? This revokes the '
+			+'current token.',
+			{name:client.name}
+		))){
+			return;
+		}
+		setRevealedToken(null);
+		run(async ()=>{
+			const rotated = await rotateApiClientToken(
+				props.token,
+				client.id
+			);
+			setRevealedToken(rotated.token);
+			await refresh();
+		});
+	}
+
 	const canSubmit = !busy
 		&& '' !== name.trim()
 		&& 0 < parseAllowedIps(allowedIpsText).length
 		&& 0 < permissions.length;
+	const columns = getApiClientColumns(t,language);
 
 	return (
 		<>
 			{null !== error && <pre className="error">{error}</pre>}
-			{null !== revealedToken && <Panel>
-				<h2>Copy the new API-client token</h2>
-				<p className="banner">
-					This token is shown only once. Store it securely; the
-					server keeps only its hash.
-				</p>
-				<label className="field">
-					<span>Bearer token</span>
-					<textarea
-						rows={3}
-						readOnly
-						value={revealedToken}
-						onFocus={(event)=>{
-							event.currentTarget.select();
+			{null !== revealedToken && <div ref={tokenPanelRef}>
+				<Panel>
+					<h2>{t('Copy the new API-client token')}</h2>
+					<p className="banner">
+						{t(
+							'This token is shown only once. Store it '
+							+'securely; the server keeps only its hash.'
+						)}
+					</p>
+					<label className="field">
+						<span>Bearer token</span>
+						<textarea
+							rows={3}
+							readOnly
+							value={revealedToken}
+							onFocus={(event)=>{
+								event.currentTarget.select();
+							}}
+						/>
+					</label>
+					<Framework7Button
+						type="button"
+						disabled={busy}
+						onClick={()=>{
+							setRevealedToken(null);
 						}}
-					/>
-				</label>
-				<Framework7Button
-					type="button"
-					disabled={busy}
-					onClick={()=>{
-						setRevealedToken(null);
-					}}
-				>
-					Dismiss
-				</Framework7Button>
-			</Panel>}
+					>
+						{t('Dismiss')}
+					</Framework7Button>
+				</Panel>
+			</div>}
 			<Panel>
 				<div className="page-heading">
 					<div>
-						<h2>API clients</h2>
+						<h2>{t('API clients')}</h2>
 						<p className="muted">
-							Manage bearer credentials for API and
-							server-to-server requests. These clients cannot
-							sign in to the admin GUI.
+							{t(
+								'Manage bearer credentials for API and '
+								+'server-to-server requests. These clients '
+								+'cannot sign in to the admin GUI.'
+							)}
 						</p>
 					</div>
 					<Framework7Button
@@ -235,12 +287,12 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 							run(refresh);
 						}}
 					>
-						Refresh
+						{t('Refresh')}
 					</Framework7Button>
 				</div>
 				<DataTable
 					rows={clients}
-					columns={API_CLIENT_COLUMNS}
+					columns={columns}
 					filterLabel="API clients"
 					emptyMessage="No API clients have been created."
 					rowKey={(client)=>{
@@ -255,7 +307,16 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 									editClient(client);
 								}}
 							>
-								Edit
+								{t('Edit')}
+							</Framework7Button>
+							<Framework7Button
+								type="button"
+								disabled={busy}
+								onClick={()=>{
+									rotateToken(client);
+								}}
+							>
+								{t('Rotate token')}
 							</Framework7Button>
 							<Framework7Button
 								type="button"
@@ -264,7 +325,7 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 									revokeClient(client);
 								}}
 							>
-								Revoke
+								{t('Revoke')}
 							</Framework7Button>
 						</>
 					)}
@@ -274,12 +335,12 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 			<Panel>
 				<h2>
 					{null === editingId
-						? 'Create API client'
-						: 'Edit API client'}
+						? t('Create API client')
+						: t('Edit API client')}
 				</h2>
 				<form onSubmit={onSubmit}>
 					<label className="field">
-						<span>Name</span>
+						<span>{t('Name')}</span>
 						<input
 							required
 							maxLength={128}
@@ -290,7 +351,7 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 						/>
 					</label>
 					<label className="field">
-						<span>Allowed source IPs</span>
+						<span>{t('Allowed source IPs')}</span>
 						<textarea
 							required
 							rows={3}
@@ -300,18 +361,23 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 							}}
 						/>
 						<small className="muted">
-							Enter exact IPv4 or IPv6 addresses, one per line.
-							Use * to allow any source IP. For proxied requests,
-							configure proxy IPs/CIDRs in Config, under HTTP;
-							only their X-Forwarded-For values are trusted.
+							{t(
+								'Enter exact IPv4 or IPv6 addresses, one per '
+								+'line. Use * to allow any source IP. For '
+								+'proxied requests, configure proxy IPs/CIDRs '
+								+'in Config, under HTTP; only their '
+								+'X-Forwarded-For values are trusted.'
+							)}
 						</small>
 					</label>
 					<fieldset className="api-client-permissions">
-						<legend>Allowed API calls</legend>
+						<legend>{t('Allowed API calls')}</legend>
 						<p className="muted">
-							Scopes apply when this bearer token is used.
-							Existing public API routes remain available
-							without a token.
+							{t(
+								'Scopes apply when this bearer token is '
+								+'used. Existing public API routes remain '
+								+'available without a token.'
+							)}
 						</p>
 						<label className="check">
 							<input
@@ -324,11 +390,13 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 									);
 								}}
 							/>
-							All listed /api calls
+							{t('All listed /api calls')}
 						</label>
 						<p className="muted">
-							API-client management and user-management routes
-							always require an admin session.
+							{t(
+								'API-client management and user-management '
+								+'routes always require an admin session.'
+							)}
 						</p>
 						{API_CLIENT_PERMISSION_CATALOG.map((permission)=>{
 							return (
@@ -352,7 +420,7 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 											);
 										}}
 									/>
-									<span>{permission.label}</span>
+									<span>{t(permission.label)}</span>
 									<code>{permission.id}</code>
 								</label>
 							);
@@ -364,8 +432,8 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 						fill
 					>
 						{null === editingId
-							? 'Create client'
-							: 'Save client'}
+							? t('Create client')
+							: t('Save client')}
 					</Framework7Button>
 					{null !== editingId && (
 						<Framework7Button
@@ -373,7 +441,7 @@ export function ApiClients(props:{token:utf8_t}):ReactElement{
 							disabled={busy}
 							onClick={resetForm}
 						>
-							Cancel
+							{t('Cancel')}
 						</Framework7Button>
 					)}
 				</form>

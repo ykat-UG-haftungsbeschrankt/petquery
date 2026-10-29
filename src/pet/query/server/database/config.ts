@@ -17,5 +17,5 @@ export abstract class PetQueryServerDatabaseConfig extends PetQueryDestructor{
 	
 	abstract serverConfigLoad(
 		gid:uuid_t
-	):Promise<PetQuerySchemaServerDatabaseConfigEntryType>;
+	):Promise<PetQuerySchemaServerDatabaseConfigEntryType|undefined>;
 };

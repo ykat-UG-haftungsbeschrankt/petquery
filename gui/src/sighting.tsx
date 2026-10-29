@@ -10,8 +10,10 @@ import { LocationMap } from '#gui/location-map';
 import { locateViewer } from '#gui/geolocation';
 import { reportPetSighting } from '@petquery/api-client';
 import { useAction } from '#gui/action';
+import { useI18n } from '#gui/i18n';
 import { useCallback } from 'react';
 import { useEffect } from 'react';
+import { useRef } from 'react';
 import { useState } from 'react';
 
 import type { FormEvent } from 'react';
@@ -24,16 +26,19 @@ export function Sighting(props:{
 	onSaved:(sighting:PetSighting)=>void;
 	onCancel:()=>void;
 }):ReactElement{
+	const {t} = useI18n();
 	const {busy,error,run} = useAction();
 	const [latitude,setLatitude] = useState<utf8_t>('');
 	const [longitude,setLongitude] = useState<utf8_t>('');
 	const [name,setName] = useState<utf8_t>('');
 	const [email,setEmail] = useState<utf8_t>('');
 	const [phone,setPhone] = useState<utf8_t>('');
+	const translate = useRef(t);
+	translate.current = t;
 
 	const onLocate = useCallback(():void=>{
 		run(async ()=>{
-			const location = await locateViewer();
+			const location = await locateViewer(translate.current);
 			setLatitude(`${location.latitude}`);
 			setLongitude(`${location.longitude}`);
 		});
@@ -69,15 +74,15 @@ export function Sighting(props:{
 			{null !== error && <p className="error" role="alert">{error}</p>}
 			<form onSubmit={onSubmit}>
 				<p className="muted">
-					This publicly updates the pet immediately on{' '}
+					{t('This publicly updates the pet immediately on')}{' '}
 					<strong>{props.endpoint}</strong>.
-					Your contact details will be visible in search results.
+					{' '}{t('Your contact details will be visible in search results.')}
 				</p>
 				<p className="muted">
-					The sighting time is set to the moment you save.
+					{t('The sighting time is set to the moment you save.')}
 				</p>
 				<Button type="button" disabled={busy} onClick={onLocate}>
-					Refresh my current location
+					{t('Refresh my current location')}
 				</Button>
 				<LocationMap
 					latitude={'' === latitude ? null : Number(latitude)}
@@ -85,11 +90,13 @@ export function Sighting(props:{
 					onChange={onMapChange}
 				/>
 				<p className="muted">
-					Your current location is pre-selected. Click the map
-					to adjust it.
+					{t(
+						'Your current location is pre-selected. Click the '
+						+'map to adjust it.'
+					)}
 				</p>
 				<label className="field">
-					<span>Latitude</span>
+					<span>{t('Latitude')}</span>
 					<input
 						type="number"
 						min="-90"
@@ -103,7 +110,7 @@ export function Sighting(props:{
 					/>
 				</label>
 				<label className="field">
-					<span>Longitude</span>
+					<span>{t('Longitude')}</span>
 					<input
 						type="number"
 						min="-180"
@@ -117,13 +124,13 @@ export function Sighting(props:{
 					/>
 				</label>
 				<label className="field">
-					<span>Contact name</span>
+					<span>{t('Contact name')}</span>
 					<input required value={name} onChange={(event)=>{
 						setName(event.target.value);
 					}}/>
 				</label>
 				<label className="field">
-					<span>Contact email</span>
+					<span>{t('Contact email')}</span>
 					<input
 						type="email"
 						required
@@ -134,7 +141,7 @@ export function Sighting(props:{
 					/>
 				</label>
 				<label className="field">
-					<span>Contact phone</span>
+					<span>{t('Contact phone')}</span>
 					<input
 						type="tel"
 						required
@@ -146,14 +153,14 @@ export function Sighting(props:{
 				</label>
 				<div className="sighting-actions">
 					<Button type="submit" disabled={busy} fill>
-						Save public sighting
+						{t('Save public sighting')}
 					</Button>
 					<Button
 						type="button"
 						disabled={busy}
 						onClick={props.onCancel}
 					>
-						Cancel
+						{t('Cancel')}
 					</Button>
 				</div>
 			</form>

@@ -22,7 +22,28 @@
 			"properties": {
 				"gid": {
 					"type": "string",
-					"pattern": "^[\\x21-\\x7e]{16,256}$"
+					"format": "uuid"
+				},
+				"api": {
+					"type": "object",
+					"required": [
+						"endpoint"
+					],
+					"properties": {
+						"endpoint": {
+							"type": "string",
+							"format": "uri"
+						}
+					},
+					"additionalProperties": false
+				},
+				"adminContact": {
+					"type": "string",
+					"maxLength": 1024
+				},
+				"companyAddress": {
+					"type": "string",
+					"maxLength": 4096
 				},
 				"http": {
 					"type": "object",
@@ -30,10 +51,18 @@
 						"port"
 					],
 					"properties": {
+						"host": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 255
+						},
 						"port": {
 							"type": "integer",
 							"minimum": 1,
 							"maximum": 65535
+						},
+						"enabled": {
+							"type": "boolean"
 						},
 						"trusted_proxies": {
 							"type": "array",
@@ -48,11 +77,46 @@
 					},
 					"additionalProperties": false
 				},
+				"https": {
+					"type": "object",
+					"required": [
+						"port",
+						"enabled",
+						"certificate"
+					],
+					"properties": {
+						"host": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 255
+						},
+						"port": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 65535
+						},
+						"enabled": {
+							"type": "boolean"
+						},
+						"certificate": {
+							"type": "object",
+							"properties": {
+								"key": {
+									"type": "string"
+								},
+								"cert": {
+									"type": "string"
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
+				},
 				"authenticate": {
 					"type": "object",
 					"required": [
 						"mode",
-						"bearer",
 						"session",
 						"lmdb",
 						"ldap",
@@ -69,6 +133,7 @@
 								"type": "string",
 								"minLength": 1
 							},
+							"minItems": 1,
 							"maxItems": 1000
 						},
 						"plugin_options": {
@@ -85,6 +150,10 @@
 							},
 							"minItems": 0,
 							"maxItems": 100
+						},
+						"bearer_env": {
+							"type": "string",
+							"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
 						},
 						"session": {
 							"type": "object",
@@ -226,7 +295,8 @@
 								},
 								"max_file_size": {
 									"type": "integer",
-									"minimum": 1
+									"minimum": 1,
+									"maximum": 1073741824
 								}
 							},
 							"additionalProperties": false
@@ -283,6 +353,106 @@
 					},
 					"additionalProperties": false
 				},
+				"logging": {
+					"type": "object",
+					"properties": {
+						"level": {
+							"anyOf": [
+								{
+									"type": "string",
+									"const": "error"
+								},
+								{
+									"type": "string",
+									"const": "warn"
+								},
+								{
+									"type": "string",
+									"const": "info"
+								},
+								{
+									"type": "string",
+									"const": "debug"
+								}
+							]
+						},
+						"request": {
+							"type": "object",
+							"properties": {
+								"enabled": {
+									"type": "boolean"
+								}
+							},
+							"additionalProperties": false
+						},
+						"file": {
+							"type": "object",
+							"properties": {
+								"path": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 4096
+								},
+								"max_size": {
+									"type": "integer",
+									"minimum": 1024,
+									"maximum": 10485760
+								},
+								"max_files": {
+									"type": "integer",
+									"minimum": 2,
+									"maximum": 5
+								}
+							},
+							"additionalProperties": false
+						}
+					},
+					"additionalProperties": false
+				},
+				"database": {
+					"anyOf": [
+						{
+							"type": "object",
+							"required": [
+								"type",
+								"connectionString"
+							],
+							"properties": {
+								"type": {
+									"type": "string",
+									"const": "postgresql"
+								},
+								"connectionString": {
+									"type": "string",
+									"minLength": 1
+								}
+							},
+							"additionalProperties": false
+						},
+						{
+							"type": "object",
+							"required": [
+								"type",
+								"path"
+							],
+							"properties": {
+								"type": {
+									"type": "string",
+									"const": "lmdb"
+								},
+								"path": {
+									"type": "string",
+									"minLength": 1
+								}
+							},
+							"additionalProperties": false
+						}
+					]
+				},
+				"ai_search_path": {
+					"type": "string",
+					"minLength": 1
+				},
 				"route": {
 					"type": "object",
 					"required": [
@@ -332,6 +502,10 @@
 							"properties": {
 								"enabled": {
 									"type": "boolean"
+								},
+								"path": {
+									"type": "string",
+									"minLength": 1
 								}
 							},
 							"additionalProperties": false
@@ -359,7 +533,28 @@
 					"properties": {
 						"gid": {
 							"type": "string",
-							"pattern": "^[\\x21-\\x7e]{16,256}$"
+							"format": "uuid"
+						},
+						"api": {
+							"type": "object",
+							"required": [
+								"endpoint"
+							],
+							"properties": {
+								"endpoint": {
+									"type": "string",
+									"format": "uri"
+								}
+							},
+							"additionalProperties": false
+						},
+						"adminContact": {
+							"type": "string",
+							"maxLength": 1024
+						},
+						"companyAddress": {
+							"type": "string",
+							"maxLength": 4096
 						},
 						"http": {
 							"type": "object",
@@ -367,10 +562,18 @@
 								"port"
 							],
 							"properties": {
+								"host": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 255
+								},
 								"port": {
 									"type": "integer",
 									"minimum": 1,
 									"maximum": 65535
+								},
+								"enabled": {
+									"type": "boolean"
 								},
 								"trusted_proxies": {
 									"type": "array",
@@ -385,11 +588,46 @@
 							},
 							"additionalProperties": false
 						},
+						"https": {
+							"type": "object",
+							"required": [
+								"port",
+								"enabled",
+								"certificate"
+							],
+							"properties": {
+								"host": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 255
+								},
+								"port": {
+									"type": "integer",
+									"minimum": 1,
+									"maximum": 65535
+								},
+								"enabled": {
+									"type": "boolean"
+								},
+								"certificate": {
+									"type": "object",
+									"properties": {
+										"key": {
+											"type": "string"
+										},
+										"cert": {
+											"type": "string"
+										}
+									},
+									"additionalProperties": false
+								}
+							},
+							"additionalProperties": false
+						},
 						"authenticate": {
 							"type": "object",
 							"required": [
 								"mode",
-								"bearer",
 								"session",
 								"lmdb",
 								"ldap",
@@ -406,6 +644,7 @@
 										"type": "string",
 										"minLength": 1
 									},
+									"minItems": 1,
 									"maxItems": 1000
 								},
 								"plugin_options": {
@@ -422,6 +661,10 @@
 									},
 									"minItems": 0,
 									"maxItems": 100
+								},
+								"bearer_env": {
+									"type": "string",
+									"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
 								},
 								"session": {
 									"type": "object",
@@ -563,7 +806,8 @@
 										},
 										"max_file_size": {
 											"type": "integer",
-											"minimum": 1
+											"minimum": 1,
+											"maximum": 1073741824
 										}
 									},
 									"additionalProperties": false
@@ -620,6 +864,106 @@
 							},
 							"additionalProperties": false
 						},
+						"logging": {
+							"type": "object",
+							"properties": {
+								"level": {
+									"anyOf": [
+										{
+											"type": "string",
+											"const": "error"
+										},
+										{
+											"type": "string",
+											"const": "warn"
+										},
+										{
+											"type": "string",
+											"const": "info"
+										},
+										{
+											"type": "string",
+											"const": "debug"
+										}
+									]
+								},
+								"request": {
+									"type": "object",
+									"properties": {
+										"enabled": {
+											"type": "boolean"
+										}
+									},
+									"additionalProperties": false
+								},
+								"file": {
+									"type": "object",
+									"properties": {
+										"path": {
+											"type": "string",
+											"minLength": 1,
+											"maxLength": 4096
+										},
+										"max_size": {
+											"type": "integer",
+											"minimum": 1024,
+											"maximum": 10485760
+										},
+										"max_files": {
+											"type": "integer",
+											"minimum": 2,
+											"maximum": 5
+										}
+									},
+									"additionalProperties": false
+								}
+							},
+							"additionalProperties": false
+						},
+						"database": {
+							"anyOf": [
+								{
+									"type": "object",
+									"required": [
+										"type",
+										"connectionString"
+									],
+									"properties": {
+										"type": {
+											"type": "string",
+											"const": "postgresql"
+										},
+										"connectionString": {
+											"type": "string",
+											"minLength": 1
+										}
+									},
+									"additionalProperties": false
+								},
+								{
+									"type": "object",
+									"required": [
+										"type",
+										"path"
+									],
+									"properties": {
+										"type": {
+											"type": "string",
+											"const": "lmdb"
+										},
+										"path": {
+											"type": "string",
+											"minLength": 1
+										}
+									},
+									"additionalProperties": false
+								}
+							]
+						},
+						"ai_search_path": {
+							"type": "string",
+							"minLength": 1
+						},
 						"route": {
 							"type": "object",
 							"required": [
@@ -669,6 +1013,10 @@
 									"properties": {
 										"enabled": {
 											"type": "boolean"
+										},
+										"path": {
+											"type": "string",
+											"minLength": 1
 										}
 									},
 									"additionalProperties": false

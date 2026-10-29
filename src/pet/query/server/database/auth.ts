@@ -12,6 +12,12 @@ export abstract class PetQueryServerDatabaseAuth extends PetQueryDestructor{
 
 	abstract serverAuthPut(key:utf8_t,value:utf8_t):Promise<void>;
 
+	abstract serverAuthReplace(
+		oldKey:utf8_t,
+		newKey:utf8_t,
+		value:utf8_t
+	):Promise<void>;
+
 	abstract serverAuthRemove(key:utf8_t):Promise<void>;
 
 	abstract serverAuthGetEntries():Promise<Map<utf8_t,utf8_t>>;

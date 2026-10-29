@@ -9,6 +9,7 @@ import { PetQuerySchemaApiAuthApiClientsDeleteRequest } from '#schema/api/auth/a
 import { PetQuerySchemaApiAuthApiClientsGetRequest } from '#schema/api/auth/api-clients/get/request.js';
 import { PetQuerySchemaApiAuthApiClientsPostRequest } from '#schema/api/auth/api-clients/post/request.js';
 import { PetQuerySchemaApiAuthApiClientsPutRequest } from '#schema/api/auth/api-clients/put/request.js';
+import { PetQuerySchemaApiAuthApiClientsRotatePostRequest } from '#schema/api/auth/api-clients/rotate/post/request.js';
 import { PetQuerySchemaApiAuthLoginPostRequest } from '#schema/api/auth/login/post/request.js';
 import { PetQuerySchemaApiAuthLogoutPostRequest } from '#schema/api/auth/logout/post/request.js';
 import { PetQuerySchemaApiAuthModeGetRequest } from '#schema/api/auth/mode/get/request.js';
@@ -31,6 +32,8 @@ import type { PetQuerySchemaApiAuthApiClientsPostRequestType } from '#schema/api
 import type { PetQuerySchemaApiAuthApiClientsPostResponseType } from '#schema/api/auth/api-clients/post/response.js';
 import type { PetQuerySchemaApiAuthApiClientsPutRequestType } from '#schema/api/auth/api-clients/put/request.js';
 import type { PetQuerySchemaApiAuthApiClientsPutResponseType } from '#schema/api/auth/api-clients/put/response.js';
+import type { PetQuerySchemaApiAuthApiClientsRotatePostRequestType } from '#schema/api/auth/api-clients/rotate/post/request.js';
+import type { PetQuerySchemaApiAuthApiClientsRotatePostResponseType } from '#schema/api/auth/api-clients/rotate/post/response.js';
 import type { PetQuerySchemaApiAuthLoginPostRequestType } from '#schema/api/auth/login/post/request.js';
 import type { PetQuerySchemaApiAuthLoginPostResponseType } from '#schema/api/auth/login/post/response.js';
 import type { PetQuerySchemaApiAuthLogoutPostRequestType } from '#schema/api/auth/logout/post/request.js';
@@ -169,6 +172,14 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
 			PetQuerySchemaApiAuthApiClientsPutRequest.getHandle(
 				this._handleUpdateApiClient.bind(this)
+			)
+		);
+		this.getServer().post(
+			'/auth/api-clients/:id/rotate',
+			this._disableCache.bind(this),
+			this._getAccessGroupHandler(PetQueryServerRouteAccessGroup.Admin),
+			PetQuerySchemaApiAuthApiClientsRotatePostRequest.getHandle(
+				this._handleRotateApiClientToken.bind(this)
 			)
 		);
 		this.getServer().delete(
@@ -407,6 +418,14 @@ export class PetQueryServerRouteAuth extends PetQueryServerRoute{
 		const server = this.getServer();
 		const auth = server.getAuth();
 		return auth._updateApiClient(id,values);
+	}
+
+	protected async _handleRotateApiClientToken(
+		request:PetQuerySchemaApiAuthApiClientsRotatePostRequestType
+	):Promise<PetQuerySchemaApiAuthApiClientsRotatePostResponseType>{
+		const server = this.getServer();
+		const auth = server.getAuth();
+		return auth._rotateApiClientToken(request.id);
 	}
 
 	protected async _handleDeleteApiClient(

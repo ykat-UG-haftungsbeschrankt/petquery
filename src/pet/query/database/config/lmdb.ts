@@ -5,7 +5,6 @@
  * free of charge, without warranty of any kind.
  */
 
-import { PetQueryAssert } from '#petquery/assert.js';
 import { PetQueryDestructor } from '#petquery/destructor.js';
 import { PetQuerySchemaServerDatabaseConfigEntry } from '#schema/server/database/config/entry.js';
 import { PetQueryServerDatabaseConfig } from '#petquery/server/database/config.js';
@@ -41,10 +40,12 @@ implements PetQueryServerDatabaseConfig{
 	
 	async serverConfigLoad(
 		gid:uuid_t
-	):Promise<PetQuerySchemaServerDatabaseConfigEntryType>{
+	):Promise<PetQuerySchemaServerDatabaseConfigEntryType|undefined>{
 		this._assertNotDestroyed();
 		const value = this._db.get('config/' + gid);
-		PetQueryAssert.notNull(value);
+		if(undefined === value){
+			return undefined;
+		}
 		return PetQuerySchemaServerDatabaseConfigEntry.fromJson(JSON.parse(value));
 	}
 };

@@ -6,10 +6,15 @@
  */
 
 import type { PetSighting } from '@petquery/api-client';
+import type { Translate } from '#gui/i18n';
 
-export async function locateViewer():Promise<PetSighting['location']>{
+export async function locateViewer(
+	t:Translate
+):Promise<PetSighting['location']>{
 	if(!navigator.geolocation){
-		throw new Error('Your browser does not support geolocation.');
+		throw new Error(
+			t('Your browser does not support geolocation.')
+		);
 	}
 	return new Promise((resolve,reject)=>{
 		navigator.geolocation.getCurrentPosition(
@@ -20,7 +25,10 @@ export async function locateViewer():Promise<PetSighting['location']>{
 				});
 			},
 			(error)=>{
-				reject(new Error(`Location unavailable: ${error.message}`));
+				reject(new Error(t(
+					'Location unavailable: {message}',
+					{message:error.message}
+				)));
 			},
 			{enableHighAccuracy:true,timeout:15000,maximumAge:60000}
 		);

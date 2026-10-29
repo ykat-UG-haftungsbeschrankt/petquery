@@ -339,12 +339,7 @@ export class PetQueryServerAuth{
 	}>{
 		this._assertNotDestroyed();
 		const settings = this._validateApiClientSettings(values);
-		const tokenBytes = randomBytes(32);
-		const token = tokenBytes.toString('base64url');
-		const hash = createHash('sha256');
-		hash.update(token);
-		const digest = hash.digest('hex');
-		const key = `${apiClientKeyPrefix}${digest}`;
+		const generated = this._generateApiClientToken();
 		const currentDate = new Date();
 		const now = currentDate.toISOString();
 		const client:PetQueryServerAuthApiClient = {
@@ -354,9 +349,38 @@ export class PetQueryServerAuth{
 			updatedAt:now
 		};
 		const database = this._database.getDbAuth();
-		await database.serverAuthPut(key,JSON.stringify(client));
+		await database.serverAuthPut(
+			generated.key,
+			JSON.stringify(client)
+		);
 		this._assertNotDestroyed();
-		return {client,token};
+		return {client,token:generated.token};
+	}
+
+	async _rotateApiClientToken(id:utf8_t):Promise<{
+		client:PetQueryServerAuthApiClient;
+		token:utf8_t;
+	}>{
+		this._assertNotDestroyed();
+		const existing = await this._findApiClientById(id);
+		this._assertNotDestroyed();
+		if(null === existing){
+			throw new Error(`API client "${id}" does not exist`);
+		}
+		const generated = this._generateApiClientToken();
+		const currentDate = new Date();
+		const client:PetQueryServerAuthApiClient = {
+			...existing.client,
+			updatedAt:currentDate.toISOString()
+		};
+		const database = this._database.getDbAuth();
+		await database.serverAuthReplace(
+			existing.key,
+			generated.key,
+			JSON.stringify(client)
+		);
+		this._assertNotDestroyed();
+		return {client,token:generated.token};
 	}
 
 	async _updateApiClient(
@@ -534,6 +558,20 @@ export class PetQueryServerAuth{
 		right:PetQueryServerAuthApiClient
 	):int_t{
 		return left.name.localeCompare(right.name);
+	}
+
+	protected _generateApiClientToken():{
+		key:utf8_t;
+		token:utf8_t;
+	}{
+		const token = randomBytes(32).toString('base64url');
+		const hash = createHash('sha256');
+		hash.update(token);
+		const digest = hash.digest('hex');
+		return {
+			key:`${apiClientKeyPrefix}${digest}`,
+			token
+		};
 	}
 
 	protected _hasAllowedIp(

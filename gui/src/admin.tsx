@@ -13,6 +13,7 @@ import { Panel } from '#gui/panel';
 import { Pets } from '#gui/pets';
 import { Servers } from '#gui/servers';
 import { Users } from '#gui/users';
+import { useI18n } from '#gui/i18n';
 import { useEffect } from 'react';
 import { useState } from 'react';
 
@@ -84,6 +85,7 @@ export function Admin(props:{
 	user:{group:'admin'|'user'};
 	providers:Array<AuthProvider>;
 }):ReactElement{
+	const {t} = useI18n();
 	const [page,setPage] = useState<AdminPage>(
 		()=>readPage(props.user.group)
 	);
@@ -137,14 +139,17 @@ export function Admin(props:{
 		<>
 			{'home' === page && (
 				<Panel className="admin-home">
-					<div className="eyebrow">Administration</div>
-					<h2>Admin</h2>
+					<div className="eyebrow">{t('Administration')}</div>
+					<h2>{t('Admin')}</h2>
 					<p className="muted">
-						Configure this server or manage federated peers.
+						{t('Configure this server or manage federated peers.')}
 					</p>
 				</Panel>
 			)}
-			<nav className="admin-nav" aria-label="Admin sections">
+			<nav
+				className="admin-nav"
+				aria-label={t('Admin sections')}
+			>
 				{pages.map((entry)=>{
 					return (
 						<Button
@@ -156,7 +161,7 @@ export function Admin(props:{
 								onNavigate(entry.page);
 							}}
 						>
-							{entry.label}
+							{t(entry.label)}
 						</Button>
 					);
 				})}

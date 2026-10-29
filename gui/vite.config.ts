@@ -39,6 +39,7 @@ export default defineConfig(({mode})=>{
 		resolve:{
 			alias:{
 				'#gui':fileURLToPath(new URL('./src',import.meta.url)),
+				'#i18n':fileURLToPath(new URL('./i18n',import.meta.url)),
 				'@petquery/api-client':fileURLToPath(
 					new URL(
 						'../packages/api-client/src/index.ts',

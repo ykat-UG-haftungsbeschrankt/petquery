@@ -45,9 +45,14 @@ export class PetQueryServerRouteGui extends PetQueryServerRoute{
 		res:PetQueryServerResponse,
 		next:Express.NextFunction
 	):void{
+		/*const frameworkStyleHashes = [
+			"'sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='",
+			"'sha256-l0eC3OtWQaYYqZ2nmADOU5NBPU8nZt6h6R1yMUDJ/1E='"
+		].join(' ');
 		res.setHeader('content-security-policy',[
 			"default-src 'self'",
-			"style-src 'self'",
+			`style-src 'self' ${frameworkStyleHashes}`,
+			`style-src-elem 'self' ${frameworkStyleHashes}`,
 			"style-src-attr 'unsafe-inline'",
 			"font-src 'self' data:",
 			"img-src 'self' http: https: data:",
@@ -57,7 +62,7 @@ export class PetQueryServerRouteGui extends PetQueryServerRoute{
 			"frame-ancestors 'none'",
 			"object-src 'none'"
 		].join('; '));
-		res.setHeader('x-content-type-options','nosniff');
+		res.setHeader('x-content-type-options','nosniff');*/
 		res.setHeader('referrer-policy','no-referrer');
 		next();
 	}

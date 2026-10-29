@@ -11,6 +11,8 @@ import { Button } from 'framework7-react';
 import { Docs } from '#gui/docs';
 import { getAuthProviders } from '@petquery/api-client';
 import { getSession } from '@petquery/api-client';
+import { isLanguageSelection } from '#gui/i18n';
+import { useI18n } from '#gui/i18n';
 import { Login } from '#gui/login';
 import { loginUser } from '@petquery/api-client';
 import { logout } from '@petquery/api-client';
@@ -81,6 +83,11 @@ function pageUrl(page:Page,user:AuthUser|null):utf8_t{
 }
 
 export function App():ReactElement{
+	const {
+		selection,
+		setSelection,
+		t
+	} = useI18n();
 	const [page,setPage] = useState<Page>(readPage);
 	const [providers,setProviders] = useState<Array<AuthProvider>>([]);
 	const [user,setUser] = useState<AuthUser|null>(null);
@@ -156,10 +163,12 @@ export function App():ReactElement{
 			return entry.name === credentials.provider;
 		});
 		if(undefined === provider){
-			throw new Error('Selected authentication provider is unavailable');
+			throw new Error(t(
+				'Selected authentication provider is unavailable'
+			));
 		}
 		if('password' !== provider.login){
-			throw new Error('Selected provider uses redirect sign-in');
+			throw new Error(t('Selected provider uses redirect sign-in'));
 		}
 		setUser(await loginUser(
 			provider.name,
@@ -196,7 +205,7 @@ export function App():ReactElement{
 	if(checking){
 		content = (
 			<Panel className="login-card">
-				<p className="muted">Checking your session...</p>
+				<p className="muted">{t('Checking your session...')}</p>
 			</Panel>
 		);
 	}else if(setupRequired){
@@ -253,19 +262,37 @@ export function App():ReactElement{
 												changePage(entry.page);
 											}}
 										>
-											{entry.label}
+											{t(entry.label)}
 										</Button>
 									);
 								})}
 							</div>
+							<label className="language-control">
+								<select
+									aria-label={t('Language')}
+									value={selection}
+									onChange={(event)=>{
+										const value = event.target.value;
+										if(isLanguageSelection(value)){
+											setSelection(value);
+										}
+									}}
+								>
+									<option value="auto">
+										{t('Automatic (browser)')}
+									</option>
+									<option value="en">{t('English')}</option>
+									<option value="de">{t('Deutsch')}</option>
+								</select>
+							</label>
 							<div className="auth-controls">
 								{checking
 									? <span className="auth-state">
-										Checking...
+										{t('Checking...')}
 									</span>
 									: setupRequired
 										? <span className="auth-state">
-											Initial setup
+											{t('Initial setup')}
 										</span>
 										: null !== user
 										? <>
@@ -278,11 +305,11 @@ export function App():ReactElement{
 												small
 												onClick={onLogout}
 											>
-												Sign out
+												{t('Sign out')}
 											</Button>
 										</>
 										: <span className="auth-state">
-											Public
+											{t('Public')}
 										</span>}
 							</div>
 						</NavRight>
@@ -311,7 +338,7 @@ export function App():ReactElement{
 										changePage(entry.page);
 									}}
 								>
-									{entry.label}
+									{t(entry.label)}
 								</Button>
 							);
 						})}
