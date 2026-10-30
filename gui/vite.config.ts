@@ -8,6 +8,7 @@
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { loadEnv } from 'vite';
+import { env as nodeEnv } from 'node:process';
 import react from '@vitejs/plugin-react';
 import { readFile } from 'node:fs/promises';
 import { writeFile } from 'node:fs/promises';
@@ -157,20 +158,31 @@ function apiEndpointWriter(
 	};
 }
 
-export default defineConfig(({mode})=>{
+export default defineConfig(async ({mode})=>{
 	const guiRoot = fileURLToPath(new URL('.',import.meta.url));
 	const env = loadEnv(mode,guiRoot,'PETQUERY_');
-	const envApiTarget = env.PETQUERY_API_URL;
+	const cliApiTarget = nodeEnv.PETQUERY_DEV_GUI_API_URL;
+	const envApiTarget = undefined === cliApiTarget
+		? env.PETQUERY_API_URL
+		: cliApiTarget;
 	const target = undefined === envApiTarget || '' === envApiTarget
 		? null
 		: parseApiOrigin(envApiTarget);
-	if(undefined !== envApiTarget && '' !== envApiTarget
+	const envPath = fileURLToPath(new URL('./.env.local',import.meta.url));
+	if(undefined !== cliApiTarget){
+		if(null === target){
+			throw new Error(
+				'--api-url must be an HTTP(S) origin without a path, '
+				+'query, or credentials'
+			);
+		}
+		await writeApiEndpoint(envPath,target);
+	}else if(undefined !== envApiTarget && '' !== envApiTarget
 	&& null === target){
 		throw new Error(
 			'PETQUERY_API_URL must be an HTTP(S) origin in gui/.env.local'
 		);
 	}
-	const envPath = fileURLToPath(new URL('./.env.local',import.meta.url));
 	const petQueryRoot = fileURLToPath(
 		new URL('../src/pet/query',import.meta.url)
 	);

@@ -221,6 +221,16 @@ GUI asks for the running API/bootstrap origin and saves it in
 distinct from `api.endpoint`, which is the origin the configured server
 advertises to peers and clients.
 
+Set the proxy target and Vite port on startup with:
+
+```bash
+npm run dev:gui -- --api-url http://127.0.0.1:50101 --port 5174
+```
+
+`--api-url` stores the origin in `gui/.env.local`; `--port` selects the Vite
+port and does not change the API server port.
+The API URL must be an HTTP(S) origin without a path, query or credentials.
+
 ### First-time bootstrap
 
 Start the server with a config path that does not exist:
@@ -232,9 +242,13 @@ node dist/index.js --config config/debug/bootstrap.json --port 50101
 
 The VS Code **Bootstrap PetQuery** launch profile uses this ignored config
 path. The bootstrap listener binds to `127.0.0.1` on the required `--port`.
-In another terminal, run `npm run dev:gui`, open the Vite URL, and enter
-`http://127.0.0.1:50101` if the GUI asks for an API origin. Save the endpoint,
-restart Vite, and reload the GUI.
+In another terminal, start Vite with the bootstrap listener as its proxy:
+
+```bash
+npm run dev:gui -- --api-url http://127.0.0.1:50101
+```
+
+Open the Vite URL it prints. The proxy origin is stored in `gui/.env.local`.
 
 The GUI detects bootstrap mode through `GET /bootstrap` and displays a
 structured config form. Submitting the form posts the complete
